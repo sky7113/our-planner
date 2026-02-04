@@ -1,0 +1,553 @@
+'use client';
+
+import { useState, useEffect, useCallback } from 'react';
+import { useTheme } from '../../context/ThemeContext';
+import { motion, AnimatePresence } from 'framer-motion';
+import {
+    Calendar, CheckCircle2, Circle, Plus, ChevronLeft, ChevronRight,
+    Target, Sun, Moon, Clock, BookOpen, Star, Sparkles, X, Trophy, Trash2
+} from 'lucide-react';
+
+interface PlannerEvent {
+    id: number;
+    title: string;
+    date: string;
+    category: 'daily' | 'weekly' | 'monthly' | 'yearly';
+    is_completed: boolean;
+    priority: 'High' | 'Medium' | 'Low';
+}
+
+interface Goal {
+    id: number;
+    title: string;
+    category: string;
+    target_date: string;
+    motivation: string;
+    progress: number;
+    is_achieved: boolean;
+}
+
+const TABS = [
+    { id: 'daily', label: 'Daily', icon: Sun },
+    { id: 'weekly', label: 'Weekly', icon: Calendar },
+    { id: 'monthly', label: 'Monthly', icon: Calendar },
+    { id: 'yearly', label: 'Yearly', icon: Target },
+    { id: 'vision', label: 'Vision', icon: Sparkles }, // New Tab
+];
+
+const GOAL_CATEGORIES = [
+    { id: 'Career', label: 'Career 🎓', color: 'blue' },
+    { id: 'Health', label: 'Health 🌿', color: 'green' },
+    { id: 'Joy', label: 'Joy ✨', color: 'yellow' },
+    { id: 'Wealth', label: 'Wealth 💰', color: 'amber' },
+    { id: 'Personal', label: 'Personal 💖', color: 'pink' },
+];
+
+export default function PlannerPage() {
+    const { theme } = useTheme();
+    const [view, setView] = useState<'daily' | 'weekly' | 'monthly' | 'yearly' | 'vision'>('daily');
+    const [events, setEvents] = useState<PlannerEvent[]>([]);
+    const [goals, setGoals] = useState<Goal[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    // Event State
+    const [isAdding, setIsAdding] = useState(false);
+    const [newTask, setNewTask] = useState('');
+    const [newTaskDate, setNewTaskDate] = useState(new Date().toISOString().split('T')[0]);
+    const [newTaskPriority, setNewTaskPriority] = useState('Medium');
+
+    // Goal State
+    const [isGoalModalOpen, setIsGoalModalOpen] = useState(false);
+    const [newGoal, setNewGoal] = useState({
+        title: '',
+        category: 'Career',
+        target_date: new Date().toISOString().split('T')[0],
+        motivation: '',
+        progress: 0
+    });
+
+
+    const fetchEvents = useCallback(async () => {
+        setLoading(true);
+        try {
+            if (view === 'vision') {
+                const res = await fetch('https://our-backend-api.onrender.com/api/goals');
+                if (res.ok) {
+                    const data = await res.json();
+                    setGoals(data);
+                }
+            } else {
+                const res = await fetch(`https://our-backend-api.onrender.com/api/planner?category=${view}`);
+                if (res.ok) {
+                    const data = await res.json();
+                    setEvents(data);
+                }
+            }
+        } catch (error) {
+            console.error(error);
+        } finally {
+            setLoading(false);
+        }
+    }, [view]);
+
+    useEffect(() => {
+        fetchEvents();
+    }, [fetchEvents]);
+
+    // --- Event Handlers ---
+
+    const handleAddEvent = async () => {
+        if (!newTask.trim()) return;
+        try {
+            const res = await fetch('https://our-backend-api.onrender.com/api/planner', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    title: newTask,
+                    date: newTaskDate,
+                    category: view,
+                    priority: newTaskPriority
+                })
+            });
+            if (res.ok) {
+                setNewTask('');
+                setIsAdding(false);
+                fetchEvents();
+            }
+        } catch (error) {
+            console.error(error);
+        }
+    };
+
+    const toggleEvent = async (id: number) => {
+        try {
+            const res = await fetch(`https://our-backend-api.onrender.com/api/planner/${id}/toggle`, {
+                method: 'PUT'
+            });
+            if (res.ok) {
+                setEvents(events.map(e => e.id === id ? { ...e, is_completed: !e.is_completed } : e));
+            }
+        } catch (error) {
+            console.error(error);
+        }
+    };
+
+    // --- Goal Handlers ---
+
+    const handleCreateGoal = async () => {
+        if (!newGoal.title || !newGoal.motivation) return;
+        try {
+            const res = await fetch('https://our-backend-api.onrender.com/api/goals', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(newGoal)
+            });
+            if (res.ok) {
+                setIsGoalModalOpen(false);
+                setNewGoal({ title: '', category: 'Career', target_date: new Date().toISOString().split('T')[0], motivation: '', progress: 0 });
+                fetchEvents(); // Refresh goals
+            }
+        } catch (error) {
+            console.error(error);
+        }
+    };
+
+    const updateGoalProgress = async (id: number, newProgress: number) => {
+        // Optimistic update
+        setGoals(goals.map(g => g.id === id ? { ...g, progress: newProgress, is_achieved: newProgress >= 100 } : g));
+
+        try {
+            await fetch(`https://our-backend-api.onrender.com/api/goals/${id}/progress`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ progress: newProgress })
+            });
+        } catch (error) {
+            console.error(error);
+        }
+    };
+
+    const deleteGoal = async (id: number) => {
+        if (!confirm('Are you sure you want to delete this goal?')) return;
+        try {
+            const res = await fetch(`https://our-backend-api.onrender.com/api/goals/${id}`, {
+                method: 'DELETE'
+            });
+            if (res.ok) {
+                setGoals(goals.filter(g => g.id !== id));
+            }
+        } catch (error) {
+            console.error(error);
+        }
+    };
+
+    // --- Helpers ---
+    const getWeekDays = () => {
+        const curr = new Date();
+        const week = [];
+        curr.setDate(curr.getDate() - curr.getDay() + 1); // Start Monday
+        for (let i = 0; i < 7; i++) {
+            week.push(new Date(curr));
+            curr.setDate(curr.getDate() + 1);
+        }
+        return week;
+    };
+
+    const quarters = [
+        { id: 'Q1', months: ['Jan', 'Feb', 'Mar'] },
+        { id: 'Q2', months: ['Apr', 'May', 'Jun'] },
+        { id: 'Q3', months: ['Jul', 'Aug', 'Sep'] },
+        { id: 'Q4', months: ['Oct', 'Nov', 'Dec'] },
+    ];
+
+    if (!theme) return null;
+
+    return (
+        <main className={`min-h-screen ${theme.colors.backgroundClass} text-white p-6 pb-24 transition-colors duration-700`}>
+            {/* Header */}
+            <div className="max-w-5xl mx-auto mb-8 flex flex-col md:flex-row items-center justify-between gap-4">
+                <h1 className="text-3xl font-light tracking-wide text-white flex items-center gap-2">
+                    <BookOpen size={28} className="text-purple-300" />
+                    Royal Planner
+                </h1>
+
+                {/* Navigation Tabs */}
+                <div className="flex bg-white/5 p-1 rounded-xl backdrop-blur-md border border-white/10 overflow-x-auto max-w-full">
+                    {TABS.map((tab) => (
+                        <button
+                            key={tab.id}
+                            onClick={() => setView(tab.id as any)}
+                            className={`px-4 py-2 rounded-lg flex items-center gap-2 text-sm font-medium transition-all whitespace-nowrap ${view === tab.id
+                                ? 'bg-white/10 text-white shadow-sm border border-white/10'
+                                : 'text-white/50 hover:text-white/80'
+                                }`}
+                        >
+                            <tab.icon size={16} />
+                            {tab.label}
+                        </button>
+                    ))}
+                </div>
+            </div>
+
+            <div className="max-w-5xl mx-auto">
+                <AnimatePresence mode="wait">
+                    <motion.div
+                        key={view}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        transition={{ duration: 0.2 }}
+                    >
+                        {/* --- DAILY VIEW --- */}
+                        {view === 'daily' && (
+                            <div className="bg-slate-900/40 backdrop-blur-xl border border-white/10 rounded-3xl p-6 md:p-8 shadow-xl">
+                                <div className="flex items-center justify-between mb-6">
+                                    <h2 className="text-2xl font-light">Today&apos;s Agenda</h2>
+                                    <button
+                                        onClick={() => setIsAdding(!isAdding)}
+                                        className="w-10 h-10 rounded-full bg-purple-500/20 text-purple-200 flex items-center justify-center hover:bg-purple-500 hover:text-white transition-all"
+                                    >
+                                        <Plus size={20} />
+                                    </button>
+                                </div>
+
+                                {isAdding && (
+                                    <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="mb-6 bg-black/20 p-4 rounded-xl">
+                                        <input
+                                            type="text"
+                                            value={newTask}
+                                            onChange={(e) => setNewTask(e.target.value)}
+                                            placeholder="What needs to be done?"
+                                            className="w-full bg-transparent border-none focus:outline-none text-lg mb-2 text-white placeholder-white/30"
+                                            autoFocus
+                                        />
+                                        <div className="flex justify-end gap-2">
+                                            <button onClick={() => setIsAdding(false)} className="px-3 py-1 text-sm text-white/50">Cancel</button>
+                                            <button onClick={handleAddEvent} className="px-4 py-1.5 bg-purple-600 rounded-lg text-sm font-medium">Add Task</button>
+                                        </div>
+                                    </motion.div>
+                                )}
+
+                                <div className="space-y-3">
+                                    {events.length === 0 && !loading && (
+                                        <p className="text-center text-white/30 py-10">No tasks for today. Enjoy the peace.</p>
+                                    )}
+                                    {events.map((event) => (
+                                        <div key={event.id} className="group flex items-center gap-4 p-3 rounded-xl hover:bg-white/5 transition-colors border border-transparent hover:border-white/5">
+                                            <button onClick={() => toggleEvent(event.id)} className="text-white/50 hover:text-purple-400 transition-colors">
+                                                {event.is_completed ? <CheckCircle2 size={24} className="text-green-400" /> : <Circle size={24} />}
+                                            </button>
+                                            <span className={`flex-1 text-lg ${event.is_completed ? 'line-through opacity-40' : ''}`}>
+                                                {event.title}
+                                            </span>
+                                            <span className={`text-xs px-2 py-1 rounded-full uppercase tracking-wider ${event.priority === 'High' ? 'bg-red-500/20 text-red-200' :
+                                                event.priority === 'Medium' ? 'bg-yellow-500/20 text-yellow-200' :
+                                                    'bg-blue-500/20 text-blue-200'
+                                                }`}>
+                                                {event.priority}
+                                            </span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* --- WEEKLY VIEW --- */}
+                        {view === 'weekly' && (
+                            <div className="grid grid-cols-1 md:grid-cols-7 gap-4">
+                                {getWeekDays().map((day, i) => (
+                                    <div key={i} className="bg-slate-900/30 backdrop-blur-md border border-white/10 rounded-2xl p-4 min-h-[200px]">
+                                        <h3 className="text-center font-medium text-white/70 mb-1">{day.toLocaleDateString('en-US', { weekday: 'short' })}</h3>
+                                        <p className="text-center text-2xl font-light mb-4 text-purple-200">{day.getDate()}</p>
+
+                                        <div className="space-y-2">
+                                            <button
+                                                onClick={() => {
+                                                    setNewTaskDate(day.toISOString().split('T')[0]);
+                                                    setView('weekly');
+                                                    setIsAdding(true);
+                                                }}
+                                                className="w-full py-1 text-xs text-center border border-dashed border-white/20 rounded-lg text-white/30 hover:bg-white/5"
+                                            >
+                                                +
+                                            </button>
+                                            {events.filter(e => e.date === day.toISOString().split('T')[0]).map(e => (
+                                                <div key={e.id} className="text-xs p-2 bg-white/10 rounded-lg border-l-2 border-purple-500 truncate">
+                                                    {e.title}
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+
+                        {/* --- MONTHLY VIEW --- */}
+                        {view === 'monthly' && (
+                            <div className="bg-slate-900/40 backdrop-blur-xl border border-white/10 rounded-3xl p-8 shadow-xl">
+                                <div className="grid grid-cols-7 gap-4 text-center mb-4 text-white/50 text-sm uppercase tracking-widest">
+                                    <span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span>
+                                </div>
+                                <div className="grid grid-cols-7 gap-2">
+                                    {Array.from({ length: 35 }).map((_, i) => (
+                                        <div key={i} className="aspect-square bg-white/5 rounded-xl p-2 border border-white/5 hover:border-purple-500/50 transition-colors relative">
+                                            <span className="text-white/40 text-sm absolute top-2 right-2">{i + 1 <= 30 ? i + 1 : ''}</span>
+                                            {/* Dots for events */}
+                                            <div className="absolute bottom-2 left-2 flex gap-1">
+                                                {i % 5 === 0 && <div className="w-1.5 h-1.5 rounded-full bg-red-400" />}
+                                                {i % 8 === 0 && <div className="w-1.5 h-1.5 rounded-full bg-blue-400" />}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                                <div className="mt-4 text-center">
+                                    <button
+                                        onClick={() => setIsAdding(!isAdding)}
+                                        className="px-6 py-2 bg-purple-600 rounded-full text-sm font-medium shadow-lg shadow-purple-900/40 hover:scale-105 transition-transform"
+                                    >
+                                        Add Event to Calendar
+                                    </button>
+
+                                    {isAdding && (
+                                        <div className="mt-4 max-w-md mx-auto bg-black/40 p-4 rounded-xl">
+                                            <input
+                                                type="date"
+                                                value={newTaskDate}
+                                                onChange={(e) => setNewTaskDate(e.target.value)}
+                                                className="w-full bg-white/10 border-white/10 rounded-lg px-3 py-2 text-white mb-2"
+                                            />
+                                            <input
+                                                type="text"
+                                                value={newTask}
+                                                onChange={(e) => setNewTask(e.target.value)}
+                                                placeholder="Event Title..."
+                                                className="w-full bg-white/10 border-white/10 rounded-lg px-3 py-2 text-white mb-2"
+                                            />
+                                            <button onClick={handleAddEvent} className="w-full py-2 bg-white/10 hover:bg-white/20 rounded-lg">Save</button>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* --- YEARLY VIEW --- */}
+                        {view === 'yearly' && (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                {quarters.map((q) => (
+                                    <div key={q.id} className="bg-gradient-to-br from-indigo-900/40 to-purple-900/40 backdrop-blur-md border border-white/10 rounded-3xl p-6 relative overflow-hidden group">
+                                        <div className="absolute -right-10 -top-10 text-[10rem] font-bold text-white/5 select-none">{q.id}</div>
+                                        <h3 className="text-2xl font-light mb-4 relative z-10">{q.id} Goals</h3>
+                                        <p className="text-white/40 text-sm mb-6 relative z-10">{q.months.join(' • ')}</p>
+
+                                        <div className="space-y-4 relative z-10">
+                                            {events.filter(e => e.category === 'yearly').map(e => (
+                                                <div key={e.id} className="flex items-center gap-3">
+                                                    <Star size={16} className="text-yellow-400" />
+                                                    <span>{e.title}</span>
+                                                </div>
+                                            ))}
+                                            {/* Note: Simplified add logic for yearly view reuse */}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+
+                        {/* --- VISION BOARD VIEW (NEW) --- */}
+                        {view === 'vision' && (
+                            <div>
+                                <div className="text-center mb-10">
+                                    <h2 className="text-4xl font-thin mb-4 bg-clip-text text-transparent bg-gradient-to-r from-purple-200 to-pink-200">Manifest Your Future</h2>
+                                    <button
+                                        onClick={() => setIsGoalModalOpen(true)}
+                                        className="px-8 py-3 bg-white text-slate-900 rounded-full font-medium shadow-[0_0_20px_rgba(255,255,255,0.3)] hover:shadow-[0_0_30px_rgba(255,255,255,0.5)] transition-all transform hover:scale-105"
+                                    >
+                                        + Add New Dream
+                                    </button>
+                                </div>
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                    {goals.map((goal) => (
+                                        <motion.div
+                                            key={goal.id}
+                                            layout
+                                            className={`relative p-6 rounded-3xl border backdrop-blur-xl overflow-hidden group transition-all duration-500 ${goal.is_achieved
+                                                ? 'bg-amber-900/20 border-amber-500/50 shadow-[0_0_30px_rgba(245,158,11,0.2)]'
+                                                : 'bg-slate-900/40 border-white/10 hover:border-white/20'
+                                                }`}
+                                        >
+                                            {/* Glow Effect for Achieved */}
+                                            {goal.is_achieved && (
+                                                <div className="absolute -top-10 -right-10 w-32 h-32 bg-amber-500/20 rounded-full blur-3xl animate-pulse" />
+                                            )}
+
+                                            <button
+                                                onClick={(e) => { e.stopPropagation(); deleteGoal(goal.id); }}
+                                                className="absolute top-4 right-4 text-white/10 hover:text-red-400 transition-colors z-20"
+                                            >
+                                                <Trash2 size={18} />
+                                            </button>
+
+                                            <div className="flex justify-between items-start mb-4 pr-8">
+                                                <span className={`text-xs font-bold uppercase tracking-widest px-2 py-1 rounded-md ${goal.is_achieved ? 'bg-amber-500 text-slate-900' : 'bg-white/10 text-white/60'
+                                                    }`}>
+                                                    {goal.category}
+                                                </span>
+                                                {goal.is_achieved && <Trophy size={20} className="text-amber-400" />}
+                                            </div>
+
+                                            <h3 className="text-2xl font-light mb-2">{goal.title}</h3>
+                                            <p className="text-sm text-white/60 italic mb-6 border-l-2 border-white/10 pl-3">
+                                                &quot;{goal.motivation}&quot;
+                                            </p>
+
+                                            <div className="space-y-2">
+                                                <div className="flex justify-between text-xs text-white/40">
+                                                    <span>Progress</span>
+                                                    <span>{goal.progress}%</span>
+                                                </div>
+                                                <input
+                                                    type="range"
+                                                    min="0"
+                                                    max="100"
+                                                    value={goal.progress}
+                                                    onChange={(e) => updateGoalProgress(goal.id, parseInt(e.target.value))}
+                                                    className="w-full h-2 bg-black/40 rounded-lg appearance-none cursor-pointer accent-white hover:accent-purple-400 transition-all"
+                                                />
+                                            </div>
+
+                                            <div className="mt-4 text-xs text-white/30 text-right">
+                                                Target: {goal.target_date}
+                                            </div>
+                                        </motion.div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                    </motion.div>
+                </AnimatePresence>
+            </div>
+
+            {/* --- GOAL SETTER MODAL --- */}
+            <AnimatePresence>
+                {isGoalModalOpen && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
+                        onClick={() => setIsGoalModalOpen(false)}
+                    >
+                        <motion.div
+                            initial={{ scale: 0.9, y: 20 }}
+                            animate={{ scale: 1, y: 0 }}
+                            exit={{ scale: 0.9, y: 20 }}
+                            className="bg-slate-900 border border-white/20 rounded-3xl p-8 max-w-lg w-full shadow-2xl relative overflow-hidden"
+                            onClick={e => e.stopPropagation()}
+                        >
+                            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-purple-500 via-pink-500 to-amber-500" />
+                            <button onClick={() => setIsGoalModalOpen(false)} className="absolute top-4 right-4 p-2 text-white/50 hover:text-white"><X size={20} /></button>
+
+                            <h2 className="text-3xl font-light mb-6">Set a New Goal</h2>
+
+                            <div className="space-y-4">
+                                <div>
+                                    <label className="text-xs uppercase tracking-wider text-white/50 font-bold mb-1 block">Dream Name</label>
+                                    <input
+                                        type="text"
+                                        value={newGoal.title}
+                                        onChange={(e) => setNewGoal({ ...newGoal, title: e.target.value })}
+                                        className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-lg focus:border-purple-500 outline-none transition-colors"
+                                        placeholder="e.g., Master Python"
+                                    />
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="text-xs uppercase tracking-wider text-white/50 font-bold mb-1 block">Category</label>
+                                        <select
+                                            value={newGoal.category}
+                                            onChange={(e) => setNewGoal({ ...newGoal, category: e.target.value })}
+                                            className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 outline-none"
+                                        >
+                                            {GOAL_CATEGORIES.map(cat => (
+                                                <option key={cat.id} value={cat.id} className="bg-slate-900">{cat.label}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label className="text-xs uppercase tracking-wider text-white/50 font-bold mb-1 block">Target Date</label>
+                                        <input
+                                            type="date"
+                                            value={newGoal.target_date}
+                                            onChange={(e) => setNewGoal({ ...newGoal, target_date: e.target.value })}
+                                            className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 outline-none"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label className="text-xs uppercase tracking-wider text-white/50 font-bold mb-1 block">My &apos;Why&apos;</label>
+                                    <textarea
+                                        value={newGoal.motivation}
+                                        onChange={(e) => setNewGoal({ ...newGoal, motivation: e.target.value })}
+                                        className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 min-h-[100px] outline-none resize-none"
+                                        placeholder="Why does this matter to me?"
+                                    />
+                                </div>
+
+                                <button
+                                    onClick={handleCreateGoal}
+                                    className="w-full py-4 mt-4 bg-gradient-to-r from-purple-600 to-pink-600 rounded-xl font-medium shadow-lg hover:scale-[1.02] transition-transform"
+                                >
+                                    Manifest It ✨
+                                </button>
+                            </div>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+        </main>
+    );
+}
