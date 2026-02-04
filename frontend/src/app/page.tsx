@@ -19,8 +19,7 @@ export default function Home() {
   useEffect(() => {
     const checkStatus = async () => {
       try {
-        const response = await fetch('https://our-backend-api.onrender.com
-          / api / status');
+        const response = await fetch('https://our-backend-api.onrender.com/api/status');
         if (response.ok) setIsOnline(true);
       } catch (error) {
         console.error("Backend offline:", error);
