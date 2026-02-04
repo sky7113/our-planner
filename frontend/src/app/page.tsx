@@ -19,6 +19,7 @@ export default function Home() {
   useEffect(() => {
     const checkStatus = async () => {
       try {
+        // ONE SINGLE LINE - NO SPACES
         const response = await fetch('https://our-backend-api.onrender.com/api/status');
         if (response.ok) setIsOnline(true);
       } catch (error) {
@@ -27,7 +28,6 @@ export default function Home() {
     };
     checkStatus();
   }, []);
-
   // ... (keeping existing cards const if needed, but ignored for now)
 
   return (
