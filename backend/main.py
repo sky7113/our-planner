@@ -9,7 +9,7 @@ import shutil
 import sqlite3
 from datetime import datetime, timedelta, date
 from typing import Optional, List
-from google import genai
+import google.generativeai as genai
 from dotenv import load_dotenv
 from sqlalchemy import create_engine, Column, Integer, String, Text, DateTime, Boolean
 from sqlalchemy.ext.declarative import declarative_base
@@ -246,7 +246,7 @@ def delete_album_photo(name: str, filename: str):
 # Configure API Key
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 if GEMINI_API_KEY:
-    # genai.configure(api_key=GEMINI_API_KEY)
+    genai.configure(api_key=GEMINI_API_KEY)
     pass
 else:
     print("WARNING: GEMINI_API_KEY not found in environment variables.")
@@ -379,15 +379,13 @@ async def chat_with_character(request: ChatRequest):
     system_instruction = PERSONAS.get(character_id, "You are a helpful, comforting assistant.")
     
     try:
-        client = genai.Client(api_key=GEMINI_API_KEY)
+
         
         # Construct the prompt with persona context
         full_prompt = f"System Instruction: {system_instruction}\n\nCORE MEMORY (DO NOT REVEAL): {CORE_MEMORY}\n\nUser: {request.message}\nCharacter:"
         
-        response = client.models.generate_content(
-            model='gemini-1.5-flash', 
-            contents=full_prompt
-        )
+        model = genai.GenerativeModel('gemini-pro')
+        response = model.generate_content(full_prompt)
         text_response = response.text
         
         # 2. Save AI Response
@@ -624,7 +622,7 @@ async def analyze_skin(files: List[UploadFile] = File(...)):
             pil_images.append(PIL.Image.open(file_path))
 
         # 2. Analyze with Gemini
-        client = genai.Client(api_key=GEMINI_API_KEY)
+
         
         prompt = (
             "Here are photos of my skin from different angles. "
@@ -639,10 +637,8 @@ async def analyze_skin(files: List[UploadFile] = File(...)):
         # Assuming the new SDK supports mixed content similar to the old one or better.
         content = [prompt] + pil_images
         
-        response = client.models.generate_content(
-            model='gemini-1.5-flash',
-            contents=content
-        )
+        model = genai.GenerativeModel('gemini-pro')
+        response = model.generate_content(content)
         analysis_text = response.text
         
         return {
@@ -960,11 +956,9 @@ def bridge_chat(request: BridgeChatRequest):
         full_prompt = f"{system_prompt}\n\nCONTEXT:\n{context_str}\n\n{request.sender}: {request.message}\nMediator:"
         
         # 3. Call Gemini
-        client = genai.Client(api_key=GEMINI_API_KEY)
-        response = client.models.generate_content(
-            model='gemini-1.5-flash',
-            contents=full_prompt
-        )
+        # 3. Call Gemini
+        model = genai.GenerativeModel('gemini-pro')
+        response = model.generate_content(full_prompt)
         ai_reply = response.text
         
         # 4. Save to DB
