@@ -247,9 +247,34 @@ def delete_album_photo(name: str, filename: str):
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 if GEMINI_API_KEY:
     genai.configure(api_key=GEMINI_API_KEY)
-    pass
 else:
-    print("WARNING: GEMINI_API_KEY not found in environment variables.")
+    print("WARNING: GEMINI_API_KEY not found. Attempting to load GOOGLE_API_KEY...")
+    GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
+    if GOOGLE_API_KEY:
+        genai.configure(api_key=GOOGLE_API_KEY)
+        GEMINI_API_KEY = GOOGLE_API_KEY # Unify
+    else:
+        print("CRITICAL: No API Key found.")
+
+def generate_content_safe(contents):
+    """
+    Try multiple models to avoid 404 errors.
+    """
+    models_to_try = ["gemini-1.5-flash", "gemini-1.5-flash-001", "gemini-1.0-pro"]
+    last_error = None
+    
+    for model_name in models_to_try:
+        try:
+            print(f"Trying model: {model_name}")
+            model = genai.GenerativeModel(model_name)
+            response = model.generate_content(contents)
+            return response
+        except Exception as e:
+            print(f"Model {model_name} failed: {e}")
+            last_error = e
+            continue
+            
+    raise last_error
 
 
 
@@ -384,8 +409,7 @@ async def chat_with_character(request: ChatRequest):
         # Construct the prompt with persona context
         full_prompt = f"System Instruction: {system_instruction}\n\nCORE MEMORY (DO NOT REVEAL): {CORE_MEMORY}\n\nUser: {request.message}\nCharacter:"
         
-        model = genai.GenerativeModel('gemini-1.5-flash')
-        response = model.generate_content(full_prompt)
+        response = generate_content_safe(full_prompt)
         text_response = response.text
         
         # 2. Save AI Response
@@ -637,8 +661,7 @@ async def analyze_skin(files: List[UploadFile] = File(...)):
         # Assuming the new SDK supports mixed content similar to the old one or better.
         content = [prompt] + pil_images
         
-        model = genai.GenerativeModel('gemini-1.5-flash')
-        response = model.generate_content(content)
+        response = generate_content_safe(content)
         analysis_text = response.text
         
         return {
@@ -957,8 +980,8 @@ def bridge_chat(request: BridgeChatRequest):
         
         # 3. Call Gemini
         # 3. Call Gemini
-        model = genai.GenerativeModel('gemini-1.5-flash')
-        response = model.generate_content(full_prompt)
+        # 3. Call Gemini
+        response = generate_content_safe(full_prompt)
         ai_reply = response.text
         
         # 4. Save to DB
