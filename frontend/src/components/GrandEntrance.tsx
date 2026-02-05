@@ -117,6 +117,24 @@ export default function GrandEntrance() {
             color: 'bg-gradient-to-br from-slate-900 to-cyan-900 border-cyan-400',
             description: 'The Strongest'
         },
+        {
+            id: 'zoro',
+            label: 'Roronoa Zoro',
+            color: 'bg-gradient-to-br from-emerald-900 to-green-900 border-emerald-500',
+            description: 'Master Swordsman'
+        },
+        {
+            id: 'kuromi',
+            label: 'Kuromi',
+            color: 'bg-gradient-to-br from-purple-900 to-pink-900 border-pink-400',
+            description: 'Cheeky but Sweet'
+        },
+        {
+            id: 'shinchan',
+            label: 'Shin-chan',
+            color: 'bg-gradient-to-br from-red-600 to-yellow-500 border-yellow-400',
+            description: 'Hurricane of Fun'
+        },
     ];
 
     if (stage === 'finished') return null;

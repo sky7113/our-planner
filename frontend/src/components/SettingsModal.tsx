@@ -103,6 +103,9 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                                         { id: 'rimuru', label: 'Rimuru', className: 'bg-cyan-500' },
                                         { id: 'luffy', label: 'Luffy', className: 'bg-red-600' },
                                         { id: 'gojo', label: 'Gojo', className: 'bg-slate-900 border border-blue-400' },
+                                        { id: 'zoro', label: 'Zoro', className: 'bg-emerald-900 border border-green-500' },
+                                        { id: 'kuromi', label: 'Kuromi', className: 'bg-purple-900 border border-pink-400' },
+                                        { id: 'shinchan', label: 'Shinchan', className: 'bg-red-600 border border-yellow-400' },
                                     ].map((char) => (
                                         <button
                                             key={char.id}

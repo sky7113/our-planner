@@ -243,7 +243,16 @@ export default function Sidekick({ className = '', image, themeId }: SidekickPro
                 src={currentImage}
                 alt={theme.name}
                 animate={controls}
-                className="w-full drop-shadow-xl"
+                className="w-full transition-transform duration-400 ease-out"
+                style={{
+                    filter: `drop-shadow(0px 5px 15px rgba(0,0,0,0.5)) drop-shadow(0px 0px 5px ${theme.colors.primary})`,
+                    transform: 'translateZ(0)', // Hardware acceleration
+                }}
+                whileHover={{
+                    scale: 1.03,
+                    y: -5,
+                    transition: { duration: 0.4, ease: "easeOut" }
+                }}
             />
         </motion.div>
     );

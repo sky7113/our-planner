@@ -172,55 +172,52 @@ const distinctPersonalities: Record<CharacterId, PersonalityObject> = {
         id: 'zoro',
         name: 'Roronoa Zoro',
         font: 'font-mono',
-        colors: {
-            primary: '#183828',
-            secondary: '#99D98C',
-            accent: '#000000',
-            textClass: 'text-gray-100',
-            backgroundClass: 'bg-emerald-950',
-            cardClass: 'bg-black/20 backdrop-blur-md',
-            borderClass: 'border-[#000000] border-opacity-50'
-        },
-        bgImage: '/images/zoro-bg.jpg',
-        sidekickImage: '/images/zoro-sidekick.png',
+        colors: createColors('#183828', '#99D98C', '#000000'), // Dark Green, Light Green, Black
+        bgImage: '/assets/zoro-bg.jpg',
+        characterImage: '/characters/zoro.png',
+        sidekickImage: '/assets/zoro-full.png',
         greeting: "Nothing happened... I was just waiting for you.",
-        voiceStyle: "stoic, serious, deeply loyal, directionally challenged"
+        voiceStyle: "stoic, serious, deeply loyal, directionally challenged",
+        labels: {
+            treasury: 'Bounty Hunter Fund',
+            knowledge: 'Swordsmanship',
+            memories: 'Log Journey',
+            companion: 'Train with Zoro'
+        }
     },
     'kuromi': {
         id: 'kuromi',
         name: 'Kuromi',
         font: 'font-rounded',
-        colors: {
-            primary: '#2B1B2D',
-            secondary: '#F4ACD3',
-            accent: '#D8B4E2',
-            textClass: 'text-pink-100',
-            backgroundClass: 'bg-purple-950',
-            cardClass: 'bg-black/20 backdrop-blur-md',
-            borderClass: 'border-[#D8B4E2] border-opacity-50'
-        },
-        bgImage: '/images/kuromi-bg.jpg',
-        sidekickImage: '/images/kuromi-sidekick.png',
-        greeting: "Cheeky but sweet! Welcome home, my favorite human!",
-        voiceStyle: "cheeky, punk-rock, sensitive, energetic"
+        colors: createColors('#2B1B2D', '#F4ACD3', '#D8B4E2'), // Dark Purple, Hot Pink, Light Purple
+        bgImage: '/assets/kuromi-bg.jpg',
+        characterImage: '/characters/kuromi.png',
+        sidekickImage: '/assets/kuromi-full.png',
+        greeting: "Cheeky but sweet! Welcome home!",
+        voiceStyle: "cheeky, punk-rock, sensitive, energetic",
+        labels: {
+            treasury: 'Melody Key Stash',
+            knowledge: 'Romance Novels',
+            memories: 'Kuromi Notes',
+            companion: 'Plot with Kuromi'
+        }
     },
     'shinchan': {
         id: 'shinchan',
         name: 'Shin-chan',
         font: 'font-sans',
-        colors: {
-            primary: '#E63946',
-            secondary: '#F4A261',
-            accent: '#2A9D8F',
-            textClass: 'text-yellow-50',
-            backgroundClass: 'bg-red-900',
-            cardClass: 'bg-black/20 backdrop-blur-md',
-            borderClass: 'border-[#2A9D8F] border-opacity-50'
-        },
-        bgImage: '/images/shinchan-bg.jpg',
-        sidekickImage: '/images/shinchan-sidekick.png',
+        colors: createColors('#E63946', '#F4A261', '#2A9D8F'), // Red, Yellow/Orange, Green
+        bgImage: '/assets/shinchan-bg.jpg',
+        characterImage: '/characters/shinchan.png',
+        sidekickImage: '/assets/shinchan-full.png',
         greeting: "Oho! Look who is here! Let's have some fun!",
-        voiceStyle: "mischievous, shameless, funny, energetic"
+        voiceStyle: "mischievous, shameless, funny, energetic",
+        labels: {
+            treasury: 'Chocobi Money',
+            knowledge: 'Action Kamen Episodes',
+            memories: 'Kasukabe Photos',
+            companion: 'Play with Shin-chan'
+        }
     },
 
 };
