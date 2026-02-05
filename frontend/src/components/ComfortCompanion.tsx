@@ -203,7 +203,7 @@ export default function ComfortCompanion() {
             )}
 
             {/* Main Content Grid */}
-            <div className="relative z-10 w-full max-w-7xl h-screen p-6 md:p-12 grid grid-cols-1 md:grid-cols-12 gap-8 items-center">
+            <div className="relative z-10 w-full max-w-5xl h-screen p-2 md:p-12 grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-8 items-center">
 
                 {/* LEFT COLUMN: Character Avatar */}
                 <div className="hidden md:flex md:col-span-5 h-[80vh] flex-col items-center justify-end relative">
@@ -322,7 +322,7 @@ export default function ComfortCompanion() {
                         </div>
 
                         {/* Input Area */}
-                        <div className={`p-6 border-t ${theme.colors.borderClass} bg-black/20`}>
+                        <div className={`p-3 md:p-6 border-t ${theme.colors.borderClass} bg-black/20`}>
                             <div className="relative">
                                 <textarea
                                     value={inputValue}
@@ -334,7 +334,7 @@ export default function ComfortCompanion() {
                                         }
                                     }}
                                     placeholder="Pour your heart out here..."
-                                    className={`w-full min-h-[60px] max-h-[120px] bg-slate-100 text-slate-900 placeholder:text-slate-500 border-2 border-slate-200 rounded-2xl pl-6 pr-16 py-4 focus:outline-none focus:border-purple-500 transition-all resize-none shadow-inner`}
+                                    className={`w-full min-h-[50px] md:min-h-[60px] max-h-[120px] bg-slate-100 text-slate-900 placeholder:text-slate-500 border-2 border-slate-200 rounded-2xl pl-4 md:pl-6 pr-14 md:pr-16 py-3 md:py-4 focus:outline-none focus:border-purple-500 transition-all resize-none shadow-inner text-base`}
                                     style={{ '--tw-ring-color': theme.colors.accent } as React.CSSProperties}
                                 />
                                 <button

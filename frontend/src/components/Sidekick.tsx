@@ -43,7 +43,7 @@ export default function Sidekick({ className = '', image, themeId }: SidekickPro
     if (currentThemeId.includes('anya')) {
         return (
             <motion.div
-                className={`fixed bottom-0 left-0 z-40 w-48 md:w-64 cursor-pointer ${className}`}
+                className={`fixed bottom-0 md:bottom-0 -bottom-10 left-0 z-40 w-32 md:w-64 opacity-80 md:opacity-100 cursor-pointer ${className}`}
                 initial={{ y: '100%' }}
                 animate={{
                     y: ['100%', '0%', '0%', '100%'], // Up, Stay, Down
@@ -74,7 +74,7 @@ export default function Sidekick({ className = '', image, themeId }: SidekickPro
     if (currentThemeId === 'rimuru') {
         return (
             <motion.div
-                className={`fixed bottom-1/2 right-4 translate-y-1/2 z-40 w-48 md:w-56 cursor-pointer ${className}`}
+                className={`fixed bottom-1/2 right-4 translate-y-1/2 z-40 w-32 md:w-56 opacity-80 md:opacity-100 cursor-pointer ${className}`}
                 animate={{
                     y: [0, -20, 0, 15, 0],
                     x: [0, 5, 0, -5, 0],
@@ -120,7 +120,7 @@ export default function Sidekick({ className = '', image, themeId }: SidekickPro
     if (currentThemeId.includes('shinobu')) {
         return (
             <motion.div
-                className={`fixed top-1/2 left-0 -translate-y-1/2 z-40 w-48 md:w-60 cursor-pointer ${className}`}
+                className={`fixed top-1/2 left-0 -translate-y-1/2 z-40 w-32 md:w-60 opacity-80 md:opacity-100 cursor-pointer ${className}`}
                 animate={{
                     y: [0, -15, 0],
                     rotate: [0, 2, -2, 0]
@@ -147,7 +147,7 @@ export default function Sidekick({ className = '', image, themeId }: SidekickPro
     if (currentThemeId === 'gojo') {
         return (
             <motion.div
-                className={`fixed top-1/2 left-8 -translate-y-1/2 z-40 w-48 md:w-64 cursor-pointer ${className}`}
+                className={`fixed top-1/2 left-8 -translate-y-1/2 z-40 w-32 md:w-64 opacity-80 md:opacity-100 cursor-pointer ${className}`}
                 animate={{
                     y: [-10, 10, -10], // Slow hover
                     opacity: [0.9, 1, 0.9], // Breathing effect
@@ -177,7 +177,7 @@ export default function Sidekick({ className = '', image, themeId }: SidekickPro
     if (currentThemeId === 'luffy') {
         return (
             <motion.div
-                className={`fixed bottom-0 right-8 z-40 w-48 md:w-60 cursor-pointer ${className}`}
+                className={`fixed bottom-0 md:bottom-0 -bottom-10 right-8 z-40 w-32 md:w-60 opacity-80 md:opacity-100 cursor-pointer ${className}`}
                 animate={{
                     y: [0, -50, 0], // Big Jump
                     scaleY: [1, 1.1, 0.9, 1], // Stretch
@@ -203,7 +203,7 @@ export default function Sidekick({ className = '', image, themeId }: SidekickPro
     if (currentThemeId.includes('rys')) {
         return (
             <motion.div
-                className={`fixed bottom-0 left-0 z-40 w-48 md:w-64 cursor-pointer ${className}`}
+                className={`fixed bottom-0 md:bottom-0 -bottom-10 left-0 z-40 w-32 md:w-64 opacity-80 md:opacity-100 cursor-pointer ${className}`}
                 initial={{ x: '-100%', opacity: 0 }}
                 animate={{
                     x: ['-100%', '0%', '0%', '-100%'], // Slide in, wait, slide out
@@ -233,7 +233,7 @@ export default function Sidekick({ className = '', image, themeId }: SidekickPro
     // --- DEFAULT / OTHERS (Simple Corner Stand) ---
     return (
         <motion.div
-            className={`fixed bottom-0 right-8 z-40 w-40 md:w-48 cursor-pointer ${className}`}
+            className={`fixed bottom-0 md:bottom-0 -bottom-10 right-8 z-40 w-28 md:w-48 opacity-80 md:opacity-100 cursor-pointer ${className}`}
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 0.8 }}
             whileHover={{ opacity: 1, scale: 1.05 }}

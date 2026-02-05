@@ -76,7 +76,7 @@ export default function Home() {
         </p>
       </div>
 
-      <div className="grid grid-cols-2 gap-6 w-full max-w-2xl z-10">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full max-w-6xl z-10 px-4">
         {[
           {
             name: theme?.labels?.companion || `${(theme?.id || 'royal').charAt(0).toUpperCase() + (theme?.id || 'royal').slice(1)} Companion`,

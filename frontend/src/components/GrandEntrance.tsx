@@ -298,7 +298,7 @@ export default function GrandEntrance() {
                                     animate={{ opacity: 1, y: 0 }}
                                     exit={{ opacity: 0, y: 20 }}
                                     onClick={handleEnterPalace}
-                                    className="fixed bottom-10 left-1/2 transform -translate-x-1/2 z-50 bg-gradient-to-r from-yellow-600 to-yellow-400 text-black font-bold py-4 px-16 rounded-full shadow-[0_0_20px_rgba(255,215,0,0.5)] hover:shadow-[0_0_40px_rgba(255,215,0,0.8)] transition-all uppercase tracking-widest text-lg border-2 border-yellow-200 flex items-center gap-2"
+                                    className="fixed bottom-10 left-1/2 transform -translate-x-1/2 z-50 bg-gradient-to-r from-yellow-600 to-yellow-400 text-black font-bold py-4 px-12 md:px-16 w-[90%] md:w-auto rounded-full shadow-[0_0_20px_rgba(255,215,0,0.5)] hover:shadow-[0_0_40px_rgba(255,215,0,0.8)] transition-all uppercase tracking-widest text-lg border-2 border-yellow-200 flex items-center justify-center gap-2"
                                 >
                                     <span>Enter Palace</span>
                                     <ArrowRight size={20} />
