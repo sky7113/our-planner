@@ -256,25 +256,42 @@ else:
     else:
         print("CRITICAL: No API Key found.")
 
+# --- Dynamic Model Discovery ---
+ACTIVE_MODEL_NAME = "gemini-1.5-flash" # Default fallback
+
+try:
+    print("Discovering available Gemini models...")
+    available_models = list(genai.list_models())
+    # Filter for models that support 'generateContent'
+    valid_models = [m for m in available_models if 'generateContent' in m.supported_generation_methods]
+    
+    if valid_models:
+        # Prefer flash if available, otherwise take the first one
+        flash_models = [m for m in valid_models if 'flash' in m.name.lower()]
+        if flash_models:
+             selected_model = flash_models[0]
+        else:
+             selected_model = valid_models[0]
+             
+        ACTIVE_MODEL_NAME = selected_model.name
+        print(f"Using automatically selected model: {ACTIVE_MODEL_NAME}")
+    else:
+        print("No models found with 'generateContent' support. Using fallback.")
+        
+except Exception as e:
+    print(f"Model discovery failed: {e}. Using fallback: {ACTIVE_MODEL_NAME}")
+
 def generate_content_safe(contents):
     """
-    Try multiple models to avoid 404 errors.
+    Uses the dynamically discovered model.
     """
-    models_to_try = ["gemini-1.5-flash", "gemini-1.5-flash-001", "gemini-1.0-pro"]
-    last_error = None
-    
-    for model_name in models_to_try:
-        try:
-            print(f"Trying model: {model_name}")
-            model = genai.GenerativeModel(model_name)
-            response = model.generate_content(contents)
-            return response
-        except Exception as e:
-            print(f"Model {model_name} failed: {e}")
-            last_error = e
-            continue
-            
-    raise last_error
+    try:
+        model = genai.GenerativeModel(ACTIVE_MODEL_NAME)
+        response = model.generate_content(contents)
+        return response
+    except Exception as e:
+        print(f"Model {ACTIVE_MODEL_NAME} failed: {e}")
+        raise e
 
 
 
