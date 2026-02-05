@@ -115,7 +115,9 @@ app.mount("/images", StaticFiles(directory="images"), name="images")
 
 # CORS Configuration
 origins = [
-    "http://localhost:3000",  # Frontend
+    "http://localhost:3000",  # Local Frontend
+    "https://our-planner.vercel.app", # Vercel Frontend
+    "https://our-planner.vercel.app/", # Vercel Frontend (Trailing Slash)
 ]
 
 app.add_middleware(
