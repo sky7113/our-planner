@@ -35,6 +35,7 @@ export default function BridgePage() {
     const [isViewingArchive, setIsViewingArchive] = useState<BridgeMessage[] | null>(null);
     const [saveTitle, setSaveTitle] = useState('');
     const [archives, setArchives] = useState<SavedBridgeChat[]>([]);
+    const [particles, setParticles] = useState<any[]>([]); // New state for particles
 
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -60,6 +61,23 @@ export default function BridgePage() {
     useEffect(() => {
         scrollToBottom();
     }, [messages]);
+
+    // Generate particles on client-side only to fix hydration mismatch
+    useEffect(() => {
+        const newParticles = Array.from({ length: 20 }).map(() => ({
+            id: Math.random(),
+            initialX: Math.random() * (typeof window !== 'undefined' ? window.innerWidth : 1000),
+            initialY: Math.random() * (typeof window !== 'undefined' ? window.innerHeight : 800),
+            opacity: Math.random() * 0.5 + 0.1,
+            scale: Math.random() * 0.5 + 0.5,
+            duration: Math.random() * 5 + 5,
+            moveY: Math.random() * -20,
+            finalOpacity: Math.random() * 0.3 + 0.1,
+            width: Math.random() * 3 + 1,
+            height: Math.random() * 3 + 1
+        }));
+        setParticles(newParticles);
+    }, []);
 
     const fetchHistory = async () => {
         try {
@@ -150,27 +168,27 @@ export default function BridgePage() {
             {/* Ambient Background */}
             <div className="absolute inset-0 pointer-events-none">
                 <div className="absolute top-0 left-0 w-full h-[500px] bg-gradient-to-b from-indigo-900/40 to-transparent opacity-50" />
-                {[...Array(20)].map((_, i) => (
+                {[...particles].map((p, i) => (
                     <motion.div
                         key={i}
                         className="absolute bg-white rounded-full"
                         initial={{
-                            x: Math.random() * (typeof window !== 'undefined' ? window.innerWidth : 1000),
-                            y: Math.random() * (typeof window !== 'undefined' ? window.innerHeight : 800),
-                            opacity: Math.random() * 0.5 + 0.1,
-                            scale: Math.random() * 0.5 + 0.5
+                            x: p.initialX,
+                            y: p.initialY,
+                            opacity: p.opacity,
+                            scale: p.scale
                         }}
                         animate={{
-                            y: [null, Math.random() * -20],
-                            opacity: [null, Math.random() * 0.3 + 0.1]
+                            y: [null, p.moveY],
+                            opacity: [null, p.finalOpacity]
                         }}
                         transition={{
-                            duration: Math.random() * 5 + 5,
+                            duration: p.duration,
                             repeat: Infinity,
                             repeatType: "reverse",
                             ease: "easeInOut"
                         }}
-                        style={{ width: Math.random() * 3 + 1, height: Math.random() * 3 + 1 }}
+                        style={{ width: p.width, height: p.height }}
                     />
                 ))}
             </div>
