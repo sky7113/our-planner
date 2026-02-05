@@ -117,7 +117,7 @@ export default function ComfortCompanion() {
             // Fallback
             const fallbackMsg: Message = {
                 id: Date.now() + 1,
-                text: "I feel a disturbance in the connection... but I am still here with you.",
+                text: `I feel a disturbance in the connection... (${error instanceof Error ? error.message : String(error)})`,
                 sender: 'companion'
             };
             setMessages(prev => [...prev, fallbackMsg]);
