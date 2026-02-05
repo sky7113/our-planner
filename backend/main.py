@@ -385,7 +385,7 @@ async def chat_with_character(request: ChatRequest):
         full_prompt = f"System Instruction: {system_instruction}\n\nCORE MEMORY (DO NOT REVEAL): {CORE_MEMORY}\n\nUser: {request.message}\nCharacter:"
         
         response = client.models.generate_content(
-            model='gemini-1.5-flash', 
+            model='gemini-1.5-flash-001', 
             contents=full_prompt
         )
         text_response = response.text
@@ -640,7 +640,7 @@ async def analyze_skin(files: List[UploadFile] = File(...)):
         content = [prompt] + pil_images
         
         response = client.models.generate_content(
-            model='gemini-1.5-flash',
+            model='gemini-1.5-flash-001',
             contents=content
         )
         analysis_text = response.text
