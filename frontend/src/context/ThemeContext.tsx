@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
-export type CharacterId = 'default' | 'shinobu' | 'anya' | 'luffy' | 'rys' | 'rimuru' | 'gojo';
+export type CharacterId = 'default' | 'shinobu' | 'anya' | 'luffy' | 'rys' | 'rimuru' | 'gojo' | 'zoro' | 'kuromi' | 'shinchan';
 
 interface PersonalityColors {
     primary: string;   // Hex
@@ -167,7 +167,62 @@ const distinctPersonalities: Record<CharacterId, PersonalityObject> = {
             memories: 'Shibuya Incident',
             companion: 'Consult the Strongest'
         }
-    }
+    },
+    'zoro': {
+        id: 'zoro',
+        name: 'Roronoa Zoro',
+        font: 'font-mono',
+        colors: {
+            primary: '#183828',
+            secondary: '#99D98C',
+            accent: '#000000',
+            textClass: 'text-gray-100',
+            backgroundClass: 'bg-emerald-950',
+            cardClass: 'bg-black/20 backdrop-blur-md',
+            borderClass: 'border-[#000000] border-opacity-50'
+        },
+        bgImage: '/images/zoro-bg.jpg',
+        sidekickImage: '/images/zoro-sidekick.png',
+        greeting: "Nothing happened... I was just waiting for you.",
+        voiceStyle: "stoic, serious, deeply loyal, directionally challenged"
+    },
+    'kuromi': {
+        id: 'kuromi',
+        name: 'Kuromi',
+        font: 'font-rounded',
+        colors: {
+            primary: '#2B1B2D',
+            secondary: '#F4ACD3',
+            accent: '#D8B4E2',
+            textClass: 'text-pink-100',
+            backgroundClass: 'bg-purple-950',
+            cardClass: 'bg-black/20 backdrop-blur-md',
+            borderClass: 'border-[#D8B4E2] border-opacity-50'
+        },
+        bgImage: '/images/kuromi-bg.jpg',
+        sidekickImage: '/images/kuromi-sidekick.png',
+        greeting: "Cheeky but sweet! Welcome home, my favorite human!",
+        voiceStyle: "cheeky, punk-rock, sensitive, energetic"
+    },
+    'shinchan': {
+        id: 'shinchan',
+        name: 'Shin-chan',
+        font: 'font-sans',
+        colors: {
+            primary: '#E63946',
+            secondary: '#F4A261',
+            accent: '#2A9D8F',
+            textClass: 'text-yellow-50',
+            backgroundClass: 'bg-red-900',
+            cardClass: 'bg-black/20 backdrop-blur-md',
+            borderClass: 'border-[#2A9D8F] border-opacity-50'
+        },
+        bgImage: '/images/shinchan-bg.jpg',
+        sidekickImage: '/images/shinchan-sidekick.png',
+        greeting: "Oho! Look who is here! Let's have some fun!",
+        voiceStyle: "mischievous, shameless, funny, energetic"
+    },
+
 };
 
 interface ThemeContextType {
