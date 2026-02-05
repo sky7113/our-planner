@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { Image, Wallet, GraduationCap, SprayCan, Settings, MessageCircle, Moon, Heart } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import GrandEntrance from '../components/GrandEntrance';
 import SettingsModal from '../components/SettingsModal';
 import LiveAvatar from '../components/LiveAvatar';
@@ -11,31 +11,15 @@ import { useTheme } from '../context/ThemeContext';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function Home() {
-  const [isOnline, setIsOnline] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [focusedCard, setFocusedCard] = useState<string | null>(null);
   const { theme } = useTheme();
-
-  useEffect(() => {
-    const checkStatus = async () => {
-      try {
-        // ONE SINGLE LINE - NO SPACES
-        const response = await fetch('https://our-backend-api.onrender.com/api/status');
-        if (response.ok) setIsOnline(true);
-      } catch (error) {
-        console.error("Backend offline:", error);
-      }
-    };
-    checkStatus();
-  }, []);
-  // ... (keeping existing cards const if needed, but ignored for now)
 
   return (
     <main className={`min-h-screen flex flex-col items-center justify-center ${theme.colors.backgroundClass} ${theme.colors.textClass} p-6 pb-32 transition-colors duration-700`}>
 
       <GrandEntrance />
 
-      {/* ... keeping ambience ... */}
       <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
         <div
           className="absolute top-[-20%] left-[-10%] w-[500px] h-[500px] rounded-full blur-[100px] opacity-20"
@@ -47,15 +31,7 @@ export default function Home() {
         />
       </div>
 
-      {/* ... keeping status badge ... */}
       <div className="absolute top-6 right-6 flex items-center gap-3 z-50">
-        {isOnline && (
-          <div className="flex items-center gap-2 bg-white/5 backdrop-blur-sm px-3 py-1.5 rounded-full border border-green-500/20">
-            <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
-            <span className="text-xs font-medium text-green-400">Online</span>
-          </div>
-        )}
-
         <button
           onClick={() => setIsSettingsOpen(true)}
           className={`p-2 rounded-full bg-white/5 backdrop-blur-sm border border-white/10 hover:bg-white/10 transition-colors ${theme.colors.textClass}`}
