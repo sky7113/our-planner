@@ -384,7 +384,7 @@ async def chat_with_character(request: ChatRequest):
         # Construct the prompt with persona context
         full_prompt = f"System Instruction: {system_instruction}\n\nCORE MEMORY (DO NOT REVEAL): {CORE_MEMORY}\n\nUser: {request.message}\nCharacter:"
         
-        model = genai.GenerativeModel('gemini-pro')
+        model = genai.GenerativeModel('gemini-1.5-flash')
         response = model.generate_content(full_prompt)
         text_response = response.text
         
@@ -637,7 +637,7 @@ async def analyze_skin(files: List[UploadFile] = File(...)):
         # Assuming the new SDK supports mixed content similar to the old one or better.
         content = [prompt] + pil_images
         
-        model = genai.GenerativeModel('gemini-pro')
+        model = genai.GenerativeModel('gemini-1.5-flash')
         response = model.generate_content(content)
         analysis_text = response.text
         
@@ -957,7 +957,7 @@ def bridge_chat(request: BridgeChatRequest):
         
         # 3. Call Gemini
         # 3. Call Gemini
-        model = genai.GenerativeModel('gemini-pro')
+        model = genai.GenerativeModel('gemini-1.5-flash')
         response = model.generate_content(full_prompt)
         ai_reply = response.text
         
