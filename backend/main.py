@@ -959,8 +959,11 @@ def bridge_chat(request: BridgeChatRequest):
         full_prompt = f"{system_prompt}\n\nCONTEXT:\n{context_str}\n\n{request.sender}: {request.message}\nMediator:"
         
         # 3. Call Gemini
-        model = genai.GenerativeModel('gemini-2.5-flash')
-        response = model.generate_content(full_prompt)
+        client = genai.Client(api_key=GEMINI_API_KEY)
+        response = client.models.generate_content(
+            model='gemini-1.5-flash',
+            contents=full_prompt
+        )
         ai_reply = response.text
         
         # 4. Save to DB
