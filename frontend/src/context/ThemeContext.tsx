@@ -75,7 +75,7 @@ const distinctPersonalities: Record<CharacterId, PersonalityObject> = {
             memories: 'Butterfly Sisters',
             companion: 'Talk to Shinobu'
         },
-        characterImage: '/characters/Shinobu.png',
+        characterImage: '/characters/shinobu.png',
         sidekickImage: '/assets/shinobu-full.png'
     },
     'anya': {
