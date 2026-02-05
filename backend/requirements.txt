@@ -6,5 +6,5 @@ pydantic
 python-multipart
 python-dotenv
 requests
-google-generativeai
+google-genai
 pillow

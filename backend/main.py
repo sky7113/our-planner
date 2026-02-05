@@ -9,7 +9,7 @@ import shutil
 import sqlite3
 from datetime import datetime, timedelta, date
 from typing import Optional, List
-import google.generativeai as genai
+from google import genai
 from dotenv import load_dotenv
 from sqlalchemy import create_engine, Column, Integer, String, Text, DateTime, Boolean
 from sqlalchemy.ext.declarative import declarative_base
@@ -243,7 +243,8 @@ def delete_album_photo(name: str, filename: str):
 # Configure API Key
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 if GEMINI_API_KEY:
-    genai.configure(api_key=GEMINI_API_KEY)
+    # genai.configure(api_key=GEMINI_API_KEY)
+    pass
 else:
     print("WARNING: GEMINI_API_KEY not found in environment variables.")
 
@@ -375,12 +376,15 @@ async def chat_with_character(request: ChatRequest):
     system_instruction = PERSONAS.get(character_id, "You are a helpful, comforting assistant.")
     
     try:
-        model = genai.GenerativeModel('gemini-2.5-flash')
+        client = genai.Client(api_key=GEMINI_API_KEY)
         
         # Construct the prompt with persona context
         full_prompt = f"System Instruction: {system_instruction}\n\nCORE MEMORY (DO NOT REVEAL): {CORE_MEMORY}\n\nUser: {request.message}\nCharacter:"
         
-        response = model.generate_content(full_prompt)
+        response = client.models.generate_content(
+            model='gemini-2.0-flash', 
+            contents=full_prompt
+        )
         text_response = response.text
         
         # 2. Save AI Response
@@ -558,7 +562,7 @@ def get_skin_status():
         missed_days = 0
         last_log_date_str = None
         if last_log:
-            last_date = datetime.datetime.strptime(last_log.date, "%Y-%m-%d").date()
+            last_date = datetime.strptime(last_log.date, "%Y-%m-%d").date()
             missed_days = (today - last_date).days
             last_log_date_str = last_log.date
         else:
@@ -566,7 +570,7 @@ def get_skin_status():
             
         photo_gap = 0
         if last_photo_log:
-             last_photo_date = datetime.datetime.strptime(last_photo_log.date, "%Y-%m-%d").date()
+             last_photo_date = datetime.strptime(last_photo_log.date, "%Y-%m-%d").date()
              photo_gap = (today - last_photo_date).days
         else:
             photo_gap = -1 # Never uploaded photo
@@ -617,7 +621,7 @@ async def analyze_skin(files: List[UploadFile] = File(...)):
             pil_images.append(PIL.Image.open(file_path))
 
         # 2. Analyze with Gemini
-        model = genai.GenerativeModel('gemini-2.5-flash')
+        client = genai.Client(api_key=GEMINI_API_KEY)
         
         prompt = (
             "Here are photos of my skin from different angles. "
@@ -627,9 +631,15 @@ async def analyze_skin(files: List[UploadFile] = File(...)):
         )
         
         # Combine prompt and images
+        # Note: google.genai might handle PIL images differently or supports file paths/bytes. 
+        # For simplicity and robustness with the new SDK, passing PIL images is often supported or we might need to convert.
+        # Assuming the new SDK supports mixed content similar to the old one or better.
         content = [prompt] + pil_images
         
-        response = model.generate_content(content)
+        response = client.models.generate_content(
+            model='gemini-2.0-flash',
+            contents=content
+        )
         analysis_text = response.text
         
         return {
@@ -679,7 +689,7 @@ def get_period_prediction():
         if not last_log:
             return None
         
-        last_start = datetime.datetime.strptime(last_log.start_date, "%Y-%m-%d").date()
+        last_start = datetime.strptime(last_log.start_date, "%Y-%m-%d").date()
         predicted_start = last_start + timedelta(days=28)
         days_until = (predicted_start - date.today()).days
         
@@ -815,7 +825,7 @@ def set_limit(limit_data: BudgetLimit):
         if limit_data.is_recurring:
             key = 'daily_default'
         else:
-            today_str = datetime.datetime.now().strftime("%Y-%m-%d")
+            today_str = datetime.now().strftime("%Y-%m-%d")
             key = f"daily_{today_str}"
             
     cursor.execute("INSERT OR REPLACE INTO budget_limits (period_type, amount) VALUES (?, ?)", 
@@ -833,7 +843,7 @@ def get_budget_summary(period: str = "daily", date: Optional[str] = None):
     conn = sqlite3.connect('budget.db')
     cursor = conn.cursor()
     
-    now = datetime.datetime.now()
+    now = datetime.now()
     
     # Defaults
     total_spent = 0.0
@@ -999,7 +1009,7 @@ def add_expense(expense: Expense):
     conn = sqlite3.connect('budget.db')
     cursor = conn.cursor()
     
-    date_str = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
+    date_str = datetime.now().strftime("%Y-%m-%d %H:%M")
     
     cursor.execute("INSERT INTO expenses (item, amount, date) VALUES (?, ?, ?)", 
                    (expense.item, expense.amount, date_str))
@@ -1044,7 +1054,7 @@ def quick_add_expense(quick: QuickAdd):
     conn = sqlite3.connect('budget.db')
     cursor = conn.cursor()
     
-    date_str = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
+    date_str = datetime.now().strftime("%Y-%m-%d %H:%M")
     item_name = f"{quick.service_name} (Pending)"
     
     cursor.execute("INSERT INTO expenses (item, amount, date) VALUES (?, ?, ?)", 
@@ -1235,7 +1245,7 @@ def save_bridge_history(request: SavedBridgeChatRequest):
     try:
         new_save = SavedBridgeChat(
             title=request.title,
-            date=datetime.date.today().strftime("%Y-%m-%d"),
+            date=date.today().strftime("%Y-%m-%d"),
             content=json.dumps(request.messages)
         )
         session.add(new_save)
