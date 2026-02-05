@@ -220,12 +220,11 @@ export default function ComfortCompanion() {
                             style={{ borderColor: `${theme.colors.accent}40`, backgroundColor: `${theme.colors.accent}10` }}
                         >
                             <img
-                                src={`/characters/${theme.id}.png`}
+                                src={theme.characterImage || `/characters/${theme.id}.png`}
                                 alt={theme.name}
-                                className="w-full h-full object-cover opacity-80 mix-blend-overlay"
+                                className="w-full h-full object-cover opacity-90"
                                 onError={(e) => {
-                                    e.currentTarget.src = '/characters/shinobu.png'; // One-time fallback
-                                    e.currentTarget.onerror = null; // Prevent loop
+                                    e.currentTarget.style.display = 'none'; // Hide if fails
                                 }}
                             />
                             <div className="absolute bottom-12 text-center p-6 bg-black/40 backdrop-blur-md rounded-2xl border border-white/10 mx-6">
