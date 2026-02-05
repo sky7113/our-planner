@@ -1,5 +1,7 @@
 'use client';
+export const dynamic = 'force-dynamic';
 import SmartBudget from "../../components/SmartBudget";
+
 
 export default function BudgetPage() {
     return (

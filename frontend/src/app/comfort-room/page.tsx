@@ -1,5 +1,5 @@
-export const dynamic = 'force-dynamic';
 'use client';
+export const dynamic = 'force-dynamic';
 
 import { Suspense } from 'react';
 import ComfortCompanion from '../../components/ComfortCompanion';

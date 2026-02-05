@@ -1,5 +1,6 @@
-export const dynamic = 'force-dynamic';
 'use client';
+export const dynamic = 'force-dynamic';
+
 
 import Link from 'next/link';
 import { Image, Wallet, GraduationCap, SprayCan, Settings, MessageCircle, Moon, Heart } from 'lucide-react';

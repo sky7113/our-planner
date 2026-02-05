@@ -1,4 +1,5 @@
 'use client';
+export const dynamic = 'force-dynamic';
 import CareerRoadmap from "../../components/CareerRoadmap";
 import { Trophy } from 'lucide-react';
 

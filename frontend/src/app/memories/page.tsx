@@ -1,4 +1,5 @@
 'use client';
+export const dynamic = 'force-dynamic';
 import MemoryGallery from "../../components/MemoryGallery";
 
 export default function MemoriesPage() {
