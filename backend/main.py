@@ -397,7 +397,7 @@ async def chat_with_character(request: ChatRequest):
         return {"response": text_response}
     except Exception as e:
         print(f"Gemini API Error: {e}")
-        return {"response": "System: connection_error. I cannot hear you clearly right now."}
+        return {"response": f"System: connection_error. Details: {str(e)}"}
     finally:
         session.close()
 
