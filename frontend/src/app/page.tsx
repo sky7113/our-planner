@@ -63,7 +63,7 @@ export default function Home() {
           </motion.div>
         </div>
         <h1
-          className="text-5xl font-light mb-3 drop-shadow-lg transition-colors duration-500 text-gray-900 dark:text-white"
+          className="text-4xl md:text-5xl font-light mb-3 drop-shadow-lg transition-colors duration-500 text-gray-900 dark:text-white text-center md:text-left py-10 md:py-0"
           style={{
             fontFamily: theme?.font
           }}
@@ -75,7 +75,7 @@ export default function Home() {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full max-w-6xl z-10 px-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full max-w-6xl z-10 px-6">
         {[
           {
             name: theme?.labels?.companion || `${(theme?.id || 'royal').charAt(0).toUpperCase() + (theme?.id || 'royal').slice(1)} Companion`,
@@ -95,7 +95,7 @@ export default function Home() {
             href={item.href}
             onMouseEnter={() => setFocusedCard(item.name)}
             onMouseLeave={() => setFocusedCard(null)}
-            className={`group relative overflow-hidden bg-white/60 dark:bg-black/40 backdrop-blur-md border border-gray-200 dark:border-white/10 p-6 rounded-2xl hover:bg-white/70 dark:hover:bg-white/10 transition-all duration-300 hover:scale-[1.02]`}
+            className={`group relative overflow-hidden bg-white/60 dark:bg-black/40 backdrop-blur-md border border-gray-200 dark:border-white/10 p-6 rounded-2xl hover:bg-white/70 dark:hover:bg-white/10 transition-all duration-300 hover:scale-[1.02] active:scale-95 min-h-[160px] md:min-h-[180px]`}
             style={{
               boxShadow: `0 0 20px ${theme?.colors?.accent}20`,
               borderColor: theme?.colors?.secondary
@@ -113,14 +113,14 @@ export default function Home() {
                 className={`mb-3 p-3 rounded-xl bg-white/5 w-fit group-hover:bg-white/10 transition-colors text-gray-800 dark:text-white/80`}
                 style={{ color: theme.id === 'default' ? undefined : theme.colors.primary }}
               >
-                <item.icon size={24} />
+                <item.icon size={40} />
               </div>
               <h3
-                className="text-xl font-bold mb-1 text-gray-900 dark:text-gray-100"
+                className="text-2xl font-bold mb-1 text-gray-900 dark:text-gray-100"
               >
                 {item.name}
               </h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
+              <p className="text-base text-gray-600 dark:text-gray-400">
                 {item.desc}
               </p>
             </div>
