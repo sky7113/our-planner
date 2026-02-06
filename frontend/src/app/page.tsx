@@ -18,7 +18,7 @@ export default function Home() {
   const { theme } = useTheme();
 
   return (
-    <main className={`min-h-screen flex flex-col items-center justify-center ${theme.colors.backgroundClass} ${theme.colors.textClass} px-4 pb-32 md:p-6 md:pb-48 transition-colors duration-700`}>
+    <main className={`min-h-screen flex flex-col items-center justify-center ${theme.colors.backgroundClass} ${theme.colors.textClass} px-4 pb-64 md:p-6 md:pb-48 transition-colors duration-700`}>
 
       <GrandEntrance />
 
@@ -47,7 +47,7 @@ export default function Home() {
       <div className="w-full max-w-md text-center mb-12 z-10 relative">
         <div className="relative inline-block group">
           <LiveAvatar
-            size="w-24 h-24"
+            size="w-32 h-32"
             className="mx-auto mb-6 shadow-2xl shadow-white/10"
             isPointing={!!focusedCard}
           />
@@ -57,7 +57,7 @@ export default function Home() {
             initial={{ opacity: 0, scale: 0.8, y: 10 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             transition={{ delay: 1, duration: 0.5 }}
-            className="absolute -right-24 top-0 bg-white text-slate-900 px-3 py-2 rounded-xl rounded-bl-none text-xs font-medium shadow-lg pointer-events-none"
+            className="absolute -right-24 -top-4 bg-white text-slate-900 px-3 py-2 rounded-xl rounded-bl-none text-xs font-medium shadow-lg pointer-events-none"
           >
             Welcome back, My Lady!
           </motion.div>
