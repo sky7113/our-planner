@@ -18,7 +18,7 @@ export default function Home() {
   const { theme } = useTheme();
 
   return (
-    <main className={`min-h-screen flex flex-col items-center justify-center ${theme.colors.backgroundClass} ${theme.colors.textClass} p-6 pb-48 transition-colors duration-700`}>
+    <main className={`min-h-screen flex flex-col items-center justify-center ${theme.colors.backgroundClass} ${theme.colors.textClass} p-0 pb-32 md:p-6 md:pb-48 transition-colors duration-700`}>
 
       <GrandEntrance />
 
@@ -36,9 +36,9 @@ export default function Home() {
       <div className="absolute top-6 right-6 flex items-center gap-3 z-50">
         <button
           onClick={() => setIsSettingsOpen(true)}
-          className={`p-2 rounded-full bg-white/5 backdrop-blur-sm border border-white/10 hover:bg-white/10 transition-colors text-gray-800 dark:text-white`}
+          className={`p-3 rounded-full bg-white/5 backdrop-blur-sm border border-white/10 hover:bg-white/10 transition-colors text-gray-800 dark:text-white`}
         >
-          <Settings size={20} />
+          <Settings size={32} />
         </button>
       </div>
 
@@ -63,7 +63,7 @@ export default function Home() {
           </motion.div>
         </div>
         <h1
-          className="text-4xl md:text-5xl font-light mb-3 drop-shadow-lg transition-colors duration-500 text-gray-900 dark:text-white text-center md:text-left py-10 md:py-0"
+          className="text-4xl md:text-5xl font-light mb-3 drop-shadow-lg transition-colors duration-500 text-gray-900 dark:text-white text-center md:text-left pt-12 pb-6 md:py-0"
           style={{
             fontFamily: theme?.font
           }}
@@ -75,7 +75,7 @@ export default function Home() {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full max-w-6xl z-10 px-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full max-w-7xl z-10 px-4 md:px-6">
         {[
           {
             name: theme?.labels?.companion || `${(theme?.id || 'royal').charAt(0).toUpperCase() + (theme?.id || 'royal').slice(1)} Companion`,
@@ -95,7 +95,7 @@ export default function Home() {
             href={item.href}
             onMouseEnter={() => setFocusedCard(item.name)}
             onMouseLeave={() => setFocusedCard(null)}
-            className={`group relative overflow-hidden bg-white/60 dark:bg-black/40 backdrop-blur-md border border-gray-200 dark:border-white/10 p-6 rounded-2xl hover:bg-white/70 dark:hover:bg-white/10 transition-all duration-300 hover:scale-[1.02] active:scale-95 min-h-[160px] md:min-h-[180px]`}
+            className={`group relative overflow-hidden bg-white/60 dark:bg-black/40 backdrop-blur-md border border-gray-200 dark:border-white/10 p-6 rounded-2xl hover:bg-white/70 dark:hover:bg-white/10 transition-all duration-300 hover:scale-[1.02] active:scale-95 min-h-[180px] w-full`}
             style={{
               boxShadow: `0 0 20px ${theme?.colors?.accent}20`,
               borderColor: theme?.colors?.secondary
