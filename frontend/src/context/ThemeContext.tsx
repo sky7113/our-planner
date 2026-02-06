@@ -23,6 +23,7 @@ export interface PersonalityObject {
     bgImage: string;
     greeting: string;
     voiceStyle: string;
+    position: 'left' | 'right'; // Added for standardized sidekick positioning
     characterImage?: string;
     sidekickImage?: string;
     labels?: {
@@ -53,13 +54,14 @@ const distinctPersonalities: Record<CharacterId, PersonalityObject> = {
         bgImage: '', // No default bg image, handled by CSS fallback
         greeting: 'Welcome Home, My Queen.',
         voiceStyle: 'formal, respectful, attentive',
+        position: 'right',
         labels: {
             treasury: 'Treasury',
             knowledge: 'Knowledge',
             memories: 'Memories',
             companion: 'Companion'
         },
-        characterImage: '/characters/group_welcome.png'
+        characterImage: '/characters/group_welcome.png' // Default group image
     },
     'shinobu': {
         id: 'shinobu',
@@ -69,6 +71,7 @@ const distinctPersonalities: Record<CharacterId, PersonalityObject> = {
         bgImage: '/backgrounds/butterfly_mansion.jpg',
         greeting: 'Ara ara, welcome home, my Queen.',
         voiceStyle: 'gentle, mature, slightly teasing but comforting',
+        position: 'left',
         labels: {
             treasury: 'Mansion Budget',
             knowledge: 'Medical Records',
@@ -86,6 +89,7 @@ const distinctPersonalities: Record<CharacterId, PersonalityObject> = {
         bgImage: '/backgrounds/anya_room.jpg',
         greeting: 'Waku Waku! You are back!',
         voiceStyle: 'childish, excited, talks about peanuts and saving the world',
+        position: 'left',
 
         characterImage: '/characters/anya.png',
         sidekickImage: '/assets/anya-full.png',
@@ -104,6 +108,7 @@ const distinctPersonalities: Record<CharacterId, PersonalityObject> = {
         bgImage: '/backgrounds/forest_house.jpg',
         greeting: 'My darling! I have been waiting for you!',
         voiceStyle: 'loyal, devoted, protective, affectionate',
+        position: 'left',
 
         characterImage: '/characters/rys.png',
         sidekickImage: '/assets/rys-full.png',
@@ -122,6 +127,7 @@ const distinctPersonalities: Record<CharacterId, PersonalityObject> = {
         bgImage: '/backgrounds/thousand_sunny.jpg',
         greeting: "Shishishi! Welcome back! I bet you're hungry!",
         voiceStyle: 'energetic, loud, careless, protective',
+        position: 'right',
 
         characterImage: '/characters/luffy.png',
         sidekickImage: '/assets/luffy-full.png',
@@ -140,6 +146,7 @@ const distinctPersonalities: Record<CharacterId, PersonalityObject> = {
         bgImage: '/backgrounds/tempest_city.jpg',
         greeting: 'I am not a bad slime! Relax, you are safe here.',
         voiceStyle: 'polite, logical, kind, leader-like',
+        position: 'right',
 
         characterImage: '/characters/rimuru.png',
         sidekickImage: '/assets/rimuru-full.png',
@@ -158,6 +165,7 @@ const distinctPersonalities: Record<CharacterId, PersonalityObject> = {
         bgImage: '/backgrounds/infinite_void.jpg',
         greeting: "Don't worry, I'm the strongest. Welcome home.",
         voiceStyle: 'arrogant, playful, teasing, insanely confident',
+        position: 'right', // Gojo looks cool on the right usually
 
         characterImage: '/characters/gojo.png',
         sidekickImage: '/assets/gojo-full.png',
@@ -178,6 +186,7 @@ const distinctPersonalities: Record<CharacterId, PersonalityObject> = {
         sidekickImage: '/assets/zoro-full.png',
         greeting: "Nothing happened... I was just waiting for you.",
         voiceStyle: "stoic, serious, deeply loyal, directionally challenged",
+        position: 'right',
         labels: {
             treasury: 'Bounty Hunter Fund',
             knowledge: 'Swordsmanship',
@@ -195,6 +204,7 @@ const distinctPersonalities: Record<CharacterId, PersonalityObject> = {
         sidekickImage: '/assets/kuromi-full.png',
         greeting: "Cheeky but sweet! Welcome home!",
         voiceStyle: "cheeky, punk-rock, sensitive, energetic",
+        position: 'left',
         labels: {
             treasury: 'Melody Key Stash',
             knowledge: 'Romance Novels',
@@ -212,6 +222,7 @@ const distinctPersonalities: Record<CharacterId, PersonalityObject> = {
         sidekickImage: '/assets/shinchan-full.png',
         greeting: "Oho! Look who is here! Let's have some fun!",
         voiceStyle: "mischievous, shameless, funny, energetic",
+        position: 'right',
         labels: {
             treasury: 'Chocobi Money',
             knowledge: 'Action Kamen Episodes',

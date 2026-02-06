@@ -38,12 +38,13 @@ export default function Sidekick({ className = '', image, themeId }: SidekickPro
 
     if (!currentImage) return null;
 
-    // --- ANYA: The Spy Geek (Peek Animation) ---
-    // Make her bob while peeking so she looks alive
+    // --- ANIMATION VARIANTS PER TIER ---
+
+    // 1. PEEKERS (Anya) - Up/Down
     if (currentThemeId.includes('anya')) {
         return (
             <motion.div
-                className={`fixed bottom-24 left-0 z-40 w-24 md:w-64 opacity-90 md:opacity-100 cursor-pointer md:bottom-0 pointer-events-none md:pointer-events-auto ${className}`}
+                className={`fixed bottom-24 md:bottom-0 w-36 md:w-96 z-30 pointer-events-none transition-all duration-500 ${theme.position === 'left' ? 'left-2 md:left-0' : 'right-2 md:right-0'} ${className}`}
                 initial={{ y: '100%' }}
                 animate={{
                     y: ['100%', '0%', '0%', '100%'], // Up, Stay, Down
@@ -63,67 +64,20 @@ export default function Sidekick({ className = '', image, themeId }: SidekickPro
                         alt="Anya Peeking"
                         animate={controls}
                         className="w-full drop-shadow-2xl"
+                        style={{ pointerEvents: 'auto' }} // Allow clicks on the image itself
                     />
-                    {/* "Waku Waku" star effect could go here */}
                 </div>
             </motion.div>
         );
     }
 
-    // --- RIMURU: The Slime Lord (Floating/Bouncing) ---
-    if (currentThemeId === 'rimuru') {
+    // 2. FLOATERS (Rimuru, Gojo, Shinobu) - Hover
+    if (['rimuru', 'gojo', 'shinobu'].includes(currentThemeId)) {
         return (
             <motion.div
-                className={`fixed bottom-24 right-2 translate-y-0 z-40 w-24 md:w-56 opacity-90 md:opacity-100 cursor-pointer md:bottom-1/2 md:translate-y-1/2 pointer-events-none md:pointer-events-auto ${className}`}
-                animate={{
-                    y: [0, -20, 0, 15, 0],
-                    x: [0, 5, 0, -5, 0],
-                }}
-                transition={{
-                    duration: 6,
-                    repeat: Infinity,
-                    ease: "easeInOut"
-                }}
-                onClick={handleInteraction}
-            >
-                <div className="relative">
-                    <motion.img
-                        src={currentImage}
-                        alt="Rimuru Floating"
-                        animate={{
-                            scaleY: [1, 0.95, 1.05, 1],
-                            scaleX: [1, 1.05, 0.95, 1]
-                        }}
-                        transition={{
-                            duration: 4,
-                            repeat: Infinity,
-                            ease: "easeInOut"
-                        }}
-                        className="w-full drop-shadow-[0_0_25px_rgba(56,189,248,0.6)]"
-                    />
-                    {isClicked && (
-                        <motion.div
-                            initial={{ opacity: 0, scale: 0 }}
-                            animate={{ opacity: 1, scale: 1.5, y: -50 }}
-                            exit={{ opacity: 0 }}
-                            className="absolute -top-10 right-10 text-4xl"
-                        >
-                            💧
-                        </motion.div>
-                    )}
-                </div>
-            </motion.div>
-        );
-    }
-
-    // --- SHINOBU: The Insect Hashira (Result: Flutter) ---
-    if (currentThemeId.includes('shinobu')) {
-        return (
-            <motion.div
-                className={`fixed bottom-24 left-0 translate-y-0 z-40 w-24 md:w-60 opacity-90 md:opacity-100 cursor-pointer md:top-1/2 md:-translate-y-1/2 pointer-events-none md:pointer-events-auto ${className}`}
+                className={`fixed bottom-24 md:bottom-0 w-36 md:w-96 z-30 pointer-events-none transition-all duration-500 ${theme.position === 'left' ? 'left-2 md:left-0' : 'right-2 md:right-0'} ${className}`}
                 animate={{
                     y: [0, -15, 0],
-                    rotate: [0, 2, -2, 0]
                 }}
                 transition={{
                     duration: 4,
@@ -134,84 +88,55 @@ export default function Sidekick({ className = '', image, themeId }: SidekickPro
             >
                 <motion.img
                     src={currentImage}
-                    alt="Shinobu"
+                    alt={theme.name}
                     animate={controls}
-                    className="w-full drop-shadow-[0_0_30px_rgba(167,139,250,0.5)]"
+                    className="w-full drop-shadow-2xl"
+                    style={{ pointerEvents: 'auto' }}
                 />
-                <div className="absolute top-0 right-0 -z-10 text-purple-400 opacity-50 animate-pulse text-2xl">🦋</div>
             </motion.div>
         );
     }
 
-    // --- GOJO: The Strongest (Mystical Hover) ---
-    if (currentThemeId === 'gojo') {
-        return (
-            <motion.div
-                className={`fixed bottom-24 left-8 translate-y-0 z-40 w-24 md:w-64 opacity-90 md:opacity-100 cursor-pointer md:top-1/2 md:-translate-y-1/2 pointer-events-none md:pointer-events-auto ${className}`}
-                animate={{
-                    y: [-10, 10, -10], // Slow hover
-                    opacity: [0.9, 1, 0.9], // Breathing effect
-                }}
-                transition={{
-                    duration: 4,
-                    repeat: Infinity,
-                    ease: "easeInOut"
-                }}
-                onClick={handleInteraction}
-            >
-                <div className="relative">
-                    <motion.img
-                        src={currentImage}
-                        alt="Gojo Satoru"
-                        animate={controls}
-                        className="w-full drop-shadow-[0_0_40px_rgba(6,182,212,0.6)]"
-                    />
-                    {/* Infinity Void Aura */}
-                    <div className="absolute inset-0 bg-cyan-500/10 blur-3xl -z-10 rounded-full animate-pulse" />
-                </div>
-            </motion.div>
-        );
-    }
-
-    // --- LUFFY: The Pirate King (Rubber Bounce) ---
+    // 3. BOUNCERS (Luffy) - Jump
     if (currentThemeId === 'luffy') {
         return (
             <motion.div
-                className={`fixed bottom-24 right-2 z-40 w-24 md:w-60 opacity-90 md:opacity-100 cursor-pointer md:bottom-0 pointer-events-none md:pointer-events-auto ${className}`}
+                className={`fixed bottom-24 md:bottom-0 w-36 md:w-96 z-30 pointer-events-none transition-all duration-500 ${theme.position === 'left' ? 'left-2 md:left-0' : 'right-2 md:right-0'} ${className}`}
                 animate={{
-                    y: [0, -50, 0], // Big Jump
-                    scaleY: [1, 1.1, 0.9, 1], // Stretch
+                    y: [0, -30, 0], // Jump
+                    scaleY: [1, 1.05, 0.95, 1], // Stretch
                 }}
                 transition={{
-                    duration: 1.5, // Faster bounce
+                    duration: 2,
                     repeat: Infinity,
-                    ease: "circOut" // Poppier bounce
+                    ease: "circOut"
                 }}
                 onClick={handleInteraction}
             >
                 <motion.img
                     src={currentImage}
-                    alt="Monkey D. Luffy"
+                    alt={theme.name}
                     animate={controls}
                     className="w-full drop-shadow-xl"
+                    style={{ pointerEvents: 'auto' }}
                 />
             </motion.div>
         );
     }
 
-    // --- RYS: The High Lord (Fade Slide) ---
-    if (currentThemeId.includes('rys')) {
+    // 4. SLIDERS (Rys) - Slide In/Out
+    if (currentThemeId === 'rys') {
         return (
             <motion.div
-                className={`fixed bottom-24 left-0 z-40 w-24 md:w-64 opacity-90 md:opacity-100 cursor-pointer md:bottom-0 pointer-events-none md:pointer-events-auto ${className}`}
+                className={`fixed bottom-24 md:bottom-0 w-36 md:w-96 z-30 pointer-events-none transition-all duration-500 ${theme.position === 'left' ? 'left-2 md:left-0' : 'right-2 md:right-0'} ${className}`}
                 initial={{ x: '-100%', opacity: 0 }}
                 animate={{
-                    x: ['-100%', '0%', '0%', '-100%'], // Slide in, wait, slide out
+                    x: ['-100%', '0%', '0%', '-100%'],
                     opacity: [0, 1, 1, 0]
                 }}
                 transition={{
-                    duration: 10,
-                    times: [0, 0.2, 0.8, 1], // Wait in middle
+                    duration: 12,
+                    times: [0, 0.1, 0.9, 1],
                     repeat: Infinity,
                     repeatDelay: 5,
                     ease: "easeInOut"
@@ -220,23 +145,21 @@ export default function Sidekick({ className = '', image, themeId }: SidekickPro
             >
                 <motion.img
                     src={currentImage}
-                    alt="Rys"
+                    alt={theme.name}
                     animate={controls}
                     className="w-full drop-shadow-2xl"
+                    style={{ pointerEvents: 'auto' }}
                 />
-                {/* Dark fog effect */}
-                <div className="absolute bottom-0 left-0 w-full h-20 bg-black/20 blur-xl -z-10" />
             </motion.div>
         );
     }
 
-    // --- DEFAULT / OTHERS (Simple Corner Stand) ---
+    // DEFAULT (Standard Stand)
     return (
         <motion.div
-            className={`fixed bottom-24 right-2 w-24 opacity-90 md:bottom-0 md:right-0 md:w-80 md:opacity-100 z-30 pointer-events-none md:pointer-events-auto cursor-pointer ${className}`}
+            className={`fixed bottom-24 md:bottom-0 w-36 md:w-96 z-30 pointer-events-none transition-all duration-500 ${theme.position === 'left' ? 'left-2 md:left-0' : 'right-2 md:right-0'} ${className}`}
             initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 0.8 }}
-            whileHover={{ opacity: 1, scale: 1.05 }}
+            animate={{ y: 0, opacity: 1 }}
             onClick={handleInteraction}
         >
             <motion.img
@@ -245,8 +168,8 @@ export default function Sidekick({ className = '', image, themeId }: SidekickPro
                 animate={controls}
                 className="w-full transition-transform duration-400 ease-out"
                 style={{
-                    filter: `drop-shadow(0px 5px 15px rgba(0,0,0,0.5)) drop-shadow(0px 0px 5px ${theme.colors.primary})`,
-                    transform: 'translateZ(0)', // Hardware acceleration
+                    filter: `drop-shadow(0px 5px 15px rgba(0,0,0,0.5))`,
+                    pointerEvents: 'auto'
                 }}
                 whileHover={{
                     scale: 1.03,
@@ -258,3 +181,4 @@ export default function Sidekick({ className = '', image, themeId }: SidekickPro
     );
 
 }
+
