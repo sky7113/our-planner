@@ -63,7 +63,7 @@ export default function Home() {
           </motion.div>
         </div>
         <h1
-          className="text-4xl md:text-5xl font-light mb-3 drop-shadow-lg transition-colors duration-500 text-gray-900 dark:text-white text-center md:text-left pt-20 pb-4 md:py-20"
+          className="text-4xl md:text-5xl font-light mb-3 drop-shadow-lg transition-colors duration-500 text-gray-900 dark:text-white text-center pt-20 pb-4 md:py-20"
           style={{
             fontFamily: theme?.font
           }}
@@ -75,7 +75,7 @@ export default function Home() {
         </p>
       </div>
 
-      <div className="flex flex-col md:grid md:grid-cols-2 lg:grid-cols-3 gap-6 w-full max-w-7xl z-10">
+      <div className="flex flex-col space-y-8 w-full max-w-3xl mx-auto z-10 px-4 md:px-0">
         {[
           {
             name: theme?.labels?.companion || `${(theme?.id || 'royal').charAt(0).toUpperCase() + (theme?.id || 'royal').slice(1)} Companion`,
