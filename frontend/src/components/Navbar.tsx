@@ -21,7 +21,7 @@ export default function Navbar() {
 
     return (
         <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50">
-            <div className="flex items-center gap-2 px-4 py-3 rounded-full bg-black/30 backdrop-blur-md border border-white/10 shadow-2xl">
+            <div className="flex items-center gap-2 px-4 py-3 rounded-full bg-white/80 dark:bg-black/40 backdrop-blur-xl border border-gray-200 dark:border-white/10 shadow-xl">
                 {navItems.map((item) => {
                     const isActive = pathname === item.path;
                     return (
@@ -37,7 +37,7 @@ export default function Navbar() {
                                 )}
                                 <item.icon
                                     size={20}
-                                    className={`relative z-10 transition-colors duration-300 ${isActive ? 'text-pink-400' : 'text-slate-400 group-hover:text-slate-200'}`}
+                                    className={`relative z-10 transition-colors duration-300 ${isActive ? 'text-pink-600 dark:text-pink-400' : 'text-gray-600 dark:text-gray-400 group-hover:text-black dark:group-hover:text-white'}`}
                                 />
                                 {isActive && (
                                     <motion.div

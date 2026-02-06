@@ -83,7 +83,7 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                                 onClick={handleRestart}
                                 className="w-full group relative overflow-hidden bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/30 rounded-xl p-4 transition-all duration-300 flex items-center gap-4"
                             >
-                                <div className={`p-3 rounded-full bg-white/10 group-hover:bg-white/20 transition-colors ${theme.colors.textClass}`}>
+                                <div className={`p-3 rounded-full bg-white/10 group-hover:bg-white/20 transition-colors text-white`}>
                                     <RefreshCw size={20} />
                                 </div>
                                 <div className="text-left">
