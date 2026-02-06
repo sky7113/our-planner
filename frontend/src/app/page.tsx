@@ -63,15 +63,14 @@ export default function Home() {
           </motion.div>
         </div>
         <h1
-          className="text-5xl font-light mb-3 drop-shadow-lg transition-colors duration-500"
+          className="text-5xl font-light mb-3 drop-shadow-lg transition-colors duration-500 text-gray-900 dark:text-white"
           style={{
-            fontFamily: theme?.font,
-            color: theme?.colors?.secondary
+            fontFamily: theme?.font
           }}
         >
           {theme?.id === 'default' ? 'The Royal Dominion' : theme?.name}
         </h1>
-        <p className={`text-lg opacity-80 ${theme?.colors?.textClass} font-light tracking-wider`}>
+        <p className={`text-lg opacity-80 text-gray-700 dark:text-gray-300 font-light tracking-wider`}>
           {theme?.greeting || "Welcome Home, My Queen"}
         </p>
       </div>
@@ -96,7 +95,7 @@ export default function Home() {
             href={item.href}
             onMouseEnter={() => setFocusedCard(item.name)}
             onMouseLeave={() => setFocusedCard(null)}
-            className={`group relative overflow-hidden backdrop-blur-md bg-white/5 border p-6 rounded-2xl hover:bg-white/10 transition-all duration-300 hover:scale-[1.02]`}
+            className={`group relative overflow-hidden bg-white/60 dark:bg-black/40 backdrop-blur-md border border-gray-200 dark:border-white/10 p-6 rounded-2xl hover:bg-white/70 dark:hover:bg-white/10 transition-all duration-300 hover:scale-[1.02]`}
             style={{
               boxShadow: `0 0 20px ${theme?.colors?.accent}20`,
               borderColor: theme?.colors?.secondary
@@ -117,11 +116,11 @@ export default function Home() {
                 <item.icon size={24} />
               </div>
               <h3
-                className="text-xl font-bold mb-1 text-white"
+                className="text-xl font-bold mb-1 text-gray-900 dark:text-gray-100"
               >
                 {item.name}
               </h3>
-              <p className="text-sm text-gray-300">
+              <p className="text-sm text-gray-600 dark:text-gray-400">
                 {item.desc}
               </p>
             </div>
