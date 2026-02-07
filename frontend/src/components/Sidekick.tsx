@@ -45,7 +45,7 @@ export default function Sidekick({ className = '', image, themeId }: SidekickPro
         return (
             <div className="fixed inset-0 pointer-events-none z-[9999] overflow-hidden">
                 <motion.div
-                    className={`absolute top-24 right-4 w-32 md:w-48 ${className}`}
+                    className={`absolute top-24 w-32 md:w-48 ${theme.position === 'left' ? 'left-2' : 'right-2'} ${className}`}
                     initial={{ y: '100%' }}
                     animate={{
                         y: ['100%', '0%', '0%', '100%'], // Up, Stay, Down
@@ -78,7 +78,7 @@ export default function Sidekick({ className = '', image, themeId }: SidekickPro
         return (
             <div className="fixed inset-0 pointer-events-none z-[9999] overflow-hidden">
                 <motion.div
-                    className={`absolute top-24 right-4 w-32 md:w-48 ${className}`}
+                    className={`absolute top-24 w-32 md:w-48 ${theme.position === 'left' ? 'left-2' : 'right-2'} ${className}`}
                     animate={{
                         y: [0, -15, 0],
                     }}
@@ -106,7 +106,7 @@ export default function Sidekick({ className = '', image, themeId }: SidekickPro
         return (
             <div className="fixed inset-0 pointer-events-none z-[9999] overflow-hidden">
                 <motion.div
-                    className={`absolute top-24 right-4 w-32 md:w-48 ${className}`}
+                    className={`absolute top-24 w-32 md:w-48 ${theme.position === 'left' ? 'left-2' : 'right-2'} ${className}`}
                     animate={{
                         y: [0, -30, 0], // Jump
                         scaleY: [1, 1.05, 0.95, 1], // Stretch
@@ -135,7 +135,7 @@ export default function Sidekick({ className = '', image, themeId }: SidekickPro
         return (
             <div className="fixed inset-0 pointer-events-none z-[9999] overflow-hidden">
                 <motion.div
-                    className={`absolute top-24 right-4 w-32 md:w-48 ${className}`}
+                    className={`absolute top-24 w-32 md:w-48 ${theme.position === 'left' ? 'left-2' : 'right-2'} ${className}`}
                     initial={{ x: '-100%', opacity: 0 }}
                     animate={{
                         x: ['-100%', '0%', '0%', '-100%'],
@@ -166,7 +166,7 @@ export default function Sidekick({ className = '', image, themeId }: SidekickPro
     return (
         <div className="fixed inset-0 pointer-events-none z-[9999] overflow-hidden">
             <motion.div
-                className={`absolute top-24 right-4 w-32 md:w-48 ${className}`}
+                className={`absolute top-24 w-32 md:w-48 ${theme.position === 'left' ? 'left-2' : 'right-2'} ${className}`}
                 initial={{ y: 20, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 onClick={handleInteraction}

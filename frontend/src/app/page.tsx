@@ -15,12 +15,13 @@ import { motion, AnimatePresence } from 'framer-motion';
 export default function Home() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [focusedCard, setFocusedCard] = useState<string | null>(null);
+  const [hasEntered, setHasEntered] = useState(false);
   const { theme } = useTheme();
 
   return (
     <main className={`min-h-screen flex flex-col items-center justify-center ${theme.colors.backgroundClass} ${theme.colors.textClass} px-4 pb-40 md:p-6 md:pb-48 transition-colors duration-700`}>
 
-      <GrandEntrance />
+      <GrandEntrance onEnterComplete={() => setHasEntered(true)} />
 
       <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
         <div
@@ -44,8 +45,8 @@ export default function Home() {
 
       <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
 
-      <div className="w-full max-w-md text-left mb-12 z-10 relative pl-6">
-        <div className="relative inline-block group">
+      <div className="w-full max-w-md mb-12 z-10 relative flex flex-col items-center">
+        <div className="relative group">
           <LiveAvatar
             size="w-32 h-32"
             className="mb-6 shadow-2xl shadow-white/10"
@@ -62,17 +63,19 @@ export default function Home() {
             Welcome back, My Lady!
           </motion.div>
         </div>
-        <h1
-          className="text-4xl md:text-5xl font-light mb-3 drop-shadow-lg transition-colors duration-500 text-gray-900 dark:text-white text-left pt-20 pb-4 md:py-20"
-          style={{
-            fontFamily: theme?.font
-          }}
-        >
-          {theme?.id === 'default' ? 'The Royal Dominion' : theme?.name}
-        </h1>
-        <p className={`text-lg opacity-80 text-gray-700 dark:text-gray-300 font-light tracking-wider`}>
-          {theme?.greeting || "Welcome Home, My Queen"}
-        </p>
+        <div className="w-full text-left pl-6">
+          <h1
+            className="text-4xl md:text-5xl font-light mb-3 drop-shadow-lg transition-colors duration-500 text-gray-900 dark:text-white pt-4 pb-4 md:py-4"
+            style={{
+              fontFamily: theme?.font
+            }}
+          >
+            {theme?.id === 'default' ? 'The Royal Dominion' : theme?.name}
+          </h1>
+          <p className={`text-lg opacity-80 text-gray-700 dark:text-gray-300 font-light tracking-wider`}>
+            {theme?.greeting || "Welcome Home, My Queen"}
+          </p>
+        </div>
       </div>
 
       <div className="flex flex-col space-y-6 w-full max-w-xl mx-auto z-10 px-4 md:px-0">
@@ -128,11 +131,13 @@ export default function Home() {
         ))}
       </div>
 
-      <Sidekick
-        className="!z-0"
-        image={theme.sidekickImage || theme.characterImage}
-        themeId={theme.id}
-      />
+      {hasEntered && (
+        <Sidekick
+          className="!z-0"
+          image={theme.sidekickImage || theme.characterImage}
+          themeId={theme.id}
+        />
+      )}
     </main>
   );
 }

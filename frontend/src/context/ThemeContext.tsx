@@ -71,7 +71,7 @@ const distinctPersonalities: Record<CharacterId, PersonalityObject> = {
         bgImage: '/backgrounds/butterfly_mansion.jpg',
         greeting: 'Ara ara, welcome home, my Queen.',
         voiceStyle: 'gentle, mature, slightly teasing but comforting',
-        position: 'left',
+        position: 'right',
         labels: {
             treasury: 'Mansion Budget',
             knowledge: 'Medical Records',
@@ -222,7 +222,7 @@ const distinctPersonalities: Record<CharacterId, PersonalityObject> = {
         sidekickImage: '/assets/shinchan-full.png',
         greeting: "Oho! Look who is here! Let's have some fun!",
         voiceStyle: "mischievous, shameless, funny, energetic",
-        position: 'right',
+        position: 'left',
         labels: {
             treasury: 'Chocobi Money',
             knowledge: 'Action Kamen Episodes',

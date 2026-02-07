@@ -6,7 +6,11 @@ import { useRouter } from 'next/navigation';
 import { useTheme, CharacterId } from '../context/ThemeContext';
 import { Smile, Frown, BatteryCharging, ArrowLeft, ArrowRight } from 'lucide-react';
 
-export default function GrandEntrance() {
+interface GrandEntranceProps {
+    onEnterComplete?: () => void;
+}
+
+export default function GrandEntrance({ onEnterComplete }: GrandEntranceProps) {
     const { setMood, setTheme, setIsSadMode, isSadMode } = useTheme();
     const router = useRouter();
     // Stages: 'welcome' -> 'mood' -> 'character' -> 'gate' -> 'finished'
@@ -59,6 +63,7 @@ export default function GrandEntrance() {
         // After animation completes (3000ms), finish and navigate
         setTimeout(() => {
             sessionStorage.setItem('queen_has_entered', 'true');
+            if (onEnterComplete) onEnterComplete();
             if (isSadMode) {
                 router.push(destination);
             } else {
@@ -77,6 +82,7 @@ export default function GrandEntrance() {
         const hasEntered = sessionStorage.getItem('queen_has_entered');
         if (hasEntered === 'true') {
             setStage('finished');
+            if (onEnterComplete) onEnterComplete();
         }
     }, []);
 
