@@ -161,7 +161,7 @@ export default function MemoryGallery() {
     // --- Render ---
 
     return (
-        <div className="w-full max-w-6xl mx-auto py-12 px-4 transition-all duration-500">
+        <div className="w-full max-w-4xl mx-auto py-12 px-4 transition-all duration-500">
 
             {/* Header Section */}
             <div className="text-center mb-10 relative">
@@ -196,7 +196,7 @@ export default function MemoryGallery() {
                         initial="hidden"
                         animate="show"
                         exit={{ opacity: 0, x: -50 }}
-                        className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"
+                        className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6"
                     >
                         {albums.map((album) => (
                             <motion.div
@@ -212,7 +212,7 @@ export default function MemoryGallery() {
                                     className="absolute top-2 right-2 bg-red-500 text-white p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity z-20 hover:bg-red-600 shadow-md"
                                     title="Delete Album"
                                 >
-                                    <Trash2 size={14} />
+                                    <Trash2 size={16} />
                                 </button>
                                 {/* Cover Image */}
                                 <div className="aspect-[4/3] w-full bg-slate-100 relative overflow-hidden flex items-center justify-center">
@@ -260,7 +260,7 @@ export default function MemoryGallery() {
                         initial="hidden"
                         animate="show"
                         exit={{ opacity: 0, x: 50 }}
-                        className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"
+                        className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6"
                     >
                         {photos.map((url, idx) => (
                             <motion.div
@@ -280,7 +280,7 @@ export default function MemoryGallery() {
                                     className="absolute top-2 right-2 bg-red-500/90 text-white p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200 hover:bg-red-600 shadow-md z-10"
                                     title="Delete Photo"
                                 >
-                                    <Trash2 size={14} />
+                                    <Trash2 size={16} />
                                 </button>
                                 <div className="aspect-square w-full bg-slate-100 relative overflow-hidden">
                                     <img src={`https://our-backend-api.onrender.com${url}`} alt="Memory" className="w-full h-full object-cover" loading="lazy" />

@@ -392,14 +392,14 @@ export default function SkincarePage() {
                                             value={newItemName}
                                             onChange={(e) => setNewItemName(e.target.value)}
                                             placeholder="Add new product..."
-                                            className="flex-1 bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/30 focus:outline-none focus:border-purple-500"
+                                            className="flex-1 h-14 bg-black/20 border border-white/10 rounded-xl px-4 text-white text-lg placeholder-white/30 focus:outline-none focus:border-purple-500 transition-all"
                                             onKeyDown={(e) => e.key === 'Enter' && handleAddProduct()}
                                         />
                                         <button
                                             onClick={handleAddProduct}
-                                            className="p-3 bg-purple-600 rounded-xl text-white hover:bg-purple-500 transition-colors"
+                                            className="w-14 h-14 bg-purple-600 rounded-xl text-white hover:bg-purple-500 transition-colors flex items-center justify-center shadow-lg"
                                         >
-                                            <Plus size={24} />
+                                            <Plus size={28} />
                                         </button>
                                     </motion.div>
                                 )}
@@ -415,9 +415,9 @@ export default function SkincarePage() {
                                 </button>
                                 <button
                                     onClick={() => handleSaveLog(showCatchUpModal ? undefined : catchUpDate ?? undefined)}
-                                    className="flex-1 flex items-center justify-center gap-2 bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-400 hover:to-indigo-500 text-white font-medium py-3 rounded-xl shadow-lg transition-all hover:scale-[1.02]"
+                                    className="flex-1 h-14 flex items-center justify-center gap-2 bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-400 hover:to-indigo-500 text-white text-lg font-medium rounded-xl shadow-lg transition-all hover:scale-[1.02]"
                                 >
-                                    <Save size={18} />
+                                    <Save size={20} />
                                     {catchUpDate && !showCatchUpModal ? `Save for ${catchUpDate}` : 'Save Routine'}
                                 </button>
                             </div>
@@ -491,19 +491,19 @@ export default function SkincarePage() {
                             <button
                                 onClick={handleAnalyze}
                                 disabled={selectedFiles.length === 0 || isAnalyzing}
-                                className={`w-full py-4 rounded-xl flex items-center justify-center gap-2 font-medium transition-all ${selectedFiles.length === 0
+                                className={`w-full h-16 rounded-xl flex items-center justify-center gap-2 font-medium text-lg transition-all ${selectedFiles.length === 0
                                     ? 'bg-white/5 text-white/40 cursor-not-allowed'
                                     : 'bg-white text-slate-900 shadow-lg hover:scale-[1.02]'
                                     }`}
                             >
                                 {isAnalyzing ? (
                                     <>
-                                        <Loader2 size={20} className="animate-spin" />
+                                        <Loader2 size={24} className="animate-spin" />
                                         <span>Analyzing Skin...</span>
                                     </>
                                 ) : (
                                     <>
-                                        <Sparkles size={20} className={selectedFiles.length > 0 ? 'text-purple-500' : ''} />
+                                        <Sparkles size={24} className={selectedFiles.length > 0 ? 'text-purple-500' : ''} />
                                         <span>Analyze Skin</span>
                                     </>
                                 )}

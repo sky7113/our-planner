@@ -180,7 +180,7 @@ export default function SmartBudget() {
     const isSafe = percentage < 80;
 
     return (
-        <div className="w-full max-w-md p-6 rounded-2xl bg-white/5 backdrop-blur-md border border-white/10 shadow-xl transition-all duration-300 relative">
+        <div className="w-full max-w-3xl mx-auto p-4 md:p-8 rounded-3xl bg-white/5 backdrop-blur-md border border-white/10 shadow-2xl transition-all duration-300 relative">
             {/* Header */}
             <div className="flex items-center justify-between mb-6 border-b border-white/5 pb-4">
                 <div className="flex items-center gap-3">
@@ -216,7 +216,7 @@ export default function SmartBudget() {
             <div className="mb-8 relative">
                 <div className="flex justify-between items-end text-sm mb-2 text-slate-400">
                     <div className="flex items-center gap-2">
-                        <span>
+                        <span className="text-xl md:text-2xl font-bold text-white tracking-tight">
                             {activePeriod === 'daily'
                                 ? (selectedDate === new Date().toISOString().split('T')[0] ? "Today's Budget" : `Budget for ${selectedDate}`)
                                 : `${activePeriod.charAt(0).toUpperCase() + activePeriod.slice(1)} Budget`
@@ -284,8 +284,8 @@ export default function SmartBudget() {
                         )}
                     </div>
 
-                    <span className={isSafe ? "text-emerald-400" : "text-rose-400"}>
-                        {Math.min(percentage, 100).toFixed(0)}% Used (₹{totalSpent})
+                    <span className={`text-2xl md:text-3xl font-bold ${isSafe ? "text-emerald-400" : "text-rose-400"} drop-shadow-md`}>
+                        {Math.min(percentage, 100).toFixed(0)}% Used <span className="text-lg opacity-60 font-normal">(₹{totalSpent})</span>
                     </span>
                 </div>
 
@@ -307,38 +307,38 @@ export default function SmartBudget() {
                         <button
                             key={app.name}
                             onClick={() => handleQuickAction(app.name, app.url)}
-                            className={`flex items-center gap-2 px-3 py-2 rounded-xl border border-white/5 hover:bg-white/5 transition-all duration-300 group min-w-[100px] justify-center`}
+                            className={`flex flex-col items-center justify-center gap-2 p-4 rounded-2xl border border-white/5 hover:bg-white/10 transition-all duration-300 group min-w-[100px] flex-1 bg-white/5`}
                             title={`Open ${app.name} & Log Expense`}
                         >
-                            <span className="text-lg">{app.icon}</span>
-                            <span className="text-xs text-slate-300 hidden sm:inline">{app.name}</span>
+                            <span className="text-3xl filter drop-shadow-lg group-hover:scale-110 transition-transform">{app.icon}</span>
+                            <span className="text-sm font-medium text-slate-300">{app.name}</span>
                         </button>
                     ))}
                 </div>
             </div>
 
-            {/* Add Expense Form */}
-            <form onSubmit={handleAddExpense} className="mb-8 flex gap-2">
+            {/* Add Expense Form (Super-Sized) */}
+            <form onSubmit={handleAddExpense} className="mb-10 flex gap-3">
                 <input
                     type="text"
                     placeholder="Item (e.g. Coffee)"
                     value={newItem}
                     onChange={(e) => setNewItem(e.target.value)}
-                    className="flex-1 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-pink-500/50"
+                    className="flex-1 h-14 bg-white/5 border border-white/10 rounded-2xl px-5 text-lg text-white focus:outline-none focus:border-pink-500/50 placeholder:text-white/20 transition-all"
                 />
                 <input
                     type="number"
                     placeholder="₹"
                     value={newAmount}
                     onChange={(e) => setNewAmount(e.target.value)}
-                    className="w-20 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-pink-500/50"
+                    className="w-28 h-14 bg-white/5 border border-white/10 rounded-2xl px-4 text-lg text-white focus:outline-none focus:border-pink-500/50 placeholder:text-white/20 transition-all text-center"
                 />
                 <button
                     type="submit"
                     disabled={isAdding}
-                    className="bg-pink-500 hover:bg-pink-600 text-white p-2 rounded-lg transition-colors disabled:opacity-50"
+                    className="h-14 w-14 flex-shrink-0 bg-pink-500 hover:bg-pink-600 text-white rounded-2xl transition-all disabled:opacity-50 flex items-center justify-center shadow-lg shadow-pink-500/20 hover:scale-105 active:scale-95"
                 >
-                    {isAdding ? <Loader2 size={18} className="animate-spin" /> : <Plus size={18} />}
+                    {isAdding ? <Loader2 size={24} className="animate-spin" /> : <Plus size={28} />}
                 </button>
             </form>
 

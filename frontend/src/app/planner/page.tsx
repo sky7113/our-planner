@@ -218,12 +218,12 @@ export default function PlannerPage() {
                         <button
                             key={tab.id}
                             onClick={() => setView(tab.id as any)}
-                            className={`px-4 py-2 rounded-lg flex items-center gap-2 text-sm font-medium transition-all whitespace-nowrap ${view === tab.id
+                            className={`px-6 py-3 rounded-xl flex items-center gap-3 text-base md:text-lg font-medium transition-all whitespace-nowrap ${view === tab.id
                                 ? 'bg-white/10 text-white shadow-sm border border-white/10'
                                 : 'text-white/50 hover:text-white/80'
                                 }`}
                         >
-                            <tab.icon size={16} />
+                            <tab.icon size={20} />
                             {tab.label}
                         </button>
                     ))}
@@ -246,9 +246,9 @@ export default function PlannerPage() {
                                     <h2 className="text-2xl font-light">Today&apos;s Agenda</h2>
                                     <button
                                         onClick={() => setIsAdding(!isAdding)}
-                                        className="w-10 h-10 rounded-full bg-purple-500/20 text-purple-200 flex items-center justify-center hover:bg-purple-500 hover:text-white transition-all"
+                                        className="w-14 h-14 rounded-2xl bg-purple-500/20 text-purple-200 flex items-center justify-center hover:bg-purple-500 hover:text-white transition-all shadow-lg"
                                     >
-                                        <Plus size={20} />
+                                        <Plus size={28} />
                                     </button>
                                 </div>
 
@@ -262,9 +262,9 @@ export default function PlannerPage() {
                                             className="w-full bg-transparent border-none focus:outline-none text-lg mb-2 text-white placeholder-white/30"
                                             autoFocus
                                         />
-                                        <div className="flex justify-end gap-2">
-                                            <button onClick={() => setIsAdding(false)} className="px-3 py-1 text-sm text-white/50">Cancel</button>
-                                            <button onClick={handleAddEvent} className="px-4 py-1.5 bg-purple-600 rounded-lg text-sm font-medium">Add Task</button>
+                                        <div className="flex justify-end gap-3 mt-4">
+                                            <button onClick={() => setIsAdding(false)} className="px-6 h-12 rounded-xl text-base text-white/50 hover:bg-white/5">Cancel</button>
+                                            <button onClick={handleAddEvent} className="px-8 h-12 bg-purple-600 rounded-xl text-base font-medium hover:bg-purple-500 transition-colors">Add Task</button>
                                         </div>
                                     </motion.div>
                                 )}
@@ -350,21 +350,21 @@ export default function PlannerPage() {
                                     </button>
 
                                     {isAdding && (
-                                        <div className="mt-4 max-w-md mx-auto bg-black/40 p-4 rounded-xl">
+                                        <div className="mt-6 max-w-lg mx-auto bg-black/40 p-6 rounded-2xl border border-white/10">
                                             <input
                                                 type="date"
                                                 value={newTaskDate}
                                                 onChange={(e) => setNewTaskDate(e.target.value)}
-                                                className="w-full bg-white/10 border-white/10 rounded-lg px-3 py-2 text-white mb-2"
+                                                className="w-full h-14 bg-white/5 border border-white/10 rounded-xl px-4 text-lg text-white mb-4 focus:ring-2 focus:ring-purple-500 focus:outline-none"
                                             />
                                             <input
                                                 type="text"
                                                 value={newTask}
                                                 onChange={(e) => setNewTask(e.target.value)}
                                                 placeholder="Event Title..."
-                                                className="w-full bg-white/10 border-white/10 rounded-lg px-3 py-2 text-white mb-2"
+                                                className="w-full h-14 bg-white/5 border border-white/10 rounded-xl px-4 text-lg text-white mb-4 focus:ring-2 focus:ring-purple-500 focus:outline-none"
                                             />
-                                            <button onClick={handleAddEvent} className="w-full py-2 bg-white/10 hover:bg-white/20 rounded-lg">Save</button>
+                                            <button onClick={handleAddEvent} className="w-full h-14 bg-purple-600 hover:bg-purple-500 rounded-xl text-lg font-medium transition-colors shadow-lg">Save Event</button>
                                         </div>
                                     )}
                                 </div>
@@ -499,7 +499,7 @@ export default function PlannerPage() {
                                         type="text"
                                         value={newGoal.title}
                                         onChange={(e) => setNewGoal({ ...newGoal, title: e.target.value })}
-                                        className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-lg focus:border-purple-500 outline-none transition-colors"
+                                        className="w-full h-14 bg-black/20 border border-white/10 rounded-xl px-4 text-lg focus:border-purple-500 outline-none transition-colors"
                                         placeholder="e.g., Master Python"
                                     />
                                 </div>

@@ -117,7 +117,7 @@ export default function PeriodTrackerPage() {
                 />
             </div>
 
-            <div className="max-w-2xl mx-auto relative z-10">
+            <div className="max-w-4xl mx-auto relative z-10">
                 {/* Header */}
                 <header className="flex items-center justify-between mb-8">
                     <Link href="/" className="flex items-center gap-2 opacity-70 hover:opacity-100 transition-opacity text-white">
@@ -184,7 +184,7 @@ export default function PeriodTrackerPage() {
                                 type="date"
                                 value={startDate}
                                 onChange={(e) => setStartDate(e.target.value)}
-                                className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-pink-500 outline-none transition-colors"
+                                className="w-full h-14 bg-black/20 border border-white/10 rounded-xl px-4 text-white text-lg focus:border-pink-500 outline-none transition-colors"
                             />
                         </div>
 
@@ -196,13 +196,13 @@ export default function PeriodTrackerPage() {
                                     <button
                                         key={option.value}
                                         onClick={() => setSelectedFlow(option.value)}
-                                        className={`flex-1 py-3 rounded-xl flex items-center justify-center gap-2 transition-all border ${selectedFlow === option.value
+                                        className={`flex-1 h-14 rounded-xl flex items-center justify-center gap-2 transition-all border ${selectedFlow === option.value
                                             ? 'bg-pink-600 border-pink-500 text-white shadow-lg shadow-pink-900/20'
                                             : 'bg-white/5 border-white/10 text-white/60 hover:bg-white/10'
                                             }`}
                                     >
                                         <option.icon size={option.size} className={selectedFlow === option.value ? 'fill-current' : ''} />
-                                        <span className="text-sm font-medium">{option.label}</span>
+                                        <span className="text-base font-medium">{option.label}</span>
                                     </button>
                                 ))}
                             </div>
@@ -216,12 +216,12 @@ export default function PeriodTrackerPage() {
                                     <button
                                         key={sym.id}
                                         onClick={() => toggleSymptom(sym.id)}
-                                        className={`px-4 py-2 rounded-full text-sm border transition-all flex items-center gap-2 ${selectedSymptoms.has(sym.id)
+                                        className={`px-6 py-3 rounded-full text-base border transition-all flex items-center gap-2 ${selectedSymptoms.has(sym.id)
                                             ? 'bg-pink-500/20 border-pink-500 text-pink-200'
                                             : 'bg-white/5 border-white/10 text-white/50 hover:bg-white/10'
                                             }`}
                                     >
-                                        <sym.icon size={14} />
+                                        <sym.icon size={18} />
                                         {sym.label}
                                     </button>
                                 ))}
@@ -232,7 +232,7 @@ export default function PeriodTrackerPage() {
                         <button
                             onClick={handleLogCycle}
                             disabled={isSaving}
-                            className="w-full py-4 bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-500 hover:to-rose-500 text-white font-medium rounded-xl shadow-lg shadow-pink-900/20 transition-all hover:scale-[1.02]"
+                            className="w-full h-16 bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-500 hover:to-rose-500 text-white text-lg font-medium rounded-2xl shadow-lg shadow-pink-900/20 transition-all hover:scale-[1.02]"
                         >
                             {isSaving ? 'Logging...' : 'Log Cycle'}
                         </button>
