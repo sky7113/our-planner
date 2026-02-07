@@ -75,7 +75,7 @@ export default function Home() {
         </p>
       </div>
 
-      <div className="flex flex-col space-y-8 w-full max-w-3xl mx-auto z-10 px-4 md:px-0">
+      <div className="flex flex-col space-y-6 w-full max-w-xl mx-auto z-10 px-4 md:px-0">
         {[
           {
             name: theme?.labels?.companion || `${(theme?.id || 'royal').charAt(0).toUpperCase() + (theme?.id || 'royal').slice(1)} Companion`,

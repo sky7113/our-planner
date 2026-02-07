@@ -36,7 +36,7 @@ export default function Navbar() {
                                     />
                                 )}
                                 <item.icon
-                                    className={`relative z-10 w-9 h-9 md:w-6 md:h-6 transition-colors duration-300 ${isActive ? 'text-pink-600 dark:text-pink-400' : 'text-gray-600 dark:text-gray-400 group-hover:text-black dark:group-hover:text-white'}`}
+                                    className={`relative z-10 w-9 h-9 transition-colors duration-300 ${isActive ? 'text-pink-600 dark:text-pink-400' : 'text-gray-600 dark:text-gray-400 group-hover:text-black dark:group-hover:text-white'}`}
                                 />
                                 {isActive && (
                                     <motion.div
