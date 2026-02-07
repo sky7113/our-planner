@@ -154,50 +154,46 @@ export default function GrandEntrance({ onEnterComplete }: GrandEntranceProps) {
                 {stage === 'welcome' && (
                     <motion.div
                         key="welcome"
-                        className="absolute inset-0 z-[60] flex flex-col items-center justify-center overflow-hidden"
+                        className="fixed inset-0 w-full h-full bg-black z-[200] flex flex-col items-center justify-start overflow-hidden"
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                     >
-                        {/* Background Image */}
-                        <img
-                            src="/welcome_bg.jpg"
-                            alt="Sky Background"
-                            className="absolute inset-0 w-full h-full object-cover"
-                        />
-
-                        {/* Overlay for better text readability */}
-                        <div className="absolute inset-0 bg-black/30" />
-
-                        {/* Title Text */}
-                        <motion.h1
+                        {/* Title Text (First Element) */}
+                        <motion.div
                             initial={{ y: -50, opacity: 0 }}
                             animate={{ y: 0, opacity: 1 }}
                             transition={{ delay: 0.5, duration: 1 }}
-                            className="relative z-20 text-5xl md:text-7xl font-serif text-yellow-400 font-bold drop-shadow-[0_4px_4px_rgba(0,0,0,0.8)] text-center mt-[-20vh]"
+                            className="pt-24 pb-8 text-center px-4 relative z-20"
                         >
-                            Welcome Home, My Queen
-                        </motion.h1>
+                            <h1 className="text-5xl md:text-7xl font-serif text-yellow-400 font-bold drop-shadow-[0_4px_4px_rgba(0,0,0,0.8)]">
+                                Welcome Home, My Queen
+                            </h1>
+                        </motion.div>
 
-                        {/* The User's Group Image */}
-                        <img
-                            src={welcomeImageSrc}
-                            alt="Welcome Characters"
-                            className="absolute bottom-0 left-1/2 -translate-x-1/2 h-[80vh] object-contain z-10"
-                        />
+                        {/* The User's Group Image (Flex) */}
+                        <div className="flex-1 w-full flex items-end justify-center relative z-10 pb-20">
+                            <img
+                                src={welcomeImageSrc}
+                                alt="Welcome Characters"
+                                className="h-full max-h-[60vh] object-contain drop-shadow-2xl"
+                            />
+                        </div>
 
-                        {/* Enter Button */}
-                        <motion.button
+                        {/* Enter Button (Bottom Relative) */}
+                        <motion.div
                             initial={{ opacity: 0, scale: 0.8 }}
                             animate={{ opacity: 1, scale: 1 }}
                             transition={{ delay: 1.5, duration: 0.5 }}
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
-                            onClick={() => setStage('mood')}
-                            className="absolute bottom-10 z-30 bg-gradient-to-r from-yellow-600 to-yellow-400 text-black font-bold py-4 px-12 rounded-full shadow-[0_0_20px_rgba(255,215,0,0.5)] hover:shadow-[0_0_40px_rgba(255,215,0,0.8)] transition-all uppercase tracking-widest text-lg border-2 border-yellow-200"
+                            className="absolute bottom-10 z-30"
                         >
-                            Enter Palace
-                        </motion.button>
+                            <button
+                                onClick={() => setStage('mood')}
+                                className="bg-gradient-to-r from-yellow-600 to-yellow-400 text-black font-bold py-4 px-12 rounded-full shadow-[0_0_20px_rgba(255,215,0,0.5)] hover:shadow-[0_0_40px_rgba(255,215,0,0.8)] transition-all uppercase tracking-widest text-lg border-2 border-yellow-200 hover:scale-105 active:scale-95"
+                            >
+                                Enter Palace
+                            </button>
+                        </motion.div>
                     </motion.div>
                 )}
 
