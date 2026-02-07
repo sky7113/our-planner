@@ -18,7 +18,7 @@ export default function Home() {
   const { theme } = useTheme();
 
   return (
-    <main className={`min-h-screen flex flex-col items-center justify-center ${theme.colors.backgroundClass} ${theme.colors.textClass} px-4 pb-64 md:p-6 md:pb-48 transition-colors duration-700`}>
+    <main className={`min-h-screen flex flex-col items-center justify-center ${theme.colors.backgroundClass} ${theme.colors.textClass} px-4 pb-40 md:p-6 md:pb-48 transition-colors duration-700`}>
 
       <GrandEntrance />
 

@@ -44,7 +44,7 @@ export default function Sidekick({ className = '', image, themeId }: SidekickPro
     if (currentThemeId.includes('anya')) {
         return (
             <motion.div
-                className={`fixed bottom-24 md:bottom-0 w-36 md:w-96 z-40 pointer-events-none transition-all duration-500 ${theme.position === 'left' ? 'left-2 md:left-0' : 'right-2 md:right-0'} ${className}`}
+                className={`fixed bottom-24 md:bottom-0 w-36 md:w-96 z-[100] pointer-events-none transition-all duration-500 ${theme.position === 'left' ? 'left-2 md:left-0' : 'right-2 md:right-0'} ${className}`}
                 initial={{ y: '100%' }}
                 animate={{
                     y: ['100%', '0%', '0%', '100%'], // Up, Stay, Down
@@ -75,7 +75,7 @@ export default function Sidekick({ className = '', image, themeId }: SidekickPro
     if (['rimuru', 'gojo', 'shinobu'].includes(currentThemeId)) {
         return (
             <motion.div
-                className={`fixed bottom-24 md:bottom-0 w-36 md:w-96 z-40 pointer-events-none transition-all duration-500 ${theme.position === 'left' ? 'left-2 md:left-0' : 'right-2 md:right-0'} ${className}`}
+                className={`fixed bottom-24 md:bottom-0 w-36 md:w-96 z-[100] pointer-events-none transition-all duration-500 ${theme.position === 'left' ? 'left-2 md:left-0' : 'right-2 md:right-0'} ${className}`}
                 animate={{
                     y: [0, -15, 0],
                 }}
@@ -101,7 +101,7 @@ export default function Sidekick({ className = '', image, themeId }: SidekickPro
     if (currentThemeId === 'luffy') {
         return (
             <motion.div
-                className={`fixed bottom-24 md:bottom-0 w-36 md:w-96 z-40 pointer-events-none transition-all duration-500 ${theme.position === 'left' ? 'left-2 md:left-0' : 'right-2 md:right-0'} ${className}`}
+                className={`fixed bottom-24 md:bottom-0 w-36 md:w-96 z-[100] pointer-events-none transition-all duration-500 ${theme.position === 'left' ? 'left-2 md:left-0' : 'right-2 md:right-0'} ${className}`}
                 animate={{
                     y: [0, -30, 0], // Jump
                     scaleY: [1, 1.05, 0.95, 1], // Stretch
@@ -128,7 +128,7 @@ export default function Sidekick({ className = '', image, themeId }: SidekickPro
     if (currentThemeId === 'rys') {
         return (
             <motion.div
-                className={`fixed bottom-24 md:bottom-0 w-36 md:w-96 z-40 pointer-events-none transition-all duration-500 ${theme.position === 'left' ? 'left-2 md:left-0' : 'right-2 md:right-0'} ${className}`}
+                className={`fixed bottom-24 md:bottom-0 w-36 md:w-96 z-[100] pointer-events-none transition-all duration-500 ${theme.position === 'left' ? 'left-2 md:left-0' : 'right-2 md:right-0'} ${className}`}
                 initial={{ x: '-100%', opacity: 0 }}
                 animate={{
                     x: ['-100%', '0%', '0%', '-100%'],
@@ -157,7 +157,7 @@ export default function Sidekick({ className = '', image, themeId }: SidekickPro
     // DEFAULT (Standard Stand)
     return (
         <motion.div
-            className={`fixed bottom-24 md:bottom-0 w-36 md:w-96 z-40 pointer-events-none transition-all duration-500 ${theme.position === 'left' ? 'left-2 md:left-0' : 'right-2 md:right-0'} ${className}`}
+            className={`fixed bottom-24 md:bottom-0 w-36 md:w-96 z-[100] pointer-events-none transition-all duration-500 ${theme.position === 'left' ? 'left-2 md:left-0' : 'right-2 md:right-0'} ${className}`}
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             onClick={handleInteraction}
