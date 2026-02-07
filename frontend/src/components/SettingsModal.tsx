@@ -50,7 +50,7 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                         initial={{ opacity: 0, scale: 0.9, y: 20 }}
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                        className={`relative w-full max-w-md bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-8 shadow-2xl overflow-hidden`}
+                        className={`relative w-[90%] max-w-lg bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-8 shadow-2xl overflow-hidden`}
                         style={{ borderColor: theme.colors.accent }}
                     >
                         {/* Decorative background glow */}
@@ -68,12 +68,12 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                         </button>
 
                         <h2
-                            className="text-2xl font-light mb-2 text-center text-white"
+                            className="text-3xl font-light mb-2 text-center text-white"
                             style={{ fontFamily: theme.font }}
                         >
                             Royal Settings
                         </h2>
-                        <p className="text-white/50 text-center mb-8 text-sm">
+                        <p className="text-white/50 text-center mb-8 text-lg">
                             Manage your personal dominion
                         </p>
 
@@ -83,12 +83,12 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                                 onClick={handleRestart}
                                 className="w-full group relative overflow-hidden bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/30 rounded-xl p-4 transition-all duration-300 flex items-center gap-4"
                             >
-                                <div className={`p-3 rounded-full bg-white/10 group-hover:bg-white/20 transition-colors text-white`}>
-                                    <RefreshCw size={20} />
+                                <div className={`p-4 rounded-full bg-white/10 group-hover:bg-white/20 transition-colors text-white`}>
+                                    <RefreshCw size={48} />
                                 </div>
                                 <div className="text-left">
-                                    <h3 className={`text-lg font-medium text-white`}>Restart Journey</h3>
-                                    <p className="text-xs text-white/50">Re-enter the palace to change your mood</p>
+                                    <h3 className={`text-xl font-medium text-white`}>Restart Journey</h3>
+                                    <p className="text-sm text-white/50">Re-enter the palace to change your mood</p>
                                 </div>
                             </button>
 
@@ -113,7 +113,7 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                                             className={`flex flex-col items-center gap-1 p-2 rounded-lg hover:bg-white/10 transition-all ${theme.id === char.id ? 'bg-white/20 ring-1 ring-white/50' : 'opacity-70 hover:opacity-100'}`}
                                         >
                                             <div
-                                                className={`w-8 h-8 rounded-full border border-white/20 ${char.className}`}
+                                                className={`w-12 h-12 rounded-full border border-white/20 ${char.className}`}
                                             />
                                             <span className="text-[10px] text-white/80">{char.label}</span>
                                         </button>

@@ -157,7 +157,7 @@ export default function Sidekick({ className = '', image, themeId }: SidekickPro
     // DEFAULT (Standard Stand)
     return (
         <motion.div
-            className={`fixed bottom-24 md:bottom-0 w-36 md:w-96 z-[100] pointer-events-none transition-all duration-500 ${theme.position === 'left' ? 'left-2 md:left-0' : 'right-2 md:right-0'} ${className}`}
+            className={`absolute top-24 right-2 w-40 md:w-64 z-10 pointer-events-none transition-all duration-500 ${className}`}
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             onClick={handleInteraction}

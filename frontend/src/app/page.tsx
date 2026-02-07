@@ -44,11 +44,11 @@ export default function Home() {
 
       <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
 
-      <div className="w-full max-w-md text-center mb-12 z-10 relative">
+      <div className="w-full max-w-md text-left mb-12 z-10 relative pl-6">
         <div className="relative inline-block group">
           <LiveAvatar
             size="w-32 h-32"
-            className="mx-auto mb-6 shadow-2xl shadow-white/10"
+            className="mb-6 shadow-2xl shadow-white/10"
             isPointing={!!focusedCard}
           />
 
@@ -63,7 +63,7 @@ export default function Home() {
           </motion.div>
         </div>
         <h1
-          className="text-4xl md:text-5xl font-light mb-3 drop-shadow-lg transition-colors duration-500 text-gray-900 dark:text-white text-center pt-20 pb-4 md:py-20"
+          className="text-4xl md:text-5xl font-light mb-3 drop-shadow-lg transition-colors duration-500 text-gray-900 dark:text-white text-left pt-20 pb-4 md:py-20"
           style={{
             fontFamily: theme?.font
           }}
