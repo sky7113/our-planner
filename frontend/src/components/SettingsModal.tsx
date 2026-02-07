@@ -50,7 +50,7 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                         initial={{ opacity: 0, scale: 0.9, y: 20 }}
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                        className={`relative w-[90%] max-w-lg bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-8 shadow-2xl overflow-hidden`}
+                        className={`relative w-[95%] max-w-lg bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-6 shadow-2xl overflow-hidden`}
                         style={{ borderColor: theme.colors.accent }}
                     >
                         {/* Decorative background glow */}
@@ -113,7 +113,7 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                                             className={`flex flex-col items-center gap-1 p-2 rounded-lg hover:bg-white/10 transition-all ${theme.id === char.id ? 'bg-white/20 ring-1 ring-white/50' : 'opacity-70 hover:opacity-100'}`}
                                         >
                                             <div
-                                                className={`w-12 h-12 rounded-full border border-white/20 ${char.className}`}
+                                                className={`w-14 h-14 rounded-full border border-white/20 ${char.className}`}
                                             />
                                             <span className="text-[10px] text-white/80">{char.label}</span>
                                         </button>
