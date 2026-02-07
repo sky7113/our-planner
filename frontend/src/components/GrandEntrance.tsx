@@ -140,7 +140,7 @@ export default function GrandEntrance() {
     if (stage === 'finished') return null;
 
     return (
-        <div className="fixed inset-0 z-[100] overflow-hidden pointer-events-auto bg-black">
+        <div className="fixed inset-0 z-[200] overflow-hidden pointer-events-auto bg-black">
 
             {/* CONTENT LAYER */}
             <AnimatePresence mode='wait'>
