@@ -65,7 +65,10 @@ export default function Sidekick({ className = '', image, themeId }: SidekickPro
                             alt="Anya Peeking"
                             animate={controls}
                             className="w-full drop-shadow-2xl"
-                            style={{ pointerEvents: 'auto' }} // Allow clicks on the image itself
+                            style={{
+                                pointerEvents: 'auto',
+                                filter: `drop-shadow(0 0 20px ${theme.colors.accent}80)`
+                            }}
                         />
                     </div>
                 </motion.div>
@@ -94,8 +97,21 @@ export default function Sidekick({ className = '', image, themeId }: SidekickPro
                         alt={theme.name}
                         animate={controls}
                         className="w-full drop-shadow-2xl"
-                        style={{ pointerEvents: 'auto' }}
+                        style={{
+                            pointerEvents: 'auto',
+                            filter: `drop-shadow(0 0 20px ${theme.colors.accent}80)`
+                        }}
                     />
+                    {currentThemeId === 'shinobu' && (
+                        <motion.img
+                            src="/assets/butterfly.png"
+                            alt="Butterfly"
+                            animate={{ y: [0, -15, 0], rotate: [0, 5, -5, 0] }}
+                            transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                            className="absolute top-12 -left-12 w-12 h-12 z-[10000] pointer-events-none opacity-80"
+                            style={{ filter: `drop-shadow(0 0 10px ${theme.colors.accent})` }}
+                        />
+                    )}
                 </motion.div>
             </div>
         );
@@ -123,7 +139,10 @@ export default function Sidekick({ className = '', image, themeId }: SidekickPro
                         alt={theme.name}
                         animate={controls}
                         className="w-full drop-shadow-xl"
-                        style={{ pointerEvents: 'auto' }}
+                        style={{
+                            pointerEvents: 'auto',
+                            filter: `drop-shadow(0 0 20px ${theme.colors.accent}80)`
+                        }}
                     />
                 </motion.div>
             </div>
@@ -155,8 +174,12 @@ export default function Sidekick({ className = '', image, themeId }: SidekickPro
                         alt={theme.name}
                         animate={controls}
                         className="w-full drop-shadow-2xl"
-                        style={{ pointerEvents: 'auto' }}
+                        style={{
+                            pointerEvents: 'auto',
+                            filter: `drop-shadow(0 0 20px ${theme.colors.accent}80)`
+                        }}
                     />
+
                 </motion.div>
             </div>
         );
@@ -177,8 +200,8 @@ export default function Sidekick({ className = '', image, themeId }: SidekickPro
                     animate={controls}
                     className="w-full transition-transform duration-400 ease-out"
                     style={{
-                        filter: `drop-shadow(0px 5px 15px rgba(0,0,0,0.5))`,
-                        pointerEvents: 'auto'
+                        pointerEvents: 'auto',
+                        filter: `drop-shadow(0 0 20px ${theme.colors.accent}80)`
                     }}
                     whileHover={{
                         scale: 1.03,
