@@ -194,129 +194,141 @@ export default function BridgePage() {
             </div>
 
             {/* Header / Identity Toggle */}
-            <div className="w-full p-4 backdrop-blur-md bg-black/20 border-b border-white/5 z-20 flex justify-between items-center sticky top-0">
-                <div className="flex items-center gap-2">
-                    <span className="text-xl font-light tracking-widest text-indigo-200">THE BRIDGE</span>
-                </div>
+            {/* Header / Identity Toggle */}
+            <div className="w-full py-4 px-4 backdrop-blur-xl bg-black/30 border-b border-white/5 z-20 flex flex-col items-center sticky top-0">
+                <span className="text-3xl md:text-4xl font-light tracking-[0.2em] text-indigo-100 text-center mb-4 pt-2">
+                    THE BRIDGE
+                </span>
 
-                <div className="flex bg-black/30 p-1 rounded-full border border-white/10">
-                    <button
-                        onClick={() => setCurrentUser('Amber')}
-                        className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-300 ${currentUser === 'Amber'
-                            ? 'bg-blue-500/20 text-blue-200 shadow-[0_0_15px_rgba(59,130,246,0.3)]'
-                            : 'text-white/40 hover:text-white/60'
-                            }`}
-                    >
-                        Amber
-                    </button>
-                    <button
-                        onClick={() => setCurrentUser('Raksha')}
-                        className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-300 ${currentUser === 'Raksha'
-                            ? 'bg-pink-500/20 text-pink-200 shadow-[0_0_15px_rgba(236,72,153,0.3)]'
-                            : 'text-white/40 hover:text-white/60'
-                            }`}
-                    >
-                        Raksha
-                    </button>
-                </div>
+                <div className="w-full max-w-2xl flex justify-between items-center relative">
+                    {/* Ghost Divider for centering */}
+                    <div className="w-20" />
 
-                <div className="flex items-center gap-2">
-                    <button
-                        onClick={handleOpenSave}
-                        className="p-2 text-white/50 hover:text-indigo-300 transition-colors"
-                        title="Archive Resolution"
-                    >
-                        <Save size={20} />
-                    </button>
-                    <button
-                        onClick={handleOpenArchive}
-                        className="p-2 text-white/50 hover:text-indigo-300 transition-colors"
-                        title="View Past Resolutions"
-                    >
-                        <Book size={20} />
-                    </button>
+                    <div className="flex bg-black/40 p-1.5 rounded-full border border-white/10 shadow-inner">
+                        <button
+                            onClick={() => setCurrentUser('Amber')}
+                            className={`px-6 py-2 rounded-full text-sm font-medium transition-all duration-300 ${currentUser === 'Amber'
+                                ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/50'
+                                : 'text-white/40 hover:text-white/60'
+                                }`}
+                        >
+                            Amber
+                        </button>
+                        <button
+                            onClick={() => setCurrentUser('Raksha')}
+                            className={`px-6 py-2 rounded-full text-sm font-medium transition-all duration-300 ${currentUser === 'Raksha'
+                                ? 'bg-pink-600 text-white shadow-lg shadow-pink-900/50'
+                                : 'text-white/40 hover:text-white/60'
+                                }`}
+                        >
+                            Raksha
+                        </button>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                        <button
+                            onClick={handleOpenSave}
+                            className="p-3 text-white/50 hover:text-indigo-300 transition-colors bg-white/5 rounded-full hover:bg-white/10"
+                            title="Archive Resolution"
+                        >
+                            <Save size={20} />
+                        </button>
+                        <button
+                            onClick={handleOpenArchive}
+                            className="p-3 text-white/50 hover:text-indigo-300 transition-colors bg-white/5 rounded-full hover:bg-white/10"
+                            title="View Past Resolutions"
+                        >
+                            <Book size={20} />
+                        </button>
+                    </div>
                 </div>
             </div>
 
             {/* Chat Area */}
-            <div className="flex-1 overflow-y-auto p-4 md:p-8 space-y-8 z-10 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent pb-20">
-                {messages.length === 0 && (
-                    <div className="flex flex-col items-center justify-center h-full text-white/30 text-center space-y-4">
-                        <Sparkles size={48} className="text-indigo-300/50 animate-pulse" />
-                        <p className="font-light max-w-md">The Bridge is open. Speak your heart, and let wisdom guide you back to each other.</p>
-                        <span className="text-xs bg-white/5 px-3 py-1 rounded-full">Session Auto-Reset Active</span>
-                    </div>
-                )}
-
-                {messages.map((msg, index) => (
-                    <div key={msg.id} className="space-y-6">
-                        {/* User Message */}
-                        <div className={`flex ${msg.sender === 'Amber' ? 'justify-start' : 'justify-end'}`}>
-                            <motion.div
-                                initial={{ opacity: 0, y: 10 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                className={`max-w-[85%] md:max-w-[70%] p-4 rounded-2xl border backdrop-blur-sm shadow-lg ${msg.sender === 'Amber'
-                                    ? 'bg-blue-950/30 border-blue-500/30 rounded-tl-none'
-                                    : 'bg-pink-950/30 border-pink-500/30 rounded-tr-none'
-                                    }`}
-                            >
-                                <div className={`text-xs font-bold mb-1 uppercase tracking-wider ${msg.sender === 'Amber' ? 'text-blue-400' : 'text-pink-400'
-                                    }`}>
-                                    {msg.sender}
-                                </div>
-                                <p className="text-white/90 leading-relaxed font-light">{msg.message}</p>
-                            </motion.div>
+            <div className="flex-1 overflow-y-auto p-4 md:p-8 z-10 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent pb-32">
+                <div className="max-w-2xl mx-auto w-full space-y-8">
+                    {messages.length === 0 && (
+                        <div className="flex flex-col items-center justify-center h-full text-white/30 text-center space-y-6 mt-20">
+                            <Sparkles size={96} className="text-indigo-300/50 animate-pulse stroke-1" />
+                            <p className="font-light text-xl max-w-md leading-relaxed text-indigo-100/80">
+                                The Bridge is open. Speak your heart, and let wisdom guide you back to each other.
+                            </p>
+                            <span className="text-xs bg-white/5 px-4 py-1.5 rounded-full uppercase tracking-widest text-indigo-300/50 border border-white/5">
+                                Session Auto-Reset Active
+                            </span>
                         </div>
+                    )}
 
-                        {/* Mediator Response (Center) */}
-                        <div className="flex justify-center">
-                            <motion.div
-                                initial={{ opacity: 0, scale: 0.95 }}
-                                animate={{ opacity: 1, scale: 1 }}
-                                transition={{ delay: 0.2 }}
-                                className="max-w-[90%] md:max-w-[60%] p-6 rounded-3xl bg-amber-900/10 border border-amber-500/20 shadow-[0_0_30px_rgba(245,158,11,0.05)] text-center relative"
-                            >
-                                <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-slate-900 p-1.5 rounded-full border border-amber-500/30">
-                                    <Heart size={16} className="text-amber-400 fill-amber-400/20" />
-                                </div>
-                                <p className="text-amber-100/90 font-serif italic text-lg leading-relaxed">
-                                    &quot;{msg.ai_response}&quot;
-                                </p>
-                            </motion.div>
+                    {messages.map((msg, index) => (
+                        <div key={msg.id} className="space-y-6">
+                            {/* User Message */}
+                            <div className={`flex ${msg.sender === 'Amber' ? 'justify-start' : 'justify-end'}`}>
+                                <motion.div
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    className={`max-w-[85%] md:max-w-[70%] p-4 rounded-2xl border backdrop-blur-sm shadow-lg ${msg.sender === 'Amber'
+                                        ? 'bg-blue-950/30 border-blue-500/30 rounded-tl-none'
+                                        : 'bg-pink-950/30 border-pink-500/30 rounded-tr-none'
+                                        }`}
+                                >
+                                    <div className={`text-xs font-bold mb-1 uppercase tracking-wider ${msg.sender === 'Amber' ? 'text-blue-400' : 'text-pink-400'
+                                        }`}>
+                                        {msg.sender}
+                                    </div>
+                                    <p className="text-white/90 leading-relaxed font-light">{msg.message}</p>
+                                </motion.div>
+                            </div>
+
+                            {/* Mediator Response (Center) */}
+                            <div className="flex justify-center">
+                                <motion.div
+                                    initial={{ opacity: 0, scale: 0.95 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    transition={{ delay: 0.2 }}
+                                    className="max-w-[90%] md:max-w-[60%] p-6 rounded-3xl bg-amber-900/10 border border-amber-500/20 shadow-[0_0_30px_rgba(245,158,11,0.05)] text-center relative"
+                                >
+                                    <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-slate-900 p-1.5 rounded-full border border-amber-500/30">
+                                        <Heart size={16} className="text-amber-400 fill-amber-400/20" />
+                                    </div>
+                                    <p className="text-amber-100/90 font-serif italic text-lg leading-relaxed">
+                                        &quot;{msg.ai_response}&quot;
+                                    </p>
+                                </motion.div>
+                            </div>
+
+                            {/* Connector Line (Visual only) */}
+                            {index < messages.length - 1 && (
+                                <div className="w-px h-8 bg-gradient-to-b from-white/10 to-transparent mx-auto" />
+                            )}
                         </div>
-
-                        {/* Connector Line (Visual only) */}
-                        {index < messages.length - 1 && (
-                            <div className="w-px h-8 bg-gradient-to-b from-white/10 to-transparent mx-auto" />
-                        )}
-                    </div>
-                ))}
-                <div ref={messagesEndRef} />
+                    ))}
+                    <div ref={messagesEndRef} />
+                </div>
             </div>
 
             {/* Input Area */}
-            <div className="p-4 md:p-6 z-20 bg-black/60 backdrop-blur-lg border-t border-white/5">
-                <div className="max-w-4xl mx-auto relative group">
-                    <div className={`absolute -inset-0.5 rounded-2xl blur opacity-30 transition duration-500 group-hover:opacity-60 ${currentUser === 'Amber' ? 'bg-blue-600' : 'bg-pink-600'
+            <div className="p-4 pb-8 md:p-6 md:pb-10 z-20 bg-black/60 backdrop-blur-xl border-t border-white/5">
+                <div className="max-w-2xl mx-auto relative group">
+                    <div className={`absolute -inset-0.5 rounded-3xl blur opacity-20 transition duration-500 group-hover:opacity-50 ${currentUser === 'Amber' ? 'bg-blue-600' : 'bg-pink-600'
                         }`} />
-                    <div className="relative flex items-center bg-slate-900 rounded-2xl border border-white/10 p-2 pl-4">
+                    <div className="relative flex items-center bg-slate-900 rounded-3xl border border-white/10 p-2 pl-6 h-20 shadow-2xl">
                         <input
                             type="text"
                             value={inputText}
                             onChange={(e) => setInputText(e.target.value)}
                             onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
                             placeholder={`Tell the Mediator how you feel, ${currentUser}...`}
-                            className="flex-1 bg-transparent border-none focus:outline-none text-white placeholder-white/30 py-2"
+                            className="flex-1 bg-transparent border-none focus:outline-none text-white text-lg placeholder-white/30 h-full"
                             disabled={isLoading}
                         />
                         <button
                             onClick={handleSendMessage}
                             disabled={isLoading}
-                            className={`p-3 rounded-xl transition-all ${isLoading ? 'bg-white/5 cursor-wait' :
-                                currentUser === 'Amber' ? 'bg-blue-600 hover:bg-blue-500 text-white' : 'bg-pink-600 hover:bg-pink-500 text-white'
+                            className={`h-14 w-14 flex items-center justify-center rounded-2xl transition-all ml-2 ${isLoading ? 'bg-white/5 cursor-wait' :
+                                currentUser === 'Amber' ? 'bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-500/20' : 'bg-pink-600 hover:bg-pink-500 text-white shadow-lg shadow-pink-500/20'
                                 }`}
                         >
-                            <Send size={20} />
+                            <Send size={28} />
                         </button>
                     </div>
                 </div>
