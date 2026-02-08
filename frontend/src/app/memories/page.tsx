@@ -1,67 +1,40 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Heart, Home, Image as ImageIcon, Book, Settings, Plus } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import axios from 'axios';
 
-// Placeholder data - in a real app this would come from a CMS or DB
-const memories = [
-    {
-        id: 1,
-        title: 'Paris, Oct 2023',
-        subtitle: 'Our favorite sunset',
-        src: 'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&w=800&q=80', // Paris
-        aspectRatio: 'aspect-[3/4]',
-    },
-    {
-        id: 2,
-        title: 'Picnic Day',
-        subtitle: 'Sunday bliss',
-        src: 'https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?auto=format&fit=crop&w=800&q=80', // Picnic
-        aspectRatio: 'aspect-[4/3]',
-    },
-    {
-        id: 3,
-        title: 'First Date',
-        subtitle: 'Where it all began',
-        src: 'https://images.unsplash.com/photo-1518199266791-5375a83190b7?auto=format&fit=crop&w=800&q=80', // Couple holding hands/flowers
-        aspectRatio: 'aspect-[3/4]',
-    },
-    {
-        id: 4,
-        title: 'Beach Bonfire',
-        subtitle: 'Under the stars',
-        src: 'https://images.unsplash.com/photo-1533230408806-646cb0595304?auto=format&fit=crop&w=800&q=80', // Bonfire
-        aspectRatio: 'aspect-[3/4]',
-    },
-    {
-        id: 5,
-        title: 'Anniversary',
-        subtitle: 'Sweet celebration',
-        src: 'https://images.unsplash.com/photo-1515934751635-c81c6bc9a2d8?auto=format&fit=crop&w=800&q=80', // Cake/Wedding
-        aspectRatio: 'aspect-[4/3]',
-    },
-    {
-        id: 6,
-        title: 'Hiking Trip',
-        subtitle: 'Conquering peaks',
-        src: 'https://images.unsplash.com/photo-1551632811-561732d1e306?auto=format&fit=crop&w=800&q=80', // Hiking
-        aspectRatio: 'aspect-[3/4]',
-    },
-];
+const API_BASE_URL = 'http://localhost:5000';
 
 const categories = ['All Memories', 'Anniversary', 'Trips', 'Dates', 'Summer \'23'];
 
 export default function MemoriesPage() {
     const [activeCategory, setActiveCategory] = useState('All Memories');
-    const [localMemories, setLocalMemories] = useState(memories);
+    const [localMemories, setLocalMemories] = useState<any[]>([]);
 
     // Upload State
     const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
     const [isUploading, setIsUploading] = useState(false);
     const [uploadProgress, setUploadProgress] = useState(0);
+
+    // Fetch Memories on Mount
+    useEffect(() => {
+        fetchMemories();
+    }, []);
+
+    const fetchMemories = async () => {
+        try {
+            const res = await axios.get(`${API_BASE_URL}/api/memories`);
+            setLocalMemories(res.data);
+        } catch (error) {
+            console.error("Error fetching memories:", error);
+        }
+    };
+
+
 
     const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files.length > 0) {
@@ -164,9 +137,9 @@ export default function MemoriesPage() {
                             key={memory.id}
                             className="relative group break-inside-avoid rounded-2xl overflow-hidden bg-white/5 border border-white/10 shadow-xl cursor-pointer hover:-translate-y-2 hover:shadow-2xl transition-all duration-500 ease-out"
                         >
-                            <div className={`relative w-full ${memory.aspectRatio}`}>
+                            <div className={`relative w-full ${memory.aspectRatio || 'aspect-[3/4]'}`}>
                                 <Image
-                                    src={memory.src}
+                                    src={memory.src.startsWith('http') ? memory.src : `${API_BASE_URL}${memory.src}`}
                                     alt={memory.title}
                                     fill
                                     className="object-cover transition-transform duration-700 group-hover:scale-110"

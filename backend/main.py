@@ -103,6 +103,15 @@ class SavedChat(Base):
     date = Column(String) # YYYY-MM-DD
     content = Column(Text) # JSON string of conversation
 
+class Memory(Base):
+    __tablename__ = "memories"
+    id = Column(Integer, primary_key=True, index=True)
+    title = Column(String)
+    subtitle = Column(String)
+    image_url = Column(String)
+    date = Column(DateTime, default=datetime.utcnow)
+    aspect_ratio = Column(String, default="aspect-[3/4]")
+
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
@@ -239,6 +248,99 @@ def delete_album_photo(name: str, filename: str):
         os.remove(path)
         return {"status": "success", "info": f"Deleted photo {safe_filename} from {safe_name}"}
     return {"status": "error", "info": "Photo not found"}
+
+
+# --- Memories System ---
+
+@app.get("/api/memories")
+def get_memories():
+    """
+    Fetch all memories, sorted by date (newest first).
+    """
+    session = SessionLocal()
+    try:
+        memories = session.query(Memory).order_by(Memory.date.desc()).all()
+        return [
+            {
+                "id": m.id,
+                "title": m.title,
+                "subtitle": m.subtitle,
+                "src": m.image_url,
+                "aspectRatio": m.aspect_ratio,
+                "date": m.date.isoformat()
+            }
+            for m in memories
+        ]
+    finally:
+        session.close()
+
+@app.post("/api/memories")
+async def create_memory(
+    title: str = "New Memory",
+    subtitle: str = None,
+    file: UploadFile = File(...)
+):
+    """
+    Upload a new memory photo and save to DB.
+    """
+    session = SessionLocal()
+    try:
+        if not subtitle:
+             subtitle = date.today().strftime("%d %b %Y")
+
+        # 1. Save Image
+        upload_dir = "images/memories"
+        os.makedirs(upload_dir, exist_ok=True)
+        
+        timestamp = int(time.time())
+        safe_filename = file.filename.replace(" ", "_").replace("/", "")
+        filename = f"{timestamp}_{safe_filename}"
+        file_path = os.path.join(upload_dir, filename)
+        
+        with open(file_path, "wb+") as buffer:
+            shutil.copyfileobj(file.file, buffer)
+            
+        image_url = f"/images/memories/{filename}"
+
+        # 2. Determine Aspect Ratio (roughly)
+        try:
+             with PIL.Image.open(file_path) as img:
+                  width, height = img.size
+                  ratio = width / height
+                  if ratio > 1.2:
+                       aspect = "aspect-[4/3]"
+                  elif ratio < 0.8:
+                       aspect = "aspect-[3/4]"
+                  else:
+                       aspect = "aspect-square"
+        except:
+             aspect = "aspect-[3/4]" # Fallback
+
+        # 3. Save to DB
+        new_memory = Memory(
+            title=title,
+            subtitle=subtitle,
+            image_url=image_url,
+            aspect_ratio=aspect
+        )
+        session.add(new_memory)
+        session.commit()
+        session.refresh(new_memory)
+        
+        return {
+            "id": new_memory.id,
+            "title": new_memory.title,
+            "subtitle": new_memory.subtitle,
+            "src": new_memory.image_url,
+            "aspectRatio": new_memory.aspect_ratio,
+            "date": new_memory.date.isoformat()
+        }
+
+    except Exception as e:
+        print(f"Memory Upload Error: {e}")
+        return {"status": "error", "info": str(e)}
+    finally:
+        session.close()
 
 
 # --- Gemini Chatbot System ---
