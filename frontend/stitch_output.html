@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Memory Gallery - Our Cherished Moments</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#ee2b7c",
+                        "background-light": "#f8f6f7",
+                        "background-dark": "#221018",
+                    },
+                    fontFamily: {
+                        "display": ["Plus Jakarta Sans", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.5rem",
+                        "lg": "1rem",
+                        "xl": "1.5rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+        .masonry-grid {
+            column-count: 2;
+            column-gap: 0.75rem;
+        }
+        .masonry-item {
+            break-inside: avoid;
+            margin-bottom: 0.75rem;
+        }
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .soft-gradient-bg {
+            background: radial-gradient(circle at top right, rgba(238, 43, 124, 0.15), transparent),
+                        radial-gradient(circle at bottom left, rgba(238, 43, 124, 0.1), transparent);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white min-h-screen font-display">
+<!-- Sticky Glassmorphic Header -->
+<header class="sticky top-0 z-50 glass-effect pt-12 pb-4 px-4 border-b border-white/10">
+<div class="flex items-center justify-between max-w-md mx-auto">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary text-3xl">auto_awesome_motion</span>
+<h1 class="text-xl font-extrabold tracking-tight text-slate-900 dark:text-white">Our Cherished Moments</h1>
+</div>
+<button class="bg-primary hover:bg-primary/90 text-white p-2 rounded-full transition-all shadow-lg shadow-primary/20 flex items-center justify-center">
+<span class="material-symbols-outlined">add</span>
+</button>
+</div>
+</header>
+<main class="max-w-md mx-auto px-4 pt-6 pb-24 soft-gradient-bg min-h-screen">
+<!-- Filter/Category Tabs -->
+<div class="flex overflow-x-auto gap-3 pb-6 no-scrollbar">
+<button class="whitespace-nowrap bg-primary text-white px-5 py-2 rounded-full text-sm font-semibold shadow-md">All Memories</button>
+<button class="whitespace-nowrap glass-effect text-slate-600 dark:text-white/70 px-5 py-2 rounded-full text-sm font-semibold">Anniversary</button>
+<button class="whitespace-nowrap glass-effect text-slate-600 dark:text-white/70 px-5 py-2 rounded-full text-sm font-semibold">Paris Trip</button>
+<button class="whitespace-nowrap glass-effect text-slate-600 dark:text-white/70 px-5 py-2 rounded-full text-sm font-semibold">Date Nights</button>
+<button class="whitespace-nowrap glass-effect text-slate-600 dark:text-white/70 px-5 py-2 rounded-full text-sm font-semibold">Summer '23</button>
+</div>
+<!-- Masonry Photo Grid -->
+<div class="masonry-grid">
+<!-- Memory Card 1 (Portrait) -->
+<div class="masonry-item relative group overflow-hidden rounded-lg shadow-xl">
+<img alt="Paris Sunset" class="w-full h-auto object-cover transition-transform duration-500 group-hover:scale-110" data-alt="A romantic sunset view of the Eiffel Tower" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAQ_WdfikOWnZ3Ik_mW1AX6cW645rvGPNyayW2dWMCcS2aoHd183c_xVPgv7VzEdDCey6cDkIr7smLCSERwHSNIEh6VOmQGJNaIKbPSrs-UgD_fiVnk3qd0MEkfR53xngsIOxt9DNtUiukaPZT7LXiOM3I_vADkwRlzEpyYvxzzKGnX7X7vnAT0za3GJm9YgfHTkn4nSWxvC4ALXu8jCu-ffWI9zVghuElPZlqROc2nG9vPN5ZWnN7XoTiqsgwCn3scmj_AmYA-5Gj6"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-100 transition-opacity"></div>
+<div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+<span class="material-symbols-outlined text-primary text-5xl drop-shadow-lg scale-75 group-hover:scale-100 transition-transform">favorite</span>
+</div>
+<div class="absolute bottom-3 left-3 right-3 text-white">
+<p class="text-sm font-bold truncate">Paris, Oct 2023</p>
+<p class="text-[10px] text-white/70">Our favorite sunset</p>
+</div>
+</div>
+<!-- Memory Card 2 (Landscape) -->
+<div class="masonry-item relative group overflow-hidden rounded-lg shadow-xl">
+<img alt="Picnic in the park" class="w-full h-auto object-cover transition-transform duration-500 group-hover:scale-110" data-alt="A couple having a cozy picnic on a green lawn" src="https://lh3.googleusercontent.com/aida-public/AB6AXuByGkh3rLYAv5J-TJipIxfIZHtxQgMFBaal4gG3ftOcYrDOZxqZLbjB6PbMkQnGcYcd65hU48ywrFDvlo7u8j23cdUpkFgCz0SIS8rTr6vODLoBVVjvTmLh4quT95Et7hL4VUV7zIOP72Neulb-X-lgnM-h08JvX6ehItnQ37ZS0Cc-OATJE64clfbYngBcmv38dkkMcRWvUWwzDWr3FN7aRGqStvFn6OxOL7Y_38ucpBRpUR-KeaJv4oyupJwn-hlE9F2w3NuDvJBX"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-100 transition-opacity"></div>
+<div class="absolute bottom-3 left-3 text-white">
+<p class="text-sm font-bold">Picnic Day</p>
+</div>
+</div>
+<!-- Memory Card 3 (Portrait) -->
+<div class="masonry-item relative group overflow-hidden rounded-lg shadow-xl">
+<div class="absolute top-3 right-3 z-10">
+<span class="material-symbols-outlined text-primary fill-1">favorite</span>
+</div>
+<img alt="Holding hands" class="w-full h-auto object-cover transition-transform duration-500 group-hover:scale-110" data-alt="Two people holding hands while walking through a flower garden" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAG8HyS5eOksJOSQP85XpmTlMMMeQ9wwt8MWrVAhY6DVnAxWeb61rcCcph6y7zyCE44iCgjo4QK6wNK8_vxt0cYaChIUArqlZDTNMBgXthVjoDamLsSq8C2PGvV2bHSX1weNbQqP7gDrBodtF71jxneLJSIqJ9j2Cot0pvkRSdQ-4qSaC0DCjyQ3TEIHWkpNjnU_AbmBDdcKElD6xGdCKm4Ymuhsig2x8HI3wZkJCQDClM5PS8fAM0Z89DuKteAONz2UKclUsJp5Ic1"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-100 transition-opacity"></div>
+<div class="absolute bottom-3 left-3 text-white">
+<p class="text-sm font-bold">First Date</p>
+<p class="text-[10px] text-white/70">Where it all began</p>
+</div>
+</div>
+<!-- Memory Card 4 (Portrait) -->
+<div class="masonry-item relative group overflow-hidden rounded-lg shadow-xl">
+<img alt="Beach evening" class="w-full h-auto object-cover transition-transform duration-500 group-hover:scale-110" data-alt="A bonfire burning on a sandy beach at night" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD2JPaRmhmenVKj4DN_3YkwvIZwGB3knIOhaEw4ZFQlYFSCu5pJDOePPEVPbiWm1SxtpIj5BXBGXQnbMOzh_tYXuzwECZqTHshw3-xWTngncy0fM9oOs7Q4C91vSDuuyT2z07Z-xrH0KJhf3dJ3uW6LxrvhT27nxUMtb8CyxPmHvnE9EUE4G_VMwoA3aZ_Pb-WIh49F2Ju8RnHqg4POd4D0MnROvy8IeeS380BxFYY8o5TjgadVxHFF6nqh4OjJQ33VGQTeOHZAGmC_"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-100 transition-opacity"></div>
+<div class="absolute bottom-3 left-3 text-white">
+<p class="text-sm font-bold">Beach Bonfire</p>
+</div>
+</div>
+<!-- Memory Card 5 (Landscape) -->
+<div class="masonry-item relative group overflow-hidden rounded-lg shadow-xl">
+<img alt="Dessert table" class="w-full h-auto object-cover transition-transform duration-500 group-hover:scale-110" data-alt="A beautiful dessert table with cupcakes and cakes" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBjSFNC6Pl45S9G3GdCbGKsGts2Iy8BGurfFe5X_rmJGieGXkCwYUHERIan3d32gDi3cLzVLq0HO312c-y7O_v9pVMu2VN3PH-Qf3I8SMWWlvPHqOesFyQc8RAtnQGGDGEJqmWcntzzit93g4_qOxS3dbsVdqrcplzJ8ScwK_DbseaUQa1-pIMliRaAN51L8Z5TsFaDBaXokN5s-p1aEwXikirglCD4NSQ2c88XC4JZb6YjS83aNOqbZltbzmbHvOQ1f9CYjQ2WTWRW"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-100 transition-opacity"></div>
+<div class="absolute bottom-3 left-3 text-white">
+<p class="text-sm font-bold">Anniversary</p>
+</div>
+</div>
+<!-- Memory Card 6 (Portrait) -->
+<div class="masonry-item relative group overflow-hidden rounded-lg shadow-xl">
+<img alt="Mountain hike" class="w-full h-auto object-cover transition-transform duration-500 group-hover:scale-110" data-alt="A scenic mountain landscape with a trail leading into the distance" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDMULkmO0YAluWJwvkGJDXXu1eMhJRNaABK-gcTOo2sxQSn3BSVWOMQ4HExLT9N3usQZDltGBJnMmw6ok1PyruKnpi1K8Mmq5PMygscCq_BAFjq9YNVMYd1fF0gbu77q2GTEfFeVWUjIDNTsa5QIL-MFDdiTpqg0oWSnc3DJDO3kpEQJ999sCQlDwf2CjeBKJvQjthZMmcAeSKS_SsaVTrxTseqXxOIKYbpApcUzGIV4thDwC4pidH6EtGUZgwc-Xj9ixF28BeSaOqW"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-100 transition-opacity"></div>
+<div class="absolute bottom-3 left-3 text-white">
+<p class="text-sm font-bold">Hiking Trip</p>
+</div>
+</div>
+</div>
+</main>
+<!-- Navigation Bar -->
+<nav class="fixed bottom-0 left-0 right-0 glass-effect border-t border-white/10 px-6 py-4 flex items-center justify-between max-w-md mx-auto z-50 rounded-t-xl">
+<a class="flex flex-col items-center gap-1 text-primary" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="text-[10px] font-bold">Home</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-slate-400 dark:text-white/40" href="#">
+<span class="material-symbols-outlined">photo_library</span>
+<span class="text-[10px] font-medium">Gallery</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-slate-400 dark:text-white/40" href="#">
+<span class="material-symbols-outlined">auto_stories</span>
+<span class="text-[10px] font-medium">Journal</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-slate-400 dark:text-white/40" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="text-[10px] font-medium">Settings</span>
+</a>
+</nav>
+<!-- Floating Action Background Blur Filler (iOS style) -->
+<div class="fixed bottom-0 left-0 w-full h-8 bg-background-light dark:bg-background-dark z-40 lg:hidden"></div>
+</body></html>
