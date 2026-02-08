@@ -18,7 +18,10 @@ interface PersonalityColors {
 export interface PersonalityObject {
     id: CharacterId;
     name: string; // Display name
-    font: string;
+    font: string; // Tailwind class for backward compat
+    fontFamily: 'Cinzel' | 'Fredoka' | 'Outfit'; // NEW: Variable name
+    bgGradient: string; // NEW: CSS Gradient
+    accentColor: string; // NEW: Hex for glows
     colors: PersonalityColors;
     bgImage: string;
     greeting: string;
@@ -50,6 +53,9 @@ const distinctPersonalities: Record<CharacterId, PersonalityObject> = {
         id: 'default',
         name: 'Royal Companion',
         font: 'font-serif',
+        fontFamily: 'Outfit',
+        bgGradient: 'linear-gradient(to bottom right, #0f172a, #3b0764, #000000)',
+        accentColor: '#c084fc',
         colors: createColors('#0f172a', '#e2e8f0', '#c084fc'), // Slate-900, Slate-200, Purple
         bgImage: '', // No default bg image, handled by CSS fallback
         greeting: 'Welcome Home, My Queen.',
@@ -67,6 +73,9 @@ const distinctPersonalities: Record<CharacterId, PersonalityObject> = {
         id: 'shinobu',
         name: 'Shinobu Kocho',
         font: 'font-serif',
+        fontFamily: 'Cinzel',
+        bgGradient: 'linear-gradient(to bottom right, #2e1065, #4c1d95, #000000)', // Deep Purple/Black
+        accentColor: '#a78bfa',
         colors: createColors('#4a0404', '#8b5cf6', '#a78bfa'), // Deep Red/Purple
         bgImage: '/backgrounds/butterfly_mansion.jpg',
         greeting: 'Ara ara, welcome home, my Queen.',
@@ -85,6 +94,9 @@ const distinctPersonalities: Record<CharacterId, PersonalityObject> = {
         id: 'anya',
         name: 'Anya Forger',
         font: 'font-rounded',
+        fontFamily: 'Fredoka',
+        bgGradient: 'linear-gradient(to bottom right, #fce7f3, #fbcfe8, #fff7ed)', // Pink/Pastel
+        accentColor: '#f472b6',
         colors: createColors('#f472b6', '#fbbf24', '#fcd34d', true), // Pink/Gold
         bgImage: '/backgrounds/anya_room.jpg',
         greeting: 'Waku Waku! You are back!',
@@ -104,6 +116,9 @@ const distinctPersonalities: Record<CharacterId, PersonalityObject> = {
         id: 'rys',
         name: 'Rys & Fenrys',
         font: 'font-sans',
+        fontFamily: 'Cinzel',
+        bgGradient: 'linear-gradient(to bottom right, #1e3a8a, #172554, #000000)', // Deep Blue
+        accentColor: '#60a5fa',
         colors: createColors('#1e3a8a', '#93c5fd', '#60a5fa'), // White/Blue
         bgImage: '/backgrounds/forest_house.jpg',
         greeting: 'My darling! I have been waiting for you!',
@@ -123,6 +138,9 @@ const distinctPersonalities: Record<CharacterId, PersonalityObject> = {
         id: 'luffy',
         name: 'Monkey D. Luffy',
         font: 'font-bold',
+        fontFamily: 'Outfit',
+        bgGradient: 'linear-gradient(to bottom right, #ef4444, #f59e0b, #3b82f6)', // Red/Gold/Blue
+        accentColor: '#facc15',
         colors: createColors('#dc2626', '#facc15', '#2563eb'), // Red, Gold, Blue
         bgImage: '/backgrounds/thousand_sunny.jpg',
         greeting: "Shishishi! Welcome back! I bet you're hungry!",
@@ -142,6 +160,9 @@ const distinctPersonalities: Record<CharacterId, PersonalityObject> = {
         id: 'rimuru',
         name: 'Rimuru Tempest',
         font: 'font-sans',
+        fontFamily: 'Outfit',
+        bgGradient: 'linear-gradient(to bottom right, #0ea5e9, #38bdf8, #f59e0b)', // Slime Blue
+        accentColor: '#38bdf8',
         colors: createColors('#0ea5e9', '#e2e8f0', '#f59e0b'), // Slime Blue, Silver, Gold
         bgImage: '/backgrounds/tempest_city.jpg',
         greeting: 'I am not a bad slime! Relax, you are safe here.',
@@ -161,6 +182,9 @@ const distinctPersonalities: Record<CharacterId, PersonalityObject> = {
         id: 'gojo',
         name: 'Satoru Gojo',
         font: 'font-mono',
+        fontFamily: 'Cinzel',
+        bgGradient: 'linear-gradient(to bottom right, #000000, #1e1b4b, #ffffff)', // Infinite Void
+        accentColor: '#06b6d4',
         colors: createColors('#0f172a', '#06b6d4', '#ffffff'), // Deep Void, Infinity Cyan, White
         bgImage: '/backgrounds/infinite_void.jpg',
         greeting: "Don't worry, I'm the strongest. Welcome home.",
@@ -180,6 +204,9 @@ const distinctPersonalities: Record<CharacterId, PersonalityObject> = {
         id: 'zoro',
         name: 'Roronoa Zoro',
         font: 'font-mono',
+        fontFamily: 'Outfit', // Sharp/Serious
+        bgGradient: 'linear-gradient(to bottom right, #052e16, #14532d, #000000)', // Dark Green
+        accentColor: '#4ade80',
         colors: createColors('#183828', '#99D98C', '#000000'), // Dark Green, Light Green, Black
         bgImage: '/assets/zoro-bg.jpg',
         characterImage: '/characters/zoro.png',
@@ -198,6 +225,9 @@ const distinctPersonalities: Record<CharacterId, PersonalityObject> = {
         id: 'kuromi',
         name: 'Kuromi',
         font: 'font-rounded',
+        fontFamily: 'Fredoka',
+        bgGradient: 'linear-gradient(to bottom right, #2e1065, #ec4899, #000000)', // Punk/Pink
+        accentColor: '#f472b6',
         colors: createColors('#2B1B2D', '#F4ACD3', '#D8B4E2'), // Dark Purple, Hot Pink, Light Purple
         bgImage: '/assets/kuromi-bg.jpg',
         characterImage: '/characters/kuromi.png',
@@ -216,6 +246,9 @@ const distinctPersonalities: Record<CharacterId, PersonalityObject> = {
         id: 'shinchan',
         name: 'Shin-chan',
         font: 'font-sans',
+        fontFamily: 'Fredoka',
+        bgGradient: 'linear-gradient(to bottom right, #ef4444, #f59e0b, #10b981)', // Red/Yellow/Green
+        accentColor: '#facc15',
         colors: createColors('#E63946', '#F4A261', '#2A9D8F'), // Red, Yellow/Orange, Green
         bgImage: '/assets/shinchan-bg.jpg',
         characterImage: '/characters/shinchan.png',

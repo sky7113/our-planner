@@ -1,13 +1,26 @@
 import type { Metadata } from "next";
-import { Outfit } from "next/font/google";
+import { Outfit, Cinzel, Fredoka } from "next/font/google";
 import Navbar from "@/components/Navbar";
 import Companion from "@/components/Companion";
 import { ThemeProvider } from "@/context/ThemeContext";
+import ThemeController from "@/components/ThemeController";
 import "./globals.css";
 
 const outfit = Outfit({
   subsets: ["latin"],
   variable: "--font-outfit",
+  display: 'swap',
+});
+
+const cinzel = Cinzel({
+  subsets: ["latin"],
+  variable: "--font-cinzel",
+  display: 'swap',
+});
+
+const fredoka = Fredoka({
+  subsets: ["latin"],
+  variable: "--font-fredoka",
   display: 'swap',
 });
 
@@ -32,9 +45,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${outfit.variable} ${outfit.className} antialiased`}
+        className={`${outfit.variable} ${cinzel.variable} ${fredoka.variable} antialiased`}
       >
         <ThemeProvider>
+          <ThemeController />
           {children}
           <Companion />
           <Navbar />
