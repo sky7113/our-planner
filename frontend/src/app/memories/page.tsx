@@ -9,21 +9,33 @@ import axios from 'axios';
 
 const API_BASE_URL = 'http://localhost:5000';
 
-const categories = ['All Memories', 'Anniversary', 'Trips', 'Dates', 'Summer \'23'];
-
 export default function MemoriesPage() {
     const [activeCategory, setActiveCategory] = useState('All Memories');
+    const [albums, setAlbums] = useState<string[]>(['All Memories']);
     const [localMemories, setLocalMemories] = useState<any[]>([]);
+    const [selectedAlbumForUpload, setSelectedAlbumForUpload] = useState<string>('Uncategorized');
 
     // Upload State
     const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
     const [isUploading, setIsUploading] = useState(false);
     const [uploadProgress, setUploadProgress] = useState(0);
 
-    // Fetch Memories on Mount
+    // Fetch Memories & Albums on Mount
     useEffect(() => {
         fetchMemories();
+        fetchAlbums();
     }, []);
+
+    const fetchAlbums = async () => {
+        try {
+            const res = await axios.get(`${API_BASE_URL}/api/memories/albums`);
+            // Ensure 'All Memories' is first and unique
+            const fetchedAlbums = res.data.filter((a: string) => a !== 'All Memories');
+            setAlbums(['All Memories', ...fetchedAlbums]);
+        } catch (error) {
+            console.error("Error fetching albums:", error);
+        }
+    };
 
     const fetchMemories = async () => {
         try {
@@ -34,11 +46,18 @@ export default function MemoriesPage() {
         }
     };
 
-
-
     const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files.length > 0) {
             setSelectedFiles(Array.from(e.target.files));
+        }
+    };
+
+    const handleCreateAlbum = () => {
+        const name = prompt("Enter new album name:");
+        if (name && !albums.includes(name)) {
+            setAlbums(prev => [...prev, name]);
+            setSelectedAlbumForUpload(name); // Auto-select for next upload
+            setActiveCategory(name); // Switch view to new album
         }
     };
 
@@ -48,30 +67,31 @@ export default function MemoriesPage() {
         setUploadProgress(0);
 
         try {
-            await Promise.all(selectedFiles.map(async (file, index) => {
-                // Simulate network delay for each file
-                await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 1000));
+            for (let i = 0; i < selectedFiles.length; i++) {
+                const file = selectedFiles[i];
+                const formData = new FormData();
+                formData.append('file', file);
+                formData.append('title', 'New Memory');
+                formData.append('album', selectedAlbumForUpload);
+
+                await axios.post(`${API_BASE_URL}/api/memories`, formData, {
+                    headers: { 'Content-Type': 'multipart/form-data' }
+                });
 
                 // Update progress
                 setUploadProgress((prev) => prev + 1);
+            }
 
-                // Mock Success: Add to local state
-                const newMemory = {
-                    id: Date.now() + index,
-                    title: 'New Memory',
-                    subtitle: new Date().toLocaleDateString(),
-                    src: URL.createObjectURL(file), // Temporary preview URL
-                    aspectRatio: 'aspect-[3/4]',
-                };
-
-                setLocalMemories(prev => [newMemory, ...prev]);
-            }));
+            // Refresh grid & albums
+            await fetchMemories();
+            await fetchAlbums();
 
             // Reset after success
             setSelectedFiles([]);
             setUploadProgress(0);
         } catch (error) {
             console.error("Upload failed", error);
+            alert("Failed to upload some images.");
         } finally {
             setIsUploading(false);
         }
@@ -114,56 +134,67 @@ export default function MemoriesPage() {
             </header>
 
             <main className="max-w-4xl mx-auto px-4 pt-6 relative z-10">
-                {/* Categories */}
-                <div className="flex overflow-x-auto gap-3 pb-8 no-scrollbar mask-gradient-right">
-                    {categories.map((cat) => (
-                        <button
-                            key={cat}
-                            onClick={() => setActiveCategory(cat)}
-                            className={`whitespace-nowrap px-6 py-2.5 rounded-full text-sm font-semibold transition-all duration-300 ${activeCategory === cat
-                                ? 'bg-pink-500 text-white shadow-lg shadow-pink-500/25 scale-105'
-                                : 'bg-white/5 text-slate-400 hover:bg-white/10 hover:text-white border border-white/5'
-                                }`}
-                        >
-                            {cat}
-                        </button>
-                    ))}
+                {/* Categories & Create Album */}
+                <div className="flex items-center gap-3 mb-8">
+                    <div className="flex overflow-x-auto gap-3 pb-2 no-scrollbar mask-gradient-right flex-1">
+                        {albums.map((album) => (
+                            <button
+                                key={album}
+                                onClick={() => setActiveCategory(album)}
+                                className={`whitespace-nowrap px-6 py-2.5 rounded-full text-sm font-semibold transition-all duration-300 ${activeCategory === album
+                                    ? 'bg-pink-500 text-white shadow-lg shadow-pink-500/25 scale-105'
+                                    : 'bg-white/5 text-slate-400 hover:bg-white/10 hover:text-white border border-white/5'
+                                    }`}
+                            >
+                                {album}
+                            </button>
+                        ))}
+                    </div>
+                    <button
+                        onClick={handleCreateAlbum}
+                        className="flex-shrink-0 p-2.5 rounded-full bg-white/10 hover:bg-pink-500/20 text-slate-400 hover:text-pink-400 transition-all border border-white/5"
+                        title="Create New Album"
+                    >
+                        <Plus size={20} />
+                    </button>
                 </div>
 
                 {/* Masonry Grid */}
                 <div className="columns-2 md:columns-3 gap-6 space-y-6">
-                    {localMemories.map((memory) => (
-                        <div
-                            key={memory.id}
-                            className="relative group break-inside-avoid rounded-2xl overflow-hidden bg-white/5 border border-white/10 shadow-xl cursor-pointer hover:-translate-y-2 hover:shadow-2xl transition-all duration-500 ease-out"
-                        >
-                            <div className={`relative w-full ${memory.aspectRatio || 'aspect-[3/4]'}`}>
-                                <Image
-                                    src={memory.src.startsWith('http') ? memory.src : `${API_BASE_URL}${memory.src}`}
-                                    alt={memory.title}
-                                    fill
-                                    className="object-cover transition-transform duration-700 group-hover:scale-110"
-                                    sizes="(max-width: 768px) 50vw, 33vw"
-                                />
-                            </div>
+                    {localMemories
+                        .filter(m => activeCategory === 'All Memories' || m.album === activeCategory)
+                        .map((memory) => (
+                            <div
+                                key={memory.id}
+                                className="relative group break-inside-avoid rounded-2xl overflow-hidden bg-white/5 border border-white/10 shadow-xl cursor-pointer hover:-translate-y-2 hover:shadow-2xl transition-all duration-500 ease-out"
+                            >
+                                <div className={`relative w-full ${memory.aspectRatio || 'aspect-[3/4]'}`}>
+                                    <Image
+                                        src={memory.src.startsWith('http') ? memory.src : `${API_BASE_URL}${memory.src}`}
+                                        alt={memory.title}
+                                        fill
+                                        className="object-cover transition-transform duration-700 group-hover:scale-110"
+                                        sizes="(max-width: 768px) 50vw, 33vw"
+                                    />
+                                </div>
 
-                            {/* Overlay Gradient */}
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-60 group-hover:opacity-80 transition-opacity duration-300" />
+                                {/* Overlay Gradient */}
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-60 group-hover:opacity-80 transition-opacity duration-300" />
 
-                            {/* Heart Icon Overlay */}
-                            <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 scale-75 group-hover:scale-100">
-                                <div className="bg-white/20 backdrop-blur-md p-4 rounded-full border border-white/30 text-pink-400 drop-shadow-[0_0_15px_rgba(244,114,182,0.6)]">
-                                    <Heart size={32} fill="currentColor" />
+                                {/* Heart Icon Overlay */}
+                                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 scale-75 group-hover:scale-100">
+                                    <div className="bg-white/20 backdrop-blur-md p-4 rounded-full border border-white/30 text-pink-400 drop-shadow-[0_0_15px_rgba(244,114,182,0.6)]">
+                                        <Heart size={32} fill="currentColor" />
+                                    </div>
+                                </div>
+
+                                {/* Text Content */}
+                                <div className="absolute bottom-0 left-0 right-0 p-4 transform translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
+                                    <p className="text-white font-bold text-lg leading-tight drop-shadow-md">{memory.title}</p>
+                                    <p className="text-white/70 text-xs font-medium uppercase tracking-wider mt-1">{memory.subtitle}</p>
                                 </div>
                             </div>
-
-                            {/* Text Content */}
-                            <div className="absolute bottom-0 left-0 right-0 p-4 transform translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
-                                <p className="text-white font-bold text-lg leading-tight drop-shadow-md">{memory.title}</p>
-                                <p className="text-white/70 text-xs font-medium uppercase tracking-wider mt-1">{memory.subtitle}</p>
-                            </div>
-                        </div>
-                    ))}
+                        ))}
                 </div>
             </main>
 
@@ -179,11 +210,28 @@ export default function MemoriesPage() {
                                 className="bg-slate-900 border border-white/10 rounded-3xl p-6 w-full max-w-lg shadow-2xl"
                             >
                                 <h2 className="text-xl font-bold text-white mb-4">
-                                    {isUploading ? 'Uploading Memories...' : `Selected ${selectedFiles.length} Photos`}
+                                    {isUploading ? 'Uploading...' : `Upload to Album`}
                                 </h2>
 
+                                {/* Album Selector */}
+                                {!isUploading && (
+                                    <div className="mb-4">
+                                        <label className="text-slate-400 text-xs uppercase font-bold tracking-wider mb-2 block">Select Album</label>
+                                        <select
+                                            value={selectedAlbumForUpload}
+                                            onChange={(e) => setSelectedAlbumForUpload(e.target.value)}
+                                            className="w-full bg-slate-800 border border-white/10 rounded-xl p-3 text-white outline-none focus:border-pink-500 transition-colors"
+                                        >
+                                            <option value="Uncategorized">Uncategorized</option>
+                                            {albums.filter(a => a !== 'All Memories').map(a => (
+                                                <option key={a} value={a}>{a}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                )}
+
                                 {/* Preview Grid */}
-                                <div className="grid grid-cols-3 gap-2 mb-6 max-h-60 overflow-y-auto custom-scrollbar">
+                                <div className="grid grid-cols-3 gap-2 mb-6 max-h-48 overflow-y-auto custom-scrollbar">
                                     {selectedFiles.map((file, i) => (
                                         <div key={i} className="relative aspect-square rounded-lg overflow-hidden border border-white/10">
                                             <img

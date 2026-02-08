@@ -111,6 +111,7 @@ class Memory(Base):
     image_url = Column(String)
     date = Column(DateTime, default=datetime.utcnow)
     aspect_ratio = Column(String, default="aspect-[3/4]")
+    album = Column(String, default="All Memories")
 
 Base.metadata.create_all(bind=engine)
 
@@ -274,10 +275,26 @@ def get_memories():
     finally:
         session.close()
 
+@app.get("/api/memories/albums")
+def get_memory_albums():
+    """
+    Fetch all unique album names.
+    """
+    session = SessionLocal()
+    try:
+        # Get distinct album names
+        albums = session.query(Memory.album).distinct().all()
+        # Flatten list of tuples [('Album A',), ('Album B',)] -> ['Album A', 'Album B']
+        album_names = [a[0] for a in albums if a[0]]
+        return album_names
+    finally:
+        session.close()
+
 @app.post("/api/memories")
 async def create_memory(
     title: str = "New Memory",
     subtitle: str = None,
+    album: str = "Uncategorized",
     file: UploadFile = File(...)
 ):
     """
@@ -321,7 +338,8 @@ async def create_memory(
             title=title,
             subtitle=subtitle,
             image_url=image_url,
-            aspect_ratio=aspect
+            aspect_ratio=aspect,
+            album=album
         )
         session.add(new_memory)
         session.commit()
@@ -333,7 +351,8 @@ async def create_memory(
             "subtitle": new_memory.subtitle,
             "src": new_memory.image_url,
             "aspectRatio": new_memory.aspect_ratio,
-            "date": new_memory.date.isoformat()
+            "date": new_memory.date.isoformat(),
+            "album": new_memory.album
         }
 
     except Exception as e:
