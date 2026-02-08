@@ -12,6 +12,8 @@ import Sidekick from '../components/Sidekick';
 import { useTheme } from '../context/ThemeContext';
 import { motion, AnimatePresence } from 'framer-motion';
 
+const MotionLink = motion.create(Link);
+
 export default function Home() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [focusedCard, setFocusedCard] = useState<string | null>(null);
@@ -19,7 +21,12 @@ export default function Home() {
   const { theme } = useTheme();
 
   return (
-    <main className={`min-h-screen flex flex-col items-center justify-center ${theme.colors.backgroundClass} ${theme.colors.textClass} px-4 pb-40 md:p-6 md:pb-48 transition-colors duration-700`}>
+    <main
+      className={`min-h-screen flex flex-col items-center justify-center aurora-bg ${theme.colors.textClass} px-4 pb-40 md:p-6 md:pb-48 transition-colors duration-700`}
+      style={{
+        '--theme-color': theme.colors.accent,
+      } as React.CSSProperties}
+    >
 
       <GrandEntrance onEnterComplete={() => setHasEntered(true)} />
 
@@ -93,16 +100,28 @@ export default function Home() {
           { name: 'Moon Cycle', icon: Moon, href: '/period-tracker', desc: 'Track your cycle & health' },
           { name: 'The Bridge', icon: Heart, href: '/bridge', desc: 'When words fail us, meet me here.' },
         ].map((item) => (
-          <Link
+          <MotionLink
             key={item.name}
             href={item.href}
             onMouseEnter={() => setFocusedCard(item.name)}
             onMouseLeave={() => setFocusedCard(null)}
-            className={`group relative overflow-hidden bg-white/60 dark:bg-black/40 backdrop-blur-md border border-gray-200 dark:border-white/10 p-6 rounded-2xl hover:bg-white/70 dark:hover:bg-white/10 transition-all duration-300 hover:scale-[1.02] active:scale-95 min-h-[180px] w-full`}
+            whileHover={{ scale: 1.02, y: -5 }}
+            whileTap={{ scale: 0.98 }}
+            className={`
+              group relative overflow-hidden
+              p-6 rounded-2xl
+              transition-all duration-300
+              min-h-[180px] w-full
+              bg-white/60 dark:bg-white/5
+              backdrop-blur-lg dark:backdrop-blur-xl
+              border border-white/40 dark:border-white/10
+              shadow-xl shadow-indigo-100/50 dark:shadow-2xl dark:shadow-black/50
+              hover:border-[var(--glow-color)] hover:shadow-[0_0_20px_var(--glow-alpha)]
+            `}
             style={{
-              boxShadow: `0 0 20px ${theme?.colors?.accent}20`,
-              borderColor: theme?.colors?.secondary
-            }}
+              '--glow-color': theme.colors.accent,
+              '--glow-alpha': `${theme.colors.accent}40`, // 25% opacity
+            } as React.CSSProperties}
           >
             <div
               className={`absolute top-0 right-0 p-3 opacity-10 group-hover:opacity-20 transition-opacity text-gray-800 dark:text-white/80`}
@@ -127,7 +146,7 @@ export default function Home() {
                 {item.desc}
               </p>
             </div>
-          </Link>
+          </MotionLink>
         ))}
       </div>
 
