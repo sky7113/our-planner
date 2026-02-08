@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Heart, Home, Image as ImageIcon, Book, Settings, Plus } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 // Placeholder data - in a real app this would come from a CMS or DB
 const memories = [
@@ -55,12 +56,69 @@ const categories = ['All Memories', 'Anniversary', 'Trips', 'Dates', 'Summer \'2
 
 export default function GalleryPage() {
     const [activeCategory, setActiveCategory] = useState('All Memories');
+    const [localMemories, setLocalMemories] = useState(memories);
+
+    // Upload State
+    const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+    const [isUploading, setIsUploading] = useState(false);
+    const [uploadProgress, setUploadProgress] = useState(0);
+
+    const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files && e.target.files.length > 0) {
+            setSelectedFiles(Array.from(e.target.files));
+        }
+    };
+
+    const handleUpload = async () => {
+        if (selectedFiles.length === 0) return;
+        setIsUploading(true);
+        setUploadProgress(0);
+
+        try {
+            await Promise.all(selectedFiles.map(async (file, index) => {
+                // Simulate network delay for each file
+                await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 1000));
+
+                // Update progress
+                setUploadProgress((prev) => prev + 1);
+
+                // Mock Success: Add to local state
+                const newMemory = {
+                    id: Date.now() + index,
+                    title: 'New Memory',
+                    subtitle: new Date().toLocaleDateString(),
+                    src: URL.createObjectURL(file), // Temporary preview URL
+                    aspectRatio: 'aspect-[3/4]',
+                };
+
+                setLocalMemories(prev => [newMemory, ...prev]);
+            }));
+
+            // Reset after success
+            setSelectedFiles([]);
+            setUploadProgress(0);
+        } catch (error) {
+            console.error("Upload failed", error);
+        } finally {
+            setIsUploading(false);
+        }
+    };
 
     return (
         <div className="min-h-screen pb-24 relative overflow-hidden bg-slate-950 text-slate-100 font-sans selection:bg-pink-500/30">
 
             {/* Background provided by globals.css .aurora-bg, but let's add a local one just in case or overlay */}
             <div className="fixed inset-0 pointer-events-none opacity-20 bg-[radial-gradient(circle_at_top_right,_var(--theme-color),_transparent_70%)]" />
+
+            {/* Hidden Input for Multi-Select */}
+            <input
+                type="file"
+                multiple
+                accept="image/*"
+                className="hidden"
+                id="gallery-upload"
+                onChange={handleFileSelect}
+            />
 
             {/* Header */}
             <header className="sticky top-0 z-50 pt-12 pb-4 px-6 border-b border-white/5 bg-slate-950/80 backdrop-blur-xl">
@@ -73,9 +131,12 @@ export default function GalleryPage() {
                             Our Cherished Moments
                         </h1>
                     </div>
-                    <button className="bg-pink-500 hover:bg-pink-600 text-white p-3 rounded-full transition-all shadow-lg shadow-pink-500/30 hover:scale-105 active:scale-95 group">
+                    <label
+                        htmlFor="gallery-upload"
+                        className="bg-pink-500 hover:bg-pink-600 text-white p-3 rounded-full transition-all shadow-lg shadow-pink-500/30 hover:scale-105 active:scale-95 group cursor-pointer"
+                    >
                         <Plus size={24} className="group-hover:rotate-90 transition-transform" />
-                    </button>
+                    </label>
                 </div>
             </header>
 
@@ -87,8 +148,8 @@ export default function GalleryPage() {
                             key={cat}
                             onClick={() => setActiveCategory(cat)}
                             className={`whitespace-nowrap px-6 py-2.5 rounded-full text-sm font-semibold transition-all duration-300 ${activeCategory === cat
-                                    ? 'bg-pink-500 text-white shadow-lg shadow-pink-500/25 scale-105'
-                                    : 'bg-white/5 text-slate-400 hover:bg-white/10 hover:text-white border border-white/5'
+                                ? 'bg-pink-500 text-white shadow-lg shadow-pink-500/25 scale-105'
+                                : 'bg-white/5 text-slate-400 hover:bg-white/10 hover:text-white border border-white/5'
                                 }`}
                         >
                             {cat}
@@ -98,7 +159,7 @@ export default function GalleryPage() {
 
                 {/* Masonry Grid */}
                 <div className="columns-2 md:columns-3 gap-6 space-y-6">
-                    {memories.map((memory) => (
+                    {localMemories.map((memory) => (
                         <div
                             key={memory.id}
                             className="relative group break-inside-avoid rounded-2xl overflow-hidden bg-white/5 border border-white/10 shadow-xl cursor-pointer hover:-translate-y-2 hover:shadow-2xl transition-all duration-500 ease-out"
@@ -132,6 +193,76 @@ export default function GalleryPage() {
                     ))}
                 </div>
             </main>
+
+            {/* Upload Modal Overlay */}
+            <AnimatePresence>
+                {
+                    selectedFiles.length > 0 && (
+                        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+                            <motion.div
+                                initial={{ opacity: 0, scale: 0.9 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                exit={{ opacity: 0, scale: 0.9 }}
+                                className="bg-slate-900 border border-white/10 rounded-3xl p-6 w-full max-w-lg shadow-2xl"
+                            >
+                                <h2 className="text-xl font-bold text-white mb-4">
+                                    {isUploading ? 'Uploading Memories...' : `Selected ${selectedFiles.length} Photos`}
+                                </h2>
+
+                                {/* Preview Grid */}
+                                <div className="grid grid-cols-3 gap-2 mb-6 max-h-60 overflow-y-auto custom-scrollbar">
+                                    {selectedFiles.map((file, i) => (
+                                        <div key={i} className="relative aspect-square rounded-lg overflow-hidden border border-white/10">
+                                            <img
+                                                src={URL.createObjectURL(file)}
+                                                alt="preview"
+                                                className="w-full h-full object-cover"
+                                            />
+                                            {isUploading && i < uploadProgress && (
+                                                <div className="absolute inset-0 bg-emerald-500/50 flex items-center justify-center">
+                                                    <div className="bg-white/90 rounded-full p-1">
+                                                        <svg className="w-4 h-4 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                                                        </svg>
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+
+                                {/* Progress Bar (if uploading) */}
+                                {isUploading && (
+                                    <div className="w-full h-2 bg-slate-700 rounded-full overflow-hidden mb-4">
+                                        <div
+                                            className="h-full bg-pink-500 transition-all duration-300 ease-out"
+                                            style={{ width: `${(uploadProgress / selectedFiles.length) * 100}%` }}
+                                        />
+                                    </div>
+                                )}
+
+                                {/* Actions */}
+                                <div className="flex gap-3">
+                                    <button
+                                        onClick={() => setSelectedFiles([])}
+                                        disabled={isUploading}
+                                        className="flex-1 py-3 bg-white/5 hover:bg-white/10 text-slate-300 rounded-xl font-medium transition-colors disabled:opacity-50"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        onClick={handleUpload}
+                                        disabled={isUploading}
+                                        className="flex-1 py-3 bg-pink-500 hover:bg-pink-600 text-white rounded-xl font-bold shadow-lg shadow-pink-500/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                                    >
+                                        {isUploading ? `Uploading ${uploadProgress}/${selectedFiles.length}...` : 'Upload All'}
+                                    </button>
+                                </div>
+                            </motion.div>
+                        </div>
+                    )
+                }
+            </AnimatePresence>
 
             {/* Navigation (Sticky Bottom) */}
             <nav className="fixed bottom-0 left-0 right-0 bg-slate-950/80 backdrop-blur-xl border-t border-white/10 z-50 pb-safe">
