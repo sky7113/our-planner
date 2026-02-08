@@ -66,20 +66,27 @@ export default function MemoriesPage() {
         setIsUploading(true);
         setUploadProgress(0);
 
+        const BATCH_SIZE = 5;
+
         try {
-            for (let i = 0; i < selectedFiles.length; i++) {
-                const file = selectedFiles[i];
-                const formData = new FormData();
-                formData.append('file', file);
-                formData.append('title', 'New Memory');
-                formData.append('album', selectedAlbumForUpload);
+            for (let i = 0; i < selectedFiles.length; i += BATCH_SIZE) {
+                const batch = selectedFiles.slice(i, i + BATCH_SIZE);
 
-                await axios.post(`${API_BASE_URL}/api/memories`, formData, {
-                    headers: { 'Content-Type': 'multipart/form-data' }
-                });
+                await Promise.all(batch.map(async (file) => {
+                    const formData = new FormData();
+                    formData.append('file', file);
+                    formData.append('title', 'New Memory');
+                    formData.append('album', selectedAlbumForUpload);
 
-                // Update progress
-                setUploadProgress((prev) => prev + 1);
+                    try {
+                        await axios.post(`${API_BASE_URL}/api/memories`, formData, {
+                            headers: { 'Content-Type': 'multipart/form-data' }
+                        });
+                        setUploadProgress((prev) => prev + 1);
+                    } catch (err) {
+                        console.error(`Failed to upload ${file.name}`, err);
+                    }
+                }));
             }
 
             // Refresh grid & albums
@@ -90,8 +97,8 @@ export default function MemoriesPage() {
             setSelectedFiles([]);
             setUploadProgress(0);
         } catch (error) {
-            console.error("Upload failed", error);
-            alert("Failed to upload some images.");
+            console.error("Batch upload failed", error);
+            alert("Some images may have failed to upload. Check console.");
         } finally {
             setIsUploading(false);
         }
