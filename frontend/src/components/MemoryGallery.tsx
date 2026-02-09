@@ -127,19 +127,22 @@ export default function MemoryGallery() {
         }
     };
 
-    const handleDeleteAlbum = async (id: number, e: React.MouseEvent) => {
+    const handleDeleteAlbum = async (name: string, e: React.MouseEvent) => {
         e.stopPropagation();
-        if (!confirm(`Are you sure you want to delete this album and all its photos?`)) return;
+        if (!confirm(`Are you sure you want to delete album "${name}" and all its photos?`)) return;
 
         try {
-            const response = await fetch(`${API_BASE_URL}/api/memory-albums/${id}`, {
+            const response = await fetch(`${API_BASE_URL}/api/albums/${name}`, {
                 method: 'DELETE',
             });
             if (response.ok) {
-                setAlbums(prev => prev.filter(a => a.id !== id));
+                setAlbums(prev => prev.filter(a => a.name !== name));
+            } else {
+                alert("Failed to delete album.");
             }
         } catch (error) {
             console.error("Delete album failed:", error);
+            alert("Error deleting album");
         }
     };
 
@@ -213,7 +216,7 @@ export default function MemoryGallery() {
                             >
                                 {/* Delete Album Button */}
                                 <button
-                                    onClick={(e) => handleDeleteAlbum(album.id, e)}
+                                    onClick={(e) => handleDeleteAlbum(album.name, e)}
                                     className="absolute top-2 right-2 bg-red-500 text-white p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity z-20 hover:bg-red-600 shadow-md"
                                     title="Delete Album"
                                 >

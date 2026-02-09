@@ -263,16 +263,38 @@ async def upload_to_album(name: str, file: UploadFile = File(...)):
 @app.delete("/api/albums/{name}")
 def delete_album(name: str):
     """
-    Deletes an entire album and its contents.
+    Deletes an entire album and its contents from both DB and Filesystem.
     """
-    # Sanitize inputs
-    safe_name = name.replace("..", "").replace("/", "").replace("\\", "")
-    path = os.path.join("images", safe_name)
-    
-    if os.path.exists(path) and os.path.isdir(path):
-        shutil.rmtree(path)
-        return {"status": "success", "info": f"Deleted album {safe_name}"}
-    return {"status": "error", "info": "Album not found"}
+    session = SessionLocal()
+    try:
+        # 1. Delete from Database
+        album = session.query(Album).filter(Album.name == name).first()
+        if album:
+            session.delete(album)
+            session.commit()
+            print(f"✅ Deleted album '{name}' from DB")
+
+        # 2. Delete from Filesystem
+        safe_name = name.replace("..", "").replace("/", "").replace("\\", "")
+        path = os.path.join("images", safe_name)
+        
+        fs_deleted = False
+        if os.path.exists(path) and os.path.isdir(path):
+            shutil.rmtree(path)
+            fs_deleted = True
+            print(f"✅ Deleted album '{name}' from Filesystem")
+            
+        if not album and not fs_deleted:
+            raise HTTPException(status_code=404, detail="Album not found")
+            
+        return {"message": f"Album '{name}' deleted successfully"}
+    except HTTPException as he:
+        raise he
+    except Exception as e:
+        print(f"❌ Error deleting album: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        session.close()
 
 @app.delete("/api/albums/{name}/photos/{filename}")
 def delete_album_photo(name: str, filename: str):
