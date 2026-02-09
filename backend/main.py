@@ -226,7 +226,21 @@ async def upload_to_album(name: str, file: UploadFile = File(...)):
     with open(file_location, "wb+") as file_object:
         file_object.write(file.file.read())
         
-    return {"status": "success", "url": f"/images/{safe_name}/{filename}"}
+    image_url = f"/images/{safe_name}/{filename}"
+
+    # Update album cover if needed
+    try:
+        session = SessionLocal()
+        album_db = session.query(Album).filter(Album.name == name).first()
+        if album_db and not album_db.cover_image:
+            album_db.cover_image = image_url
+            session.commit()
+    except Exception as e:
+        print(f"Failed to update album cover: {e}")
+    finally:
+        session.close()
+
+    return {"status": "success", "url": image_url}
 
 @app.delete("/api/albums/{name}")
 def delete_album(name: str):
@@ -304,6 +318,12 @@ def create_memory_album(request: AlbumRequest):
         session.add(new_album)
         session.commit()
         session.refresh(new_album)
+        
+        # Ensure directory exists for uploads
+        safe_name = request.name.replace("..", "").replace("/", "").replace("\\", "")
+        path = os.path.join("images", safe_name)
+        os.makedirs(path, exist_ok=True)
+        
         return {"status": "success", "id": new_album.id, "name": new_album.name}
     except Exception as e:
         return {"status": "error", "info": str(e)}
@@ -322,6 +342,31 @@ def get_all_memory_albums():
             {"id": a.id, "name": a.name, "cover": a.cover_image}
             for a in albums
         ]
+    finally:
+        session.close()
+
+@app.delete("/api/memory-albums/{id}")
+def delete_memory_album(id: int):
+    """
+    Delete a persistent album.
+    """
+    session = SessionLocal()
+    try:
+        album = session.query(Album).filter(Album.id == id).first()
+        if not album:
+            return {"status": "error", "info": "Album not found"}
+        
+        # Delete physical folder info
+        safe_name = album.name.replace("..", "").replace("/", "").replace("\\", "")
+        path = os.path.join("images", safe_name)
+        if os.path.exists(path) and os.path.isdir(path):
+             shutil.rmtree(path)
+
+        session.delete(album)
+        session.commit()
+        return {"status": "success", "info": f"Deleted album {album.name}"}
+    except Exception as e:
+        return {"status": "error", "info": str(e)}
     finally:
         session.close()
 

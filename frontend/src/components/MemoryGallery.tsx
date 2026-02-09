@@ -4,8 +4,11 @@ import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Camera, Plus, Loader2, ArrowLeft, Folder, Trash2 } from 'lucide-react';
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+
 // Types
 interface Album {
+    id: number;
     name: string;
     cover: string | null;
 }
@@ -39,7 +42,7 @@ export default function MemoryGallery() {
 
     const fetchAlbums = async () => {
         try {
-            const response = await fetch('https://our-backend-api.onrender.com/api/albums');
+            const response = await fetch(`${API_BASE_URL}/api/memory-albums`);
             if (response.ok) {
                 setAlbums(await response.json());
             }
@@ -50,7 +53,7 @@ export default function MemoryGallery() {
 
     const fetchPhotos = async (albumName: string) => {
         try {
-            const response = await fetch(`https://our-backend-api.onrender.com/api/albums/${albumName}`);
+            const response = await fetch(`${API_BASE_URL}/api/albums/${albumName}`);
             if (response.ok) {
                 setPhotos(await response.json());
             }
@@ -73,8 +76,10 @@ export default function MemoryGallery() {
         if (!name) return;
 
         try {
-            const response = await fetch(`https://our-backend-api.onrender.com/api/albums/${name}`, {
-                method: 'POST'
+            const response = await fetch(`${API_BASE_URL}/api/memory-albums`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name })
             });
             if (response.ok) {
                 fetchAlbums();
@@ -106,7 +111,7 @@ export default function MemoryGallery() {
         formData.append('file', file);
 
         try {
-            const response = await fetch(`https://our-backend-api.onrender.com/api/albums/${currentAlbum}/upload`, {
+            const response = await fetch(`${API_BASE_URL}/api/albums/${currentAlbum}/upload`, {
                 method: 'POST',
                 body: formData,
             });
@@ -122,16 +127,16 @@ export default function MemoryGallery() {
         }
     };
 
-    const handleDeleteAlbum = async (name: string, e: React.MouseEvent) => {
+    const handleDeleteAlbum = async (id: number, e: React.MouseEvent) => {
         e.stopPropagation();
-        if (!confirm(`Are you sure you want to delete the album "${name}" and all its photos?`)) return;
+        if (!confirm(`Are you sure you want to delete this album and all its photos?`)) return;
 
         try {
-            const response = await fetch(`https://our-backend-api.onrender.com/api/albums/${name}`, {
+            const response = await fetch(`${API_BASE_URL}/api/memory-albums/${id}`, {
                 method: 'DELETE',
             });
             if (response.ok) {
-                setAlbums(prev => prev.filter(a => a.name !== name));
+                setAlbums(prev => prev.filter(a => a.id !== id));
             }
         } catch (error) {
             console.error("Delete album failed:", error);
@@ -208,7 +213,7 @@ export default function MemoryGallery() {
                             >
                                 {/* Delete Album Button */}
                                 <button
-                                    onClick={(e) => handleDeleteAlbum(album.name, e)}
+                                    onClick={(e) => handleDeleteAlbum(album.id, e)}
                                     className="absolute top-2 right-2 bg-red-500 text-white p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity z-20 hover:bg-red-600 shadow-md"
                                     title="Delete Album"
                                 >
@@ -217,7 +222,7 @@ export default function MemoryGallery() {
                                 {/* Cover Image */}
                                 <div className="aspect-[4/3] w-full bg-slate-100 relative overflow-hidden flex items-center justify-center">
                                     {album.cover ? (
-                                        <img src={`https://our-backend-api.onrender.com${album.cover}`} alt={album.name} className="w-full h-full object-cover" />
+                                        <img src={`${API_BASE_URL}${album.cover}`} alt={album.name} className="w-full h-full object-cover" />
                                     ) : (
                                         <Folder size={48} className="text-slate-300" />
                                     )}
@@ -283,7 +288,7 @@ export default function MemoryGallery() {
                                     <Trash2 size={16} />
                                 </button>
                                 <div className="aspect-square w-full bg-slate-100 relative overflow-hidden">
-                                    <img src={`https://our-backend-api.onrender.com${url}`} alt="Memory" className="w-full h-full object-cover" loading="lazy" />
+                                    <img src={`${API_BASE_URL}${url}`} alt="Memory" className="w-full h-full object-cover" loading="lazy" />
                                 </div>
                             </motion.div>
                         ))}
