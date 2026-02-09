@@ -28,16 +28,12 @@ export default function MemoriesPage() {
 
     const fetchAlbums = async () => {
         try {
-            // Fetch persistent albums from new API
-            const res = await axios.get(`${API_BASE_URL}/api/memory-albums`);
+            // Fetch persistent albums from nuclear API
+            const res = await axios.get(`${API_BASE_URL}/api/albums`);
             const persistentAlbums = res.data.map((a: any) => a.name);
 
-            // Fetch legacy album names (derived from memories)
-            const legacyRes = await axios.get(`${API_BASE_URL}/api/memories/albums`);
-            const legacyAlbums = legacyRes.data;
-
-            // Merge and deduplicate
-            const uniqueAlbums = Array.from(new Set(['All Memories', ...persistentAlbums, ...legacyAlbums]));
+            // Add 'All Memories' and deduplicate
+            const uniqueAlbums = Array.from(new Set(['All Memories', ...persistentAlbums]));
             setAlbums(uniqueAlbums);
         } catch (error) {
             console.error("Error fetching albums:", error);
@@ -73,7 +69,7 @@ export default function MemoriesPage() {
             const payload = { name };
             console.log("Payload:", payload);
 
-            await axios.post(`${API_BASE_URL}/api/memory-albums`, payload);
+            await axios.post(`${API_BASE_URL}/api/albums`, payload);
             setAlbums(prev => [...prev, name]);
             setSelectedAlbumForUpload(name); // Auto-select
             setActiveCategory(name); // Switch view

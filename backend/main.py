@@ -157,39 +157,54 @@ def get_status():
 @app.get("/api/albums")
 def get_albums():
     """
-    Returns a list of albums (subdirectories) with a cover image.
+    Fetch all albums from the database (Nuclear Fix).
     """
-    albums = []
-    if os.path.exists("images"):
-        for name in os.listdir("images"):
-            path = os.path.join("images", name)
-            if os.path.isdir(path):
-                cover = None
-                # Check for images in the folder
-                try:
-                    files = os.listdir(path)
-                    images = [f for f in files if f.lower().endswith(('.png', '.jpg', '.jpeg', '.gif', '.webp'))]
-                    if images:
-                        cover = f"/images/{name}/{images[0]}"
-                except Exception as e:
-                    print(f"Error reading album {name}: {e}")
-                
-                albums.append({"name": name, "cover": cover})
-    return albums
+    session = SessionLocal()
+    try:
+        albums = session.query(Album).order_by(Album.created_at.desc()).all()
+        return [
+            {"id": a.id, "name": a.name, "cover": a.cover_image, "createdAt": a.created_at}
+            for a in albums
+        ]
+    finally:
+        session.close()
 
-@app.post("/api/albums/{name}")
-def create_album(name: str):
+@app.post("/api/albums")
+def create_album_nuclear(request: AlbumRequest):
     """
-    Creates a new album (subdirectory).
+    Nuclear Fix: Create Album with explicit logging.
     """
-    # Basic sanitization
-    safe_name = name.replace("..", "").replace("/", "").replace("\\", "")
-    path = os.path.join("images", safe_name)
-    
-    if not os.path.exists(path):
-        os.makedirs(path)
-        return {"status": "success", "info": f"Album '{safe_name}' created"}
-    return {"status": "info", "info": f"Album '{safe_name}' already exists"}
+    print(f"👉 RECEIVED REQUEST: Create Album {request.name}") # LOG THE REQUEST
+
+    if not request.name:
+         print("❌ Error: Name missing")
+         raise HTTPException(status_code=400, detail="Album name is required")
+
+    session = SessionLocal()
+    try:
+        # Check if exists
+        existing = session.query(Album).filter(Album.name == request.name).first()
+        if existing:
+            print(f"⚠️ Album '{request.name}' already exists.")
+            return {"status": "info", "info": "Album already exists", "id": existing.id, "name": existing.name}
+        
+        new_album = Album(name=request.name)
+        session.add(new_album)
+        session.commit()
+        session.refresh(new_album)
+        
+        # Ensure directory exists for uploads (Hybrid approach: DB + FS)
+        safe_name = request.name.replace("..", "").replace("/", "").replace("\\", "")
+        path = os.path.join("images", safe_name)
+        os.makedirs(path, exist_ok=True)
+        
+        print(f"✅ SUCCESS: Album created: {new_album.name}")
+        return {"status": "success", "id": new_album.id, "name": new_album.name}
+    except Exception as e:
+        print(f"❌ SERVER ERROR: {e}")
+        return {"status": "error", "info": str(e)}
+    finally:
+        session.close()
 
 @app.get("/api/albums/{name}")
 def get_album_photos(name: str):
