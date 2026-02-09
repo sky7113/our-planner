@@ -28,10 +28,17 @@ export default function MemoriesPage() {
 
     const fetchAlbums = async () => {
         try {
-            const res = await axios.get(`${API_BASE_URL}/api/memories/albums`);
-            // Ensure 'All Memories' is first and unique
-            const fetchedAlbums = res.data.filter((a: string) => a !== 'All Memories');
-            setAlbums(['All Memories', ...fetchedAlbums]);
+            // Fetch persistent albums from new API
+            const res = await axios.get(`${API_BASE_URL}/api/memory-albums`);
+            const persistentAlbums = res.data.map((a: any) => a.name);
+
+            // Fetch legacy album names (derived from memories)
+            const legacyRes = await axios.get(`${API_BASE_URL}/api/memories/albums`);
+            const legacyAlbums = legacyRes.data;
+
+            // Merge and deduplicate
+            const uniqueAlbums = Array.from(new Set(['All Memories', ...persistentAlbums, ...legacyAlbums]));
+            setAlbums(uniqueAlbums);
         } catch (error) {
             console.error("Error fetching albums:", error);
         }
@@ -52,12 +59,23 @@ export default function MemoriesPage() {
         }
     };
 
-    const handleCreateAlbum = () => {
+    const handleCreateAlbum = async () => {
         const name = prompt("Enter new album name:");
-        if (name && !albums.includes(name)) {
+        if (!name) return;
+
+        if (albums.includes(name)) {
+            alert("Album already exists!");
+            return;
+        }
+
+        try {
+            await axios.post(`${API_BASE_URL}/api/memory-albums`, { name });
             setAlbums(prev => [...prev, name]);
-            setSelectedAlbumForUpload(name); // Auto-select for next upload
-            setActiveCategory(name); // Switch view to new album
+            setSelectedAlbumForUpload(name); // Auto-select
+            setActiveCategory(name); // Switch view
+        } catch (error) {
+            console.error("Error creating album:", error);
+            alert("Failed to create album. Please try again.");
         }
     };
 

@@ -113,6 +113,13 @@ class Memory(Base):
     aspect_ratio = Column(String, default="aspect-[3/4]")
     album = Column(String, default="All Memories")
 
+class Album(Base):
+    __tablename__ = "albums"
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, unique=True, index=True)
+    cover_image = Column(String, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
@@ -275,18 +282,67 @@ def get_memories():
     finally:
         session.close()
 
-@app.get("/api/memories/albums")
-def get_memory_albums():
+
+# --- Album Management ---
+
+class AlbumRequest(BaseModel):
+    name: str
+
+@app.post("/api/memory-albums")
+def create_memory_album(request: AlbumRequest):
     """
-    Fetch all unique album names.
+    Create a new persistent album.
     """
     session = SessionLocal()
     try:
-        # Get distinct album names
-        albums = session.query(Memory.album).distinct().all()
-        # Flatten list of tuples [('Album A',), ('Album B',)] -> ['Album A', 'Album B']
-        album_names = [a[0] for a in albums if a[0]]
-        return album_names
+        # Check if exists
+        existing = session.query(Album).filter(Album.name == request.name).first()
+        if existing:
+            return {"status": "info", "info": "Album already exists", "id": existing.id}
+        
+        new_album = Album(name=request.name)
+        session.add(new_album)
+        session.commit()
+        session.refresh(new_album)
+        return {"status": "success", "id": new_album.id, "name": new_album.name}
+    except Exception as e:
+        return {"status": "error", "info": str(e)}
+    finally:
+        session.close()
+
+@app.get("/api/memory-albums")
+def get_all_memory_albums():
+    """
+    Fetch all persistent albums.
+    """
+    session = SessionLocal()
+    try:
+        albums = session.query(Album).order_by(Album.created_at.desc()).all()
+        return [
+            {"id": a.id, "name": a.name, "cover": a.cover_image}
+            for a in albums
+        ]
+    finally:
+        session.close()
+
+@app.get("/api/memories/albums")
+def get_memory_albums():
+    """
+    DEPRECATED/FALLBACK: Fetch all unique album names from memories + persistent albums.
+    """
+    session = SessionLocal()
+    try:
+        # 1. Get persistent albums
+        persistent_albums = session.query(Album.name).all()
+        p_names = [a[0] for a in persistent_albums]
+
+        # 2. Get distinct album names from memories (for backward compatibility)
+        memory_albums = session.query(Memory.album).distinct().all()
+        m_names = [a[0] for a in memory_albums if a[0]]
+
+        # 3. Merge and deduplicate
+        all_names = list(set(p_names + m_names))
+        return sorted(all_names)
     finally:
         session.close()
 
