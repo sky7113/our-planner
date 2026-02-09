@@ -7,7 +7,7 @@ import { Heart, Home, Image as ImageIcon, Book, Settings, Plus } from 'lucide-re
 import { motion, AnimatePresence } from 'framer-motion';
 import axios from 'axios';
 
-const API_BASE_URL = 'http://localhost:5000';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
 export default function MemoriesPage() {
     const [activeCategory, setActiveCategory] = useState('All Memories');
@@ -69,7 +69,11 @@ export default function MemoriesPage() {
         }
 
         try {
-            await axios.post(`${API_BASE_URL}/api/memory-albums`, { name });
+            console.log("Creating album with name:", name); // LOG THE REQUEST
+            const payload = { name };
+            console.log("Payload:", payload);
+
+            await axios.post(`${API_BASE_URL}/api/memory-albums`, payload);
             setAlbums(prev => [...prev, name]);
             setSelectedAlbumForUpload(name); // Auto-select
             setActiveCategory(name); // Switch view

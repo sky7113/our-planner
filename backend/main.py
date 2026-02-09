@@ -307,6 +307,7 @@ def create_memory_album(request: AlbumRequest):
     """
     Create a new persistent album.
     """
+    print(f"Received create album request: {request}") # LOG THE REQUEST
     session = SessionLocal()
     try:
         # Check if exists
