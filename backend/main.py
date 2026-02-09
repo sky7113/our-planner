@@ -34,6 +34,9 @@ class ChatMessage(Base):
     content = Column(String)
     timestamp = Column(DateTime, default=datetime.utcnow)
 
+class AlbumRequest(BaseModel):
+    name: str
+
 class SkinLog(BaseModel):
     __tablename__ = "skin_logs" 
 
@@ -314,10 +317,7 @@ def get_memories():
 
 # --- Album Management ---
 
-class AlbumRequest(BaseModel):
-    name: str
 
-@app.post("/api/memory-albums")
 def create_memory_album(request: AlbumRequest):
     """
     Create a new persistent album.
