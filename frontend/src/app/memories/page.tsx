@@ -195,7 +195,7 @@ export default function MemoriesPage() {
                             >
                                 <div className={`relative w-full ${memory.aspectRatio || 'aspect-[3/4]'}`}>
                                     <Image
-                                        src={memory.src.startsWith('http') ? memory.src : `${API_BASE_URL}${memory.src}`}
+                                        src={memory.src.startsWith('http') ? memory.src : `${API_BASE_URL}/${memory.src.replace(/^\//, '')}`}
                                         alt={memory.title}
                                         fill
                                         className="object-cover transition-transform duration-700 group-hover:scale-110"
