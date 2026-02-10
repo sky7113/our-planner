@@ -157,6 +157,13 @@ def read_root():
 def get_status():
     return {"system": "nominal", "mood": "gentle", "user": "Raksha"}
 
+@app.get("/api/reset_db")
+def reset_database():
+    # Delete old tables and create new ones with correct columns
+    Base.metadata.drop_all(bind=engine)
+    Base.metadata.create_all(bind=engine)
+    return {"message": "Database reset successfully! You can now upload photos."}
+
 @app.get("/api/albums")
 def get_albums():
     """
