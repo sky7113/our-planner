@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Heart, Home, Image as ImageIcon, Book, Settings, Plus, X } from 'lucide-react';
+import { Heart, Home, Image as ImageIcon, Book, Settings, Plus, X, Trash2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import axios from 'axios';
 
@@ -100,6 +100,30 @@ export default function MemoriesPage() {
         } catch (error) {
             console.error("Error deleting album:", error);
             alert("Failed to delete album. Please try again.");
+        }
+    };
+
+    const handleDeletePhoto = async (memory: any, e: React.MouseEvent) => {
+        e.stopPropagation();
+        if (!confirm('Are you sure you want to delete this photo?')) return;
+
+        try {
+            // Note: memory.album might be missing or 'All Memories' if viewing all.
+            // But the API requires an album name. 
+            // If the memory object has an album field, we use it. 
+            // If not, we might need a fallback, but the API requires the correct album folder.
+            // However, based on the backend implementation, it tries to find by ID if album mismatch.
+            // So we can pass 'All Memories' or the current active category if memory.album is null.
+            const albumName = memory.album || activeCategory;
+
+            await axios.delete(`${API_BASE_URL}/api/albums/${albumName}/photos/${memory.id}`);
+
+            // Remove from local state immediately
+            setLocalMemories(prev => prev.filter(m => m.id !== memory.id));
+
+        } catch (error) {
+            console.error("Error deleting photo:", error);
+            alert("Failed to delete photo.");
         }
     };
 
@@ -200,8 +224,8 @@ export default function MemoriesPage() {
                                     <span
                                         onClick={(e) => handleDeleteAlbum(album, e)}
                                         className={`p-0.5 rounded-full transition-colors ${activeCategory === album
-                                                ? 'hover:bg-white/20'
-                                                : 'hover:bg-white/10 hover:text-red-400'
+                                            ? 'hover:bg-white/20'
+                                            : 'hover:bg-white/10 hover:text-red-400'
                                             }`}
                                         title="Delete Album"
                                     >
@@ -248,6 +272,15 @@ export default function MemoriesPage() {
                                         <Heart size={32} fill="currentColor" />
                                     </div>
                                 </div>
+
+                                {/* Delete Button (Top Right) */}
+                                <button
+                                    onClick={(e) => handleDeletePhoto(memory, e)}
+                                    className="absolute top-2 right-2 bg-red-500/80 hover:bg-red-600 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 z-10 shadow-lg translate-y-[-10px] group-hover:translate-y-0"
+                                    title="Delete Photo"
+                                >
+                                    <Trash2 size={16} />
+                                </button>
 
                                 {/* Text Content */}
                                 <div className="absolute bottom-0 left-0 right-0 p-4 transform translate-y-2 group-hover:translate-y-0 transition-transform duration-300">

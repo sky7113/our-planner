@@ -309,6 +309,54 @@ def delete_album(name: str):
     finally:
         session.close()
 
+@app.delete("/api/albums/{album_name}/photos/{photo_id}")
+def delete_photo(album_name: str, photo_id: int):
+    """
+    Deletes a specific memory/photo from DB and Filesystem.
+    """
+    session = SessionLocal()
+    try:
+        # 1. Find the photo in the database
+        photo = session.query(Memory).filter(Memory.id == photo_id, Memory.album == album_name).first()
+        
+        if not photo:
+            # Try finding by ID only if album mismatch (robustness)
+            photo = session.query(Memory).filter(Memory.id == photo_id).first()
+            if not photo:
+                raise HTTPException(status_code=404, detail="Photo not found")
+            
+        # 2. Delete the actual file from the filesystem
+        # Use image_url to derive path for robustness (handles both /images/memories and /images/album)
+        if photo.image_url:
+            # Remove leading slash and potential URL prefix to get filesystem path
+            # e.g. "/images/memories/123.jpg" -> "images/memories/123.jpg"
+            relative_path = photo.image_url.lstrip("/")
+            # Sanitize to prevent directory traversal (just in case)
+            relative_path = relative_path.replace("..", "")
+            
+            # Additional check: ensure it starts with 'images/' to avoid deleting arbitrary files
+            if relative_path.startswith("images/"):
+                 if os.path.exists(relative_path):
+                    os.remove(relative_path)
+                    print(f"✅ Deleted file: {relative_path}")
+                 else:
+                    print(f"⚠️ File not found at: {relative_path}")
+            else:
+                 print(f"⚠️ Unsafe path skipped: {relative_path}")
+
+        # 3. Delete from Database
+        session.delete(photo)
+        session.commit()
+        return {"message": "Photo deleted successfully"}
+        
+    except HTTPException as he:
+        raise he
+    except Exception as e:
+        print(f"❌ Error deleting photo: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        session.close()
+
 @app.delete("/api/albums/{name}/photos/{filename}")
 def delete_album_photo(name: str, filename: str):
     """
@@ -323,6 +371,7 @@ def delete_album_photo(name: str, filename: str):
         os.remove(path)
         return {"status": "success", "info": f"Deleted photo {safe_filename} from {safe_name}"}
     return {"status": "error", "info": "Photo not found"}
+
 
 
 # --- Memories System ---
