@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Heart, Home, Image as ImageIcon, Book, Settings, Plus } from 'lucide-react';
+import { Heart, Home, Image as ImageIcon, Book, Settings, Plus, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import axios from 'axios';
 
@@ -12,6 +12,7 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 export default function MemoriesPage() {
     const [activeCategory, setActiveCategory] = useState('All Memories');
     const [albums, setAlbums] = useState<string[]>(['All Memories']);
+
     const [localMemories, setLocalMemories] = useState<any[]>([]);
     const [selectedAlbumForUpload, setSelectedAlbumForUpload] = useState<string>('Uncategorized');
 
@@ -76,6 +77,29 @@ export default function MemoriesPage() {
         } catch (error) {
             console.error("Error creating album:", error);
             alert("Failed to create album. Please try again.");
+        }
+    };
+
+    const handleDeleteAlbum = async (albumName: string, e: React.MouseEvent) => {
+        e.stopPropagation();
+        if (albumName === 'All Memories') return;
+
+        if (!confirm(`Are you sure you want to delete album "${albumName}"? This will also delete all photos inside it.`)) {
+            return;
+        }
+
+        try {
+            await axios.delete(`${API_BASE_URL}/api/albums/${albumName}`);
+
+            setAlbums(prev => prev.filter(a => a !== albumName));
+            if (activeCategory === albumName) {
+                setActiveCategory('All Memories');
+            }
+            // Also refresh memories to remove deleted photos from view
+            fetchMemories();
+        } catch (error) {
+            console.error("Error deleting album:", error);
+            alert("Failed to delete album. Please try again.");
         }
     };
 
@@ -166,12 +190,24 @@ export default function MemoriesPage() {
                             <button
                                 key={album}
                                 onClick={() => setActiveCategory(album)}
-                                className={`whitespace-nowrap px-6 py-2.5 rounded-full text-sm font-semibold transition-all duration-300 ${activeCategory === album
+                                className={`whitespace-nowrap px-6 py-2.5 rounded-full text-sm font-semibold transition-all duration-300 flex items-center gap-2 ${activeCategory === album
                                     ? 'bg-pink-500 text-white shadow-lg shadow-pink-500/25 scale-105'
                                     : 'bg-white/5 text-slate-400 hover:bg-white/10 hover:text-white border border-white/5'
                                     }`}
                             >
                                 {album}
+                                {album !== 'All Memories' && (
+                                    <span
+                                        onClick={(e) => handleDeleteAlbum(album, e)}
+                                        className={`p-0.5 rounded-full transition-colors ${activeCategory === album
+                                                ? 'hover:bg-white/20'
+                                                : 'hover:bg-white/10 hover:text-red-400'
+                                            }`}
+                                        title="Delete Album"
+                                    >
+                                        <X size={14} />
+                                    </span>
+                                )}
                             </button>
                         ))}
                     </div>
