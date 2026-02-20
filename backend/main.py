@@ -493,11 +493,13 @@ def get_memory_albums():
     finally:
         session.close()
 
+from fastapi import Form
+
 @app.post("/api/memories")
 async def create_memory(
-    title: str = "New Memory",
-    subtitle: str = None,
-    album: str = "Uncategorized",
+    title: str = Form("New Memory"),
+    subtitle: Optional[str] = Form(None),
+    album: str = Form("Uncategorized"),
     file: UploadFile = File(...)
 ):
     """

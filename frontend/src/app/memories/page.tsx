@@ -252,7 +252,7 @@ export default function MemoriesPage() {
                 {/* Masonry Grid */}
                 <div className="columns-2 md:columns-3 gap-6 space-y-6">
                     {localMemories
-                        .filter(m => activeCategory === 'All Memories' || m.album?.toLowerCase() === activeCategory.toLowerCase())
+                        .filter(m => activeCategory === 'All Memories' || m.album?.toLowerCase().trim() === activeCategory.toLowerCase().trim())
                         .map((memory) => {
                             const imagePath = memory.image_url || memory.src || '';
                             const fullImageUrl = imagePath.startsWith('http')
