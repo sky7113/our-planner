@@ -27,6 +27,7 @@ const nextConfig = {
             {
                 protocol: 'https',
                 hostname: 'our-backend-api.onrender.com',
+                pathname: '/**',
             },
             {
                 protocol: 'http',
