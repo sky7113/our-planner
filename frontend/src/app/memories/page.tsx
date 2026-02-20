@@ -53,6 +53,11 @@ export default function MemoriesPage() {
     const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files.length > 0) {
             setSelectedFiles(Array.from(e.target.files));
+            if (activeCategory !== 'All Memories') {
+                setSelectedAlbumForUpload(activeCategory);
+            } else {
+                setSelectedAlbumForUpload('Uncategorized');
+            }
         }
     };
 
@@ -247,7 +252,7 @@ export default function MemoriesPage() {
                 {/* Masonry Grid */}
                 <div className="columns-2 md:columns-3 gap-6 space-y-6">
                     {localMemories
-                        .filter(m => activeCategory === 'All Memories' || m.album === activeCategory)
+                        .filter(m => activeCategory === 'All Memories' || m.album?.toLowerCase() === activeCategory.toLowerCase())
                         .map((memory) => {
                             const imagePath = memory.image_url || memory.src || '';
                             const fullImageUrl = imagePath.startsWith('http')
