@@ -260,12 +260,10 @@ export default function MemoriesPage() {
                                     className="relative group break-inside-avoid rounded-2xl overflow-hidden bg-white/5 border border-white/10 shadow-xl cursor-pointer hover:-translate-y-2 hover:shadow-2xl transition-all duration-500 ease-out"
                                 >
                                     <div className={`relative w-full ${memory.aspectRatio || 'aspect-[3/4]'}`}>
-                                        <Image
+                                        <img
                                             src={fullImageUrl}
                                             alt={memory.title}
-                                            fill
-                                            className="object-cover transition-transform duration-700 group-hover:scale-110"
-                                            sizes="(max-width: 768px) 50vw, 33vw"
+                                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                                         />
                                     </div>
 

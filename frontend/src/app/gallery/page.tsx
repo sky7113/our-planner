@@ -102,12 +102,10 @@ export default function GalleryPage() {
                                 {/* Cover Image */}
                                 <div className="relative aspect-[4/3] w-full bg-slate-900/50">
                                     {album.cover ? (
-                                        <Image
+                                        <img
                                             src={album.cover.startsWith('http') ? album.cover : `${API_BASE_URL}/${album.cover.replace(/^\//, '')}`}
                                             alt={album.name}
-                                            fill
-                                            className="object-cover transition-transform duration-700 group-hover:scale-110"
-                                            sizes="(max-width: 768px) 50vw, 33vw"
+                                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                                         />
                                     ) : (
                                         <div className="flex items-center justify-center h-full text-slate-600">
