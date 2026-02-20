@@ -142,6 +142,7 @@ app.mount("/images", StaticFiles(directory="images"), name="images")
 # CORS Configuration
 origins = [
     "http://localhost:3000",  # Local Frontend
+    "http://127.0.0.1:3000",  # Local IP Frontend
     "https://our-planner.vercel.app", # Vercel Frontend
     "https://our-planner.vercel.app/", # Vercel Frontend (Trailing Slash)
 ]
@@ -391,7 +392,8 @@ def get_memories():
                 "subtitle": m.subtitle,
                 "src": m.image_url,
                 "aspectRatio": m.aspect_ratio,
-                "date": m.date.isoformat()
+                "date": m.date.isoformat(),
+                "album": m.album
             }
             for m in memories
         ]
@@ -507,7 +509,14 @@ async def create_memory(
              subtitle = date.today().strftime("%d %b %Y")
 
         # 1. Save Image
-        upload_dir = "images/memories"
+        # Use album folder if provided, otherwise default to "memories" or "Uncategorized"
+        safe_album = album.replace("..", "").replace("/", "").replace("\\", "") if album else "Uncategorized"
+        
+        # If album is "All Memories" (shouldn't happen for upload but just in case), treat as fallback
+        if safe_album == "All Memories":
+             safe_album = "memories"
+             
+        upload_dir = os.path.join("images", safe_album)
         os.makedirs(upload_dir, exist_ok=True)
         
         timestamp = int(time.time())
@@ -518,7 +527,7 @@ async def create_memory(
         with open(file_path, "wb+") as buffer:
             shutil.copyfileobj(file.file, buffer)
             
-        image_url = f"/images/memories/{filename}"
+        image_url = f"/images/{safe_album}/{filename}"
 
         # 2. Determine Aspect Ratio (roughly)
         try:

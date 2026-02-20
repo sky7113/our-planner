@@ -248,47 +248,54 @@ export default function MemoriesPage() {
                 <div className="columns-2 md:columns-3 gap-6 space-y-6">
                     {localMemories
                         .filter(m => activeCategory === 'All Memories' || m.album === activeCategory)
-                        .map((memory) => (
-                            <div
-                                key={memory.id}
-                                className="relative group break-inside-avoid rounded-2xl overflow-hidden bg-white/5 border border-white/10 shadow-xl cursor-pointer hover:-translate-y-2 hover:shadow-2xl transition-all duration-500 ease-out"
-                            >
-                                <div className={`relative w-full ${memory.aspectRatio || 'aspect-[3/4]'}`}>
-                                    <Image
-                                        src={memory.src.startsWith('http') ? memory.src : `${API_BASE_URL}/${memory.src.replace(/^\//, '')}`}
-                                        alt={memory.title}
-                                        fill
-                                        className="object-cover transition-transform duration-700 group-hover:scale-110"
-                                        sizes="(max-width: 768px) 50vw, 33vw"
-                                    />
-                                </div>
+                        .map((memory) => {
+                            const imagePath = memory.image_url || memory.src || '';
+                            const fullImageUrl = imagePath.startsWith('http')
+                                ? imagePath
+                                : `${API_BASE_URL}/${imagePath.replace(/^\//, '')}`;
 
-                                {/* Overlay Gradient */}
-                                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-60 group-hover:opacity-80 transition-opacity duration-300" />
+                            return (
+                                <div
+                                    key={memory.id}
+                                    className="relative group break-inside-avoid rounded-2xl overflow-hidden bg-white/5 border border-white/10 shadow-xl cursor-pointer hover:-translate-y-2 hover:shadow-2xl transition-all duration-500 ease-out"
+                                >
+                                    <div className={`relative w-full ${memory.aspectRatio || 'aspect-[3/4]'}`}>
+                                        <Image
+                                            src={fullImageUrl}
+                                            alt={memory.title}
+                                            fill
+                                            className="object-cover transition-transform duration-700 group-hover:scale-110"
+                                            sizes="(max-width: 768px) 50vw, 33vw"
+                                        />
+                                    </div>
 
-                                {/* Heart Icon Overlay */}
-                                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 scale-75 group-hover:scale-100">
-                                    <div className="bg-white/20 backdrop-blur-md p-4 rounded-full border border-white/30 text-pink-400 drop-shadow-[0_0_15px_rgba(244,114,182,0.6)]">
-                                        <Heart size={32} fill="currentColor" />
+                                    {/* Overlay Gradient */}
+                                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-60 group-hover:opacity-80 transition-opacity duration-300" />
+
+                                    {/* Heart Icon Overlay */}
+                                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 scale-75 group-hover:scale-100">
+                                        <div className="bg-white/20 backdrop-blur-md p-4 rounded-full border border-white/30 text-pink-400 drop-shadow-[0_0_15px_rgba(244,114,182,0.6)]">
+                                            <Heart size={32} fill="currentColor" />
+                                        </div>
+                                    </div>
+
+                                    {/* Delete Button (Top Right) */}
+                                    <button
+                                        onClick={(e) => handleDeletePhoto(memory, e)}
+                                        className="absolute top-2 right-2 bg-red-500/80 hover:bg-red-600 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 z-10 shadow-lg translate-y-[-10px] group-hover:translate-y-0"
+                                        title="Delete Photo"
+                                    >
+                                        <Trash2 size={16} />
+                                    </button>
+
+                                    {/* Text Content */}
+                                    <div className="absolute bottom-0 left-0 right-0 p-4 transform translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
+                                        <p className="text-white font-bold text-lg leading-tight drop-shadow-md">{memory.title}</p>
+                                        <p className="text-white/70 text-xs font-medium uppercase tracking-wider mt-1">{memory.subtitle}</p>
                                     </div>
                                 </div>
-
-                                {/* Delete Button (Top Right) */}
-                                <button
-                                    onClick={(e) => handleDeletePhoto(memory, e)}
-                                    className="absolute top-2 right-2 bg-red-500/80 hover:bg-red-600 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 z-10 shadow-lg translate-y-[-10px] group-hover:translate-y-0"
-                                    title="Delete Photo"
-                                >
-                                    <Trash2 size={16} />
-                                </button>
-
-                                {/* Text Content */}
-                                <div className="absolute bottom-0 left-0 right-0 p-4 transform translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
-                                    <p className="text-white font-bold text-lg leading-tight drop-shadow-md">{memory.title}</p>
-                                    <p className="text-white/70 text-xs font-medium uppercase tracking-wider mt-1">{memory.subtitle}</p>
-                                </div>
-                            </div>
-                        ))}
+                            );
+                        })}
                 </div>
             </main>
 

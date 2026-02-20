@@ -22,6 +22,22 @@ const withPWA = withPWAInit({
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+    images: {
+        remotePatterns: [
+            {
+                protocol: 'https',
+                hostname: 'our-backend-api.onrender.com',
+            },
+            {
+                protocol: 'http',
+                hostname: 'localhost',
+            },
+            {
+                protocol: 'http',
+                hostname: '127.0.0.1',
+            }
+        ],
+    },
     // Explicitly keep experimental features off to avoid conflicts
 };
 
