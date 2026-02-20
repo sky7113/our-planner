@@ -551,7 +551,7 @@ async def create_memory(
             subtitle=subtitle,
             image_url=image_url,
             aspect_ratio=aspect,
-            album=album
+            album=safe_album
         )
         session.add(new_memory)
         session.commit()
