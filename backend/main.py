@@ -16,8 +16,17 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 import json
 import PIL.Image
+import cloudinary
+import cloudinary.uploader
 
 load_dotenv()
+
+# --- Cloudinary Setup ---
+cloudinary.config(
+    cloud_name=os.getenv('CLOUDINARY_CLOUD_NAME'),
+    api_key=os.getenv('CLOUDINARY_API_KEY'),
+    api_secret=os.getenv('CLOUDINARY_API_SECRET')
+)
 
 # --- Database Setup ---
 DATABASE_URL = "postgresql://neondb_owner:npg_N8aJxgwV3ZRM@ep-wild-paper-ainnf2vo-pooler.c-4.us-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require"
@@ -245,20 +254,13 @@ async def upload_to_album(name: str, file: UploadFile = File(...)):
     Uploads a file to a specific album.
     """
     safe_name = name.replace("..", "").replace("/", "").replace("\\", "")
-    path = os.path.join("images", safe_name)
-    
-    if not os.path.exists(path):
-         return {"status": "error", "info": "Album not found"}
-    
-    timestamp = int(time.time())
-    safe_filename = file.filename.replace(" ", "_")
-    filename = f"{timestamp}_{safe_filename}"
-    file_location = os.path.join(path, filename)
-    
-    with open(file_location, "wb+") as file_object:
-        file_object.write(file.file.read())
-        
-    image_url = f"/images/{safe_name}/{filename}"
+    if safe_name == "All Memories":
+         safe_album = "memories"
+    else:
+         safe_album = safe_name
+         
+    upload_result = cloudinary.uploader.upload(file.file, folder=safe_album)
+    image_url = upload_result.get('secure_url')
 
     # Update album cover if needed
     try:
@@ -510,30 +512,21 @@ async def create_memory(
         if not subtitle:
              subtitle = date.today().strftime("%d %b %Y")
 
-        # 1. Save Image
-        # Use album folder if provided, otherwise default to "memories" or "Uncategorized"
+        # 1. Save Image via Cloudinary
+        # Handle album fallback
         safe_album = album.replace("..", "").replace("/", "").replace("\\", "") if album else "Uncategorized"
-        
-        # If album is "All Memories" (shouldn't happen for upload but just in case), treat as fallback
         if safe_album == "All Memories":
              safe_album = "memories"
              
-        upload_dir = os.path.join("images", safe_album)
-        os.makedirs(upload_dir, exist_ok=True)
-        
-        timestamp = int(time.time())
-        safe_filename = file.filename.replace(" ", "_").replace("/", "")
-        filename = f"{timestamp}_{safe_filename}"
-        file_path = os.path.join(upload_dir, filename)
-        
-        with open(file_path, "wb+") as buffer:
-            shutil.copyfileobj(file.file, buffer)
-            
-        image_url = f"/images/{safe_album}/{filename}"
+        upload_result = cloudinary.uploader.upload(file.file, folder=safe_album)
+        image_url = upload_result.get('secure_url')
 
         # 2. Determine Aspect Ratio (roughly)
         try:
-             with PIL.Image.open(file_path) as img:
+             import requests
+             from io import BytesIO
+             response = requests.get(image_url)
+             with PIL.Image.open(BytesIO(response.content)) as img:
                   width, height = img.size
                   ratio = width / height
                   if ratio > 1.2:
