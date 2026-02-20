@@ -147,7 +147,13 @@ export default function MemoriesPage() {
                     const formData = new FormData();
                     formData.append('file', file);
                     formData.append('title', 'New Memory');
-                    formData.append('album', selectedAlbumForUpload);
+
+                    // If they didn't touch the dropdown and it somehow stuck to Uncategorized while under a tab, force the tab name
+                    const albumName = selectedAlbumForUpload && selectedAlbumForUpload !== 'Uncategorized'
+                        ? selectedAlbumForUpload
+                        : (activeCategory === 'All Memories' ? 'Uncategorized' : activeCategory);
+
+                    formData.append('album', albumName);
 
                     try {
                         await axios.post(`${API_BASE_URL}/api/memories`, formData, {
