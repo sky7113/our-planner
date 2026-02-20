@@ -253,7 +253,8 @@ async def upload_to_album(name: str, file: UploadFile = File(...)):
     """
     Uploads a file to a specific album.
     """
-    safe_name = name.replace("..", "").replace("/", "").replace("\\", "")
+    clean_name = name.strip() if name else "Uncategorized"
+    safe_name = clean_name.replace("..", "").replace("/", "").replace("\\", "")
     if safe_name == "All Memories":
          safe_album = "memories"
     else:
@@ -514,7 +515,8 @@ async def create_memory(
 
         # 1. Save Image via Cloudinary
         # Handle album fallback
-        safe_album = album.replace("..", "").replace("/", "").replace("\\", "") if album else "Uncategorized"
+        clean_album = album.strip() if album else "Uncategorized"
+        safe_album = clean_album.replace("..", "").replace("/", "").replace("\\", "")
         if safe_album == "All Memories":
              safe_album = "memories"
              
