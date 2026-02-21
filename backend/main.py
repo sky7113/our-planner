@@ -282,29 +282,53 @@ def delete_album(name: str):
     """
     Deletes an entire album and its contents from both DB and Filesystem.
     """
+    clean_name = name.strip()
     session = SessionLocal()
     try:
         # 1. Delete from Database
-        album = session.query(Album).filter(Album.name == name).first()
+        album = session.query(Album).filter(Album.name == clean_name).first()
+        memories = session.query(Memory).filter(Memory.album == clean_name).all()
+        
+        db_deleted = False
         if album:
             session.delete(album)
+            db_deleted = True
+            
+        if memories:
+            for mem in memories:
+                session.delete(mem)
+            db_deleted = True
+            
+        if db_deleted:
             session.commit()
-            print(f"✅ Deleted album '{name}' from DB")
+            print(f"✅ Deleted album '{clean_name}' and {len(memories)} memories from DB")
 
-        # 2. Delete from Filesystem
-        safe_name = name.replace("..", "").replace("/", "").replace("\\", "")
-        path = os.path.join("images", safe_name)
-        
+        # 2. Delete from Cloudinary (with try/except so ghost entries don't block DB deletion)
+        safe_album = clean_name.replace("..", "").replace("/", "").replace("\\", "")
+        if safe_album == "All Memories":
+             safe_album = "memories"
+             
+        try:
+            import cloudinary.api
+            # Try to delete resources in the folder first, then the folder itself
+            cloudinary.api.delete_resources_by_prefix(f"{safe_album}/")
+            cloudinary.api.delete_folder(safe_album)
+            print(f"✅ Deleted Cloudinary folder: {safe_album}")
+        except Exception as e:
+            print(f"⚠️ Cloudinary deletion skipped/failed (Ignored): {e}")
+
+        # 3. Delete from Filesystem
+        path = os.path.join("images", safe_album)
         fs_deleted = False
         if os.path.exists(path) and os.path.isdir(path):
             shutil.rmtree(path)
             fs_deleted = True
-            print(f"✅ Deleted album '{name}' from Filesystem")
+            print(f"✅ Deleted album '{safe_album}' from Filesystem")
             
-        if not album and not fs_deleted:
+        if not db_deleted and not fs_deleted:
             raise HTTPException(status_code=404, detail="Album not found")
             
-        return {"message": f"Album '{name}' deleted successfully"}
+        return {"message": f"Album '{clean_name}' deleted successfully"}
     except HTTPException as he:
         raise he
     except Exception as e:
