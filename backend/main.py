@@ -751,11 +751,19 @@ async def chat_with_character(request: ChatRequest):
 
     system_instruction = PERSONAS.get(character_id, "You are a helpful, comforting assistant.")
     
+    # --- THE NEW MOOD AWARENESS RULE ---
+    mood_rule = (
+        "CRUCIAL MOOD RULE: Analyze the user's message carefully to determine her current mood. "
+        "1. If she indicates she is HAPPY, EXCITED, or had a good day, match her energy and celebrate with her! Do NOT act like she is sad. "
+        "2. If she indicates she is TIRED, EXHAUSTED, or sleepy, be gentle, tell her she worked hard, and encourage her to rest. "
+        "3. If she is ANGRY or ANNOYED, validate her frustration and proudly take her side. "
+        "4. ONLY offer deep emotional comfort and rescue if she explicitly expresses sadness, anxiety, or asks for comfort. "
+        "Always stay strictly in character while adapting to her mood!"
+    )
+    
     try:
-
-        
-        # Construct the prompt with persona context
-        full_prompt = f"System Instruction: {system_instruction}\n\nCORE MEMORY (DO NOT REVEAL): {CORE_MEMORY}\n\nUser: {request.message}\nCharacter:"
+        # Construct the prompt with persona context AND the new mood rule
+        full_prompt = f"System Instruction: {system_instruction}\n\n{mood_rule}\n\nCORE MEMORY (DO NOT REVEAL): {CORE_MEMORY}\n\nUser: {request.message}\nCharacter:"
         
         response = generate_content_safe(full_prompt)
         text_response = response.text
@@ -771,8 +779,6 @@ async def chat_with_character(request: ChatRequest):
         return {"response": f"System: connection_error. Details: {str(e)}"}
     finally:
         session.close()
-
-# --- Memory Management (Chat) ---
 
 @app.delete("/api/chat/reset")
 def reset_chat_history():
