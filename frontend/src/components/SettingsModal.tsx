@@ -77,7 +77,8 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                             Manage your personal dominion
                         </p>
 
-                        <div className="space-y-4">
+                        {/* Scrollable Container for Modal Inner Content */}
+                        <div className="space-y-4 overflow-y-auto max-h-[70vh] pb-32 -mx-2 px-2 scrollbar-none">
                             {/* Restart Journey Button */}
                             <button
                                 onClick={handleRestart}
