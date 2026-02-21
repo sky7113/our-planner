@@ -13,7 +13,7 @@ interface Message {
 }
 
 export default function ComfortCompanion() {
-    const { theme, setIsSadMode } = useTheme();
+    const { theme, setIsSadMode, mood } = useTheme();
     const router = useRouter();
     const searchParams = useSearchParams();
     const [messages, setMessages] = useState<Message[]>([]);
@@ -38,35 +38,20 @@ export default function ComfortCompanion() {
                 console.error("Failed to reset memory:", e);
             }
 
-            // 2. Set Greeting
-            let greeting = "I am here for you.";
-            switch (theme.name) {
-                case 'Shinobu Kocho': // Updated name check
-                case 'Shinobu':
-                    greeting = "I see sadness in your eyes. Tell me everything, I am listening.";
-                    break;
-                case 'Anya Forger':
-                case 'Anya':
-                    greeting = "Don't cry! Anya is here! Do you want peanuts? Tell me who was mean!";
-                    break;
-                case 'Monkey D. Luffy':
-                case 'Luffy':
-                    greeting = "Who made you cry?! I'm gonna beat them up! You're my Nakama!";
-                    break;
-                case 'Rys & Fenrys':
-                case 'Rys':
-                    greeting = "My love, why do you weep? Let me hold you until the storm passes.";
-                    break;
-                case 'Rimuru Tempest':
-                case 'Rimuru':
-                    greeting = "It sounds like you've had a tough time. I'm here. Everything will be okay.";
-                    break;
-                case 'Satoru Gojo':
-                    greeting = "Don't worry, I'm the strongest. Welcome home.";
-                    break;
-                default:
-                    greeting = theme.greeting || "I am here for you.";
+            // 2. Set Greeting dynamically based on mood
+            let greeting = "I see sadness in your eyes. Tell me everything, I am listening.";
+            const currentMood = (mood || '').toLowerCase();
+
+            if (currentMood.includes('happy') || currentMood.includes('smile') || currentMood.includes('good')) {
+                greeting = "I see a bright smile! Tell me all about your amazing day!";
+            } else if (currentMood.includes('tired') || currentMood.includes('exhausted') || currentMood.includes('sleepy')) {
+                greeting = "You look exhausted. Come rest here and tell me about it.";
+            } else if (currentMood.includes('angry') || currentMood.includes('stressed') || currentMood.includes('mad')) {
+                greeting = "Who upset you? Tell me everything, I am on your side.";
+            } else if (currentMood.includes('sad') || currentMood.includes('cry')) {
+                greeting = "I see sadness in your eyes. Tell me everything, I am listening.";
             }
+
             setMessages([{ id: Date.now(), text: greeting, sender: 'companion' }]);
         };
 
