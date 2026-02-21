@@ -340,7 +340,7 @@ def delete_album(name: str):
 @app.delete("/api/albums/{album_name}/photos/{photo_id}")
 def delete_photo(album_name: str, photo_id: int):
     """
-    Deletes a specific memory/photo from DB and Filesystem.
+    Deletes a specific memory/photo from DB and Cloudinary (no local os.remove).
     """
     session = SessionLocal()
     try:
@@ -353,24 +353,26 @@ def delete_photo(album_name: str, photo_id: int):
             if not photo:
                 raise HTTPException(status_code=404, detail="Photo not found")
             
-        # 2. Delete the actual file from the filesystem
-        # Use image_url to derive path for robustness (handles both /images/memories and /images/album)
+        # 2. Delete the actual file from Cloudinary 
         if photo.image_url:
-            # Remove leading slash and potential URL prefix to get filesystem path
-            # e.g. "/images/memories/123.jpg" -> "images/memories/123.jpg"
-            relative_path = photo.image_url.lstrip("/")
-            # Sanitize to prevent directory traversal (just in case)
-            relative_path = relative_path.replace("..", "")
-            
-            # Additional check: ensure it starts with 'images/' to avoid deleting arbitrary files
-            if relative_path.startswith("images/"):
-                 if os.path.exists(relative_path):
-                    os.remove(relative_path)
-                    print(f"✅ Deleted file: {relative_path}")
-                 else:
-                    print(f"⚠️ File not found at: {relative_path}")
-            else:
-                 print(f"⚠️ Unsafe path skipped: {relative_path}")
+            try:
+                import cloudinary.uploader
+                # Extract public_id from Cloudinary URL
+                url_parts = photo.image_url.split('/')
+                if 'upload' in url_parts:
+                    upload_idx = url_parts.index('upload')
+                    parts_after_upload = url_parts[upload_idx + 1:]
+                    # Skip version segment (e.g., 'v1714482030') if it exists
+                    if parts_after_upload and parts_after_upload[0].startswith('v') and parts_after_upload[0][1:].isdigit():
+                        parts_after_upload = parts_after_upload[1:]
+                    
+                    public_id_with_ext = '/'.join(parts_after_upload)
+                    public_id = public_id_with_ext.rsplit('.', 1)[0]
+                    
+                    cloudinary.uploader.destroy(public_id)
+                    print(f"✅ Deleted Cloudinary asset: {public_id}")
+            except Exception as e:
+                print(f"⚠️ Cloudinary deletion skipped/failed (Ignored): {e}")
 
         # 3. Delete from Database
         session.delete(photo)
@@ -388,17 +390,25 @@ def delete_photo(album_name: str, photo_id: int):
 @app.delete("/api/albums/{name}/photos/{filename}")
 def delete_album_photo(name: str, filename: str):
     """
-    Deletes a specific photo from an album.
+    Deletes a specific photo from an album (from Cloudinary).
     """
     # Sanitize inputs
-    safe_name = name.replace("..", "").replace("/", "").replace("\\", "")
+    clean_name = name.strip()
+    safe_name = clean_name.replace("..", "").replace("/", "").replace("\\", "")
     safe_filename = filename.replace("/", "").replace("\\", "")
-    path = os.path.join("images", safe_name, safe_filename)
     
-    if os.path.exists(path):
-        os.remove(path)
-        return {"status": "success", "info": f"Deleted photo {safe_filename} from {safe_name}"}
-    return {"status": "error", "info": "Photo not found"}
+    if safe_name == "All Memories":
+         safe_name = "memories"
+         
+    try:
+         import cloudinary.uploader
+         public_id = f"{safe_name}/{safe_filename.rsplit('.', 1)[0]}"
+         cloudinary.uploader.destroy(public_id)
+         print(f"✅ Deleted Cloudinary asset: {public_id}")
+    except Exception as e:
+         print(f"⚠️ Cloudinary deletion skipped/failed: {e}")
+         
+    return {"status": "success", "info": f"Attempted to delete photo {safe_filename} from {safe_name}"}
 
 
 
