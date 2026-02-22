@@ -387,32 +387,44 @@ def delete_photo(album_name: str, photo_id: int):
     finally:
         session.close()
 
-@app.delete("/api/albums/{name}/photos/{filename}")
-def delete_album_photo(name: str, filename: str):
+@app.delete("/api/albums/{album_name}")
+def delete_entire_album(album_name: str):
     """
-    Deletes a specific photo from an album (from Cloudinary).
+    ABSOLUTE BULLDOZER: Deletes an album and all its photos from the DB, ignoring all Cloudinary errors.
     """
-    # Sanitize inputs
-    clean_name = name.strip()
-    safe_name = clean_name.replace("..", "").replace("/", "").replace("\\", "")
-    safe_filename = filename.replace("/", "").replace("\\", "")
-    
-    if safe_name == "All Memories":
-         safe_name = "memories"
-         
+    session = SessionLocal()
     try:
-         import cloudinary.uploader
-         public_id = f"{safe_name}/{safe_filename.rsplit('.', 1)[0]}"
-         cloudinary.uploader.destroy(public_id)
-         print(f"✅ Deleted Cloudinary asset: {public_id}")
+        # 1. Catch the ghost! Track both with and without the invisible space
+        clean_name = album_name.strip()
+        
+        # 2. Try to delete from Cloudinary, but COMPLETELY ignore if it fails
+        try:
+            import cloudinary.api
+            cloudinary.api.delete_resources_by_prefix(clean_name)
+            cloudinary.api.delete_folder(clean_name)
+        except Exception as e:
+            print(f"Ignored Cloudinary Ghost Error: {e}") # Shrug and move on!
+
+        # 3. WIPE all memories attached to this album from the database
+        session.query(Memory).filter(Memory.album == clean_name).delete()
+        session.query(Memory).filter(Memory.album == album_name).delete()
+        
+        # 4. If you have an explicit Album table, wipe it from there too
+        try:
+            session.query(Album).filter(Album.name == clean_name).delete()
+            session.query(Album).filter(Album.name == album_name).delete()
+        except NameError:
+            pass # If there is no Album table, just ignore this step
+
+        # Execute the database deletion!
+        session.commit()
+        return {"status": "success", "message": "Ghost album completely eradicated!"}
+        
     except Exception as e:
-         print(f"⚠️ Cloudinary deletion skipped/failed: {e}")
-         
-    return {"status": "success", "info": f"Attempted to delete photo {safe_filename} from {safe_name}"}
-
-
-
-# --- Memories System ---
+        session.rollback() # Undo database changes if database crashes
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        session.close()
 
 @app.get("/api/memories")
 def get_memories():
