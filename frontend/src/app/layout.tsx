@@ -6,10 +6,7 @@ import { ThemeProvider } from "@/context/ThemeContext";
 import ThemeController from "@/components/ThemeController";
 import {
   ClerkProvider,
-  SignInButton,
-  SignUpButton,
   SignedIn,
-  SignedOut,
   UserButton,
 } from "@clerk/nextjs";
 import "./globals.css";
@@ -56,11 +53,7 @@ export default function RootLayout({
         <body
           className={`${outfit.variable} ${cinzel.variable} ${fredoka.variable} antialiased`}
         >
-          <header className="absolute top-4 right-4 z-50 flex gap-4 bg-black/50 p-2 rounded-lg backdrop-blur-sm text-white">
-            <SignedOut>
-              <SignInButton />
-              <SignUpButton />
-            </SignedOut>
+          <header className="absolute top-6 right-24 z-50 flex gap-4 p-2 rounded-lg text-white">
             <SignedIn>
               <UserButton />
             </SignedIn>
