@@ -4,13 +4,14 @@ export const dynamic = 'force-dynamic';
 
 import Link from 'next/link';
 import { Image, Wallet, GraduationCap, SprayCan, Settings, MessageCircle, Moon, Heart } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import GrandEntrance from '../components/GrandEntrance';
 import SettingsModal from '../components/SettingsModal';
 import LiveAvatar from '../components/LiveAvatar';
 import Sidekick from '../components/Sidekick';
 import { useTheme } from '../context/ThemeContext';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useAuth, useClerk } from '@clerk/nextjs';
 
 const MotionLink = motion.create(Link);
 
@@ -19,6 +20,32 @@ export default function Home() {
   const [focusedCard, setFocusedCard] = useState<string | null>(null);
   const [hasEntered, setHasEntered] = useState(false);
   const { theme } = useTheme();
+  const { isSignedIn, isLoaded } = useAuth();
+  const clerk = useClerk();
+
+  // Trigger Sign-in when entry animation finishes if the user is not authenticated
+  useEffect(() => {
+    if (hasEntered && isLoaded && !isSignedIn) {
+      clerk.openSignIn();
+    }
+  }, [hasEntered, isLoaded, isSignedIn, clerk]);
+
+  // Intercept settings click
+  const handleSettingsClick = () => {
+    if (!isSignedIn) {
+      clerk.openSignIn();
+      return;
+    }
+    setIsSettingsOpen(true);
+  };
+
+  // Intercept protected link clicks
+  const handleProtectedLinkClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+    if (!isSignedIn) {
+      e.preventDefault();
+      clerk.openSignIn();
+    }
+  };
 
   return (
     <main
@@ -43,7 +70,7 @@ export default function Home() {
 
       <div className="absolute top-6 right-6 flex items-center gap-3 z-50">
         <button
-          onClick={() => setIsSettingsOpen(true)}
+          onClick={handleSettingsClick}
           className={`p-3 rounded-full bg-white/5 backdrop-blur-sm border border-white/10 hover:bg-white/10 transition-colors text-gray-800 dark:text-white`}
         >
           <Settings size={32} />
@@ -103,6 +130,7 @@ export default function Home() {
           <MotionLink
             key={item.name}
             href={item.href}
+            onClick={(e: React.MouseEvent<HTMLAnchorElement>) => handleProtectedLinkClick(e, item.href)}
             onMouseEnter={() => setFocusedCard(item.name)}
             onMouseLeave={() => setFocusedCard(null)}
             whileHover={{ scale: 1.02, y: -5 }}

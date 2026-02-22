@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Home, GraduationCap, Image, Wallet, Sparkles, SprayCan, Moon, Heart } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useAuth, useClerk } from '@clerk/nextjs';
 
 const navItems = [
     { name: 'Home', path: '/', icon: Home },
@@ -18,6 +19,15 @@ const navItems = [
 
 export default function Navbar() {
     const pathname = usePathname();
+    const { isSignedIn } = useAuth();
+    const clerk = useClerk();
+
+    const handleProtectedLinkClick = (e: React.MouseEvent<HTMLAnchorElement>, path: string) => {
+        if (path !== '/' && !isSignedIn) {
+            e.preventDefault();
+            clerk.openSignIn();
+        }
+    };
 
     return (
         <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-[110]">
@@ -25,7 +35,11 @@ export default function Navbar() {
                 {navItems.map((item) => {
                     const isActive = pathname === item.path;
                     return (
-                        <Link key={item.path} href={item.path}>
+                        <Link
+                            key={item.path}
+                            href={item.path}
+                            onClick={(e) => handleProtectedLinkClick(e, item.path)}
+                        >
                             <div className="relative flex flex-col items-center justify-center w-12 h-12 rounded-full transition-all duration-300 group">
                                 {isActive && (
                                     <motion.div

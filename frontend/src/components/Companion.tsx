@@ -5,6 +5,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useTheme } from '../context/ThemeContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, MessageCircle } from 'lucide-react';
+import { useAuth, useClerk } from '@clerk/nextjs';
 
 export default function Companion() {
     const { theme } = useTheme();
@@ -12,6 +13,16 @@ export default function Companion() {
     const router = useRouter();
     const [isOpen, setIsOpen] = useState(false);
     const [isVisible, setIsVisible] = useState(false);
+    const { isSignedIn } = useAuth();
+    const clerk = useClerk();
+
+    const handleCompanionClick = () => {
+        if (!isSignedIn) {
+            clerk.openSignIn();
+            return;
+        }
+        router.push('/comfort-room');
+    }
 
     // Route visibility logic
     useEffect(() => {
@@ -66,7 +77,7 @@ export default function Companion() {
             <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                onClick={() => router.push('/comfort-room')}
+                onClick={handleCompanionClick}
                 onMouseEnter={() => setIsOpen(true)}
                 onMouseLeave={() => setIsOpen(false)}
                 className="relative w-16 h-16 rounded-full shadow-[0_4px_20px_rgba(0,0,0,0.3)] overflow-hidden border-2 cursor-pointer pointer-events-auto transition-all duration-300 group"
