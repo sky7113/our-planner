@@ -19,6 +19,29 @@ import PIL.Image
 import cloudinary
 import cloudinary.uploader
 
+# Forward declaration for dependency
+def get_current_user_clerk_id(x_clerk_user_id: Optional[str] = Header(None)):
+    if not x_clerk_user_id:
+        raise HTTPException(status_code=401, detail="Missing X-Clerk-User-Id header")
+    return x_clerk_user_id
+
+def check_permission(permission_flag: str):
+    def _check(clerk_id: str = Depends(get_current_user_clerk_id)):
+        session = SessionLocal()
+        try:
+            user = session.query(User).filter(User.clerk_id == clerk_id).first()
+            if not user or not user.couple_id:
+                return clerk_id 
+                
+            if not user.is_admin:
+                couple = session.query(Couple).filter(Couple.id == user.couple_id).first()
+                if couple and not getattr(couple, permission_flag, False):
+                    raise HTTPException(status_code=403, detail="Forbidden: Room locked by your partner")
+            return clerk_id
+        finally:
+            session.close()
+    return _check
+
 load_dotenv()
 
 # --- Cloudinary Setup ---
@@ -339,7 +362,7 @@ def delete_album(album_name: str):
         session.close()
 
 @app.delete("/api/albums/{album_name}/photos/{photo_id}")
-def delete_photo(album_name: str, photo_id: int):
+def delete_photo(album_name: str, photo_id: int, clerk_id: str = Depends(check_permission("partner_can_gallery"))):
     """
     Deletes a specific memory/photo from DB and Cloudinary (no local os.remove).
     """
@@ -391,7 +414,7 @@ def delete_photo(album_name: str, photo_id: int):
 
 
 @app.get("/api/memories")
-def get_memories():
+def get_memories(clerk_id: str = Depends(check_permission("partner_can_gallery"))):
     """
     Fetch all memories, sorted by date (newest first).
     """
@@ -446,7 +469,7 @@ def create_memory_album(request: AlbumRequest):
         session.close()
 
 @app.get("/api/memory-albums")
-def get_all_memory_albums():
+def get_all_memory_albums(clerk_id: str = Depends(check_permission("partner_can_gallery"))):
     """
     Fetch all persistent albums.
     """
@@ -461,7 +484,7 @@ def get_all_memory_albums():
         session.close()
 
 @app.delete("/api/memory-albums/{id}")
-def delete_memory_album(id: int):
+def delete_memory_album(id: int, clerk_id: str = Depends(check_permission("partner_can_gallery"))):
     """
     Delete a persistent album.
     """
@@ -486,7 +509,7 @@ def delete_memory_album(id: int):
         session.close()
 
 @app.get("/api/memories/albums")
-def get_memory_albums():
+def get_memory_albums(clerk_id: str = Depends(check_permission("partner_can_gallery"))):
     """
     DEPRECATED/FALLBACK: Fetch all unique album names from memories + persistent albums.
     """
@@ -513,7 +536,8 @@ async def create_memory(
     title: str = Form("New Memory"),
     subtitle: Optional[str] = Form(None),
     album: str = Form("Uncategorized"),
-    file: UploadFile = File(...)
+    file: UploadFile = File(...),
+    clerk_id: str = Depends(check_permission("partner_can_gallery"))
 ):
     """
     Upload a new memory photo and save to DB.
@@ -740,7 +764,7 @@ class SavedBridgeChatRequest(BaseModel):
     messages: List[dict] 
 
 @app.get("/api/history/{character_id}")
-def get_chat_history(character_id: str):
+def get_chat_history(character_id: str, clerk_id: str = Depends(check_permission("partner_can_chat"))):
     """
     Retrieve chat history for a specific character.
     """
@@ -752,7 +776,7 @@ def get_chat_history(character_id: str):
         session.close()
 
 @app.post("/api/chat")
-async def chat_with_character(request: ChatRequest):
+async def chat_with_character(request: ChatRequest, clerk_id: str = Depends(check_permission("partner_can_chat"))):
     """
     Chat endpoint using Google Gemini + SQLite History.
     """
@@ -799,7 +823,7 @@ async def chat_with_character(request: ChatRequest):
         session.close()
 
 @app.delete("/api/chat/reset")
-def reset_chat_history():
+def reset_chat_history(clerk_id: str = Depends(check_permission("partner_can_chat"))):
     """
     Clear active chat history.
     """
@@ -812,7 +836,7 @@ def reset_chat_history():
         session.close()
 
 @app.post("/api/chat/save")
-def save_chat_history(request: SavedChatRequest):
+def save_chat_history(request: SavedChatRequest, clerk_id: str = Depends(check_permission("partner_can_chat"))):
     """
     Save current chat permanently.
     """
@@ -830,7 +854,7 @@ def save_chat_history(request: SavedChatRequest):
         session.close()
 
 @app.get("/api/chat/saved")
-def get_saved_chats():
+def get_saved_chats(clerk_id: str = Depends(check_permission("partner_can_chat"))):
     """
     List all saved chats.
     """
@@ -845,7 +869,7 @@ def get_saved_chats():
         session.close()
 
 @app.get("/api/chat/saved/{id}")
-def get_saved_chat_detail(id: int):
+def get_saved_chat_detail(id: int, clerk_id: str = Depends(check_permission("partner_can_chat"))):
     """
     Get specific saved chat content.
     """
@@ -867,7 +891,7 @@ def get_saved_chat_detail(id: int):
 # --- Skincare System ---
 
 @app.post("/api/skin/log")
-def log_skin_routine(log: SkinLogRequest):
+def log_skin_routine(log: SkinLogRequest, clerk_id: str = Depends(check_permission("partner_can_journal"))):
     """
     Log a skincare routine (Morning/Night).
     Accepts date from body to support logging for yesterday.
@@ -902,7 +926,7 @@ def log_skin_routine(log: SkinLogRequest):
         session.close()
 
 @app.get("/api/skin/history")
-def get_skin_history():
+def get_skin_history(clerk_id: str = Depends(check_permission("partner_can_journal"))):
     """
     Returns a list of dates that have skin logs.
     """
@@ -916,7 +940,7 @@ def get_skin_history():
         session.close()
 
 @app.get("/api/skin/log")
-def get_skin_log(date: str):
+def get_skin_log(date: str, clerk_id: str = Depends(check_permission("partner_can_journal"))):
     """
     Returns the log details for a specific date.
     """
@@ -937,7 +961,7 @@ def get_skin_log(date: str):
         session.close()
 
 @app.get("/api/skin/status")
-def get_skin_status():
+def get_skin_status(clerk_id: str = Depends(check_permission("partner_can_journal"))):
     """
     Calculates missed days and photo gaps.
     """
@@ -986,7 +1010,7 @@ def get_skin_status():
 
 
 @app.post("/api/skin/analyze")
-async def analyze_skin(files: List[UploadFile] = File(...)):
+async def analyze_skin(files: List[UploadFile] = File(...), clerk_id: str = Depends(check_permission("partner_can_journal"))):
     """
     Upload multiple face photos -> Analyze with Gemini 2.5 Flash -> Return advice.
     """
@@ -1050,7 +1074,7 @@ async def analyze_skin(files: List[UploadFile] = File(...)):
 # --- Moon Cycle System ---
 
 @app.post("/api/period/log")
-def log_period(log: PeriodLogRequest):
+def log_period(log: PeriodLogRequest, clerk_id: str = Depends(check_permission("partner_can_journal"))):
     """
     Log a period entry.
     """
@@ -1072,7 +1096,7 @@ def log_period(log: PeriodLogRequest):
         session.close()
 
 @app.get("/api/period/prediction")
-def get_period_prediction():
+def get_period_prediction(clerk_id: str = Depends(check_permission("partner_can_journal"))):
     """
     Predicts next period start date based on last log + 28 days.
     """
@@ -1102,7 +1126,7 @@ def get_period_prediction():
 # --- Future Planner System ---
 
 @app.post("/api/planner")
-def create_planner_event(event: PlannerEventRequest):
+def create_planner_event(event: PlannerEventRequest, clerk_id: str = Depends(check_permission("partner_can_journal"))):
     """
     Create a new planner event.
     """
@@ -1123,7 +1147,7 @@ def create_planner_event(event: PlannerEventRequest):
         session.close()
 
 @app.get("/api/planner")
-def get_planner_events(category: Optional[str] = None):
+def get_planner_events(category: Optional[str] = None, clerk_id: str = Depends(check_permission("partner_can_journal"))):
     """
     Get all planner events, optionally filtered by category.
     Sorted by date.
@@ -1151,7 +1175,7 @@ def get_planner_events(category: Optional[str] = None):
         session.close()
 
 @app.put("/api/planner/{id}/toggle")
-def toggle_planner_event(id: int):
+def toggle_planner_event(id: int, clerk_id: str = Depends(check_permission("partner_can_journal"))):
     """
     Toggle the completion status of an event.
     """
@@ -1323,7 +1347,7 @@ def get_budget_summary(period: str = "daily", date: Optional[str] = None):
 # --- The Bridge (Conflict Resolution) ---
 
 @app.post("/api/bridge/chat")
-def bridge_chat(request: BridgeChatRequest):
+def bridge_chat(request: BridgeChatRequest, clerk_id: str = Depends(check_permission("partner_can_chat"))):
     """
     Mediator AI Logic.
     """
@@ -1374,7 +1398,7 @@ def bridge_chat(request: BridgeChatRequest):
         session.close()
 
 @app.get("/api/bridge/history")
-def get_bridge_history():
+def get_bridge_history(clerk_id: str = Depends(check_permission("partner_can_chat"))):
     """
     Get full bridge history.
     """
@@ -1529,7 +1553,7 @@ def delete_routine_item(id: int):
 # --- Goal Setting Engine ---
 
 @app.post("/api/goals")
-def create_goal(goal: GoalRequest):
+def create_goal(goal: GoalRequest, clerk_id: str = Depends(check_permission("partner_can_journal"))):
     """
     Create a new goal.
     """
@@ -1551,7 +1575,7 @@ def create_goal(goal: GoalRequest):
         session.close()
 
 @app.get("/api/goals")
-def get_goals():
+def get_goals(clerk_id: str = Depends(check_permission("partner_can_journal"))):
     """
     Fetch all goals sorted by target_date.
     """
@@ -1574,7 +1598,7 @@ def get_goals():
         session.close()
 
 @app.put("/api/goals/{id}/progress")
-def update_goal_progress(id: int, update: GoalProgressRequest):
+def update_goal_progress(id: int, update: GoalProgressRequest, clerk_id: str = Depends(check_permission("partner_can_journal"))):
     """
     Update the progress of a goal.
     """
@@ -1619,7 +1643,7 @@ if __name__ == "__main__":
 # --- Memory Management (Bridge) ---
 
 @app.delete("/api/bridge/reset")
-def reset_bridge_history():
+def reset_bridge_history(clerk_id: str = Depends(check_permission("partner_can_chat"))):
     """
     Clear active bridge chat history.
     """
@@ -1632,7 +1656,7 @@ def reset_bridge_history():
         session.close()
 
 @app.post("/api/bridge/save")
-def save_bridge_history(request: SavedBridgeChatRequest):
+def save_bridge_history(request: SavedBridgeChatRequest, clerk_id: str = Depends(check_permission("partner_can_chat"))):
     """
     Save bridge session to archive.
     """
@@ -1650,7 +1674,7 @@ def save_bridge_history(request: SavedBridgeChatRequest):
         session.close()
 
 @app.get("/api/bridge/archive")
-def get_bridge_archive():
+def get_bridge_archive(clerk_id: str = Depends(check_permission("partner_can_chat"))):
     """
     Get all saved bridge sessions.
     """
@@ -1670,11 +1694,6 @@ import random
 
 def generate_pairing_code():
     return ''.join(random.choices(string.ascii_uppercase + string.digits, k=6))
-
-def get_current_user_clerk_id(x_clerk_user_id: Optional[str] = Header(None)):
-    if not x_clerk_user_id:
-        raise HTTPException(status_code=401, detail="Missing X-Clerk-User-Id header")
-    return x_clerk_user_id
 
 @app.get("/api/users/me")
 def get_current_user(clerk_id: str = Depends(get_current_user_clerk_id)):

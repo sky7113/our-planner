@@ -3,13 +3,19 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Heart, Home, Image as ImageIcon, Book, Settings, Plus, X, Trash2 } from 'lucide-react';
+import { Heart, Home, Image as ImageIcon, Book, Settings, Plus, X, Trash2, Lock } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import axios from 'axios';
+
+import { useAuth } from '@clerk/nextjs';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
 export default function MemoriesPage() {
+    const { userId } = useAuth();
+    const [userProfile, setUserProfile] = useState<any>(null);
+    const [isCheckingAccess, setIsCheckingAccess] = useState(true);
+
     const [activeCategory, setActiveCategory] = useState('All Memories');
     const [albums, setAlbums] = useState<string[]>(['All Memories']);
 
@@ -23,9 +29,34 @@ export default function MemoriesPage() {
 
     // Fetch Memories & Albums on Mount
     useEffect(() => {
-        fetchMemories();
-        fetchAlbums();
-    }, []);
+        if (!userId) {
+            setIsCheckingAccess(false);
+            return;
+        }
+
+        const checkAccessAndFetch = async () => {
+            try {
+                const res = await axios.get(`${API_BASE_URL}/api/users/me`, {
+                    headers: { 'x-clerk-user-id': userId }
+                });
+                setUserProfile(res.data);
+
+                // If not admin and partner locked gallery, don't fetch data
+                if (!res.data.is_admin && res.data.couple && res.data.couple.partner_can_gallery === false) {
+                    setIsCheckingAccess(false);
+                    return;
+                }
+
+                await Promise.all([fetchMemories(), fetchAlbums()]);
+            } catch (error) {
+                console.error("Error fetching user profile:", error);
+            } finally {
+                setIsCheckingAccess(false);
+            }
+        };
+
+        checkAccessAndFetch();
+    }, [userId]);
 
     const fetchAlbums = async () => {
         try {
@@ -43,7 +74,9 @@ export default function MemoriesPage() {
 
     const fetchMemories = async () => {
         try {
-            const res = await axios.get(`${API_BASE_URL}/api/memories`);
+            const res = await axios.get(`${API_BASE_URL}/api/memories`, {
+                headers: { 'x-clerk-user-id': userId }
+            });
             setLocalMemories(res.data);
         } catch (error) {
             console.error("Error fetching memories:", error);
@@ -151,7 +184,10 @@ export default function MemoriesPage() {
 
                     try {
                         await axios.post(`${API_BASE_URL}/api/memories`, formData, {
-                            headers: { 'Content-Type': 'multipart/form-data' }
+                            headers: {
+                                'Content-Type': 'multipart/form-data',
+                                'x-clerk-user-id': userId
+                            }
                         });
                         setUploadProgress((prev) => prev + 1);
                     } catch (err) {
@@ -212,94 +248,122 @@ export default function MemoriesPage() {
             </header>
 
             <main className="max-w-4xl mx-auto px-4 pt-6 relative z-10">
-                {/* Categories & Create Album */}
-                <div className="flex items-center gap-3 mb-8">
-                    <div className="flex overflow-x-auto gap-3 pb-2 no-scrollbar mask-gradient-right flex-1">
-                        {albums.map((album) => (
-                            <button
-                                key={album}
-                                onClick={() => setActiveCategory(album)}
-                                className={`whitespace-nowrap px-6 py-2.5 rounded-full text-sm font-semibold transition-all duration-300 flex items-center gap-2 ${activeCategory === album
-                                    ? 'bg-pink-500 text-white shadow-lg shadow-pink-500/25 scale-105'
-                                    : 'bg-white/5 text-slate-400 hover:bg-white/10 hover:text-white border border-white/5'
-                                    }`}
-                            >
-                                {album}
-                                {album !== 'All Memories' && (
-                                    <span
-                                        onClick={(e) => handleDeleteAlbum(album, e)}
-                                        className={`p-0.5 rounded-full transition-colors ${activeCategory === album
-                                            ? 'hover:bg-white/20'
-                                            : 'hover:bg-white/10 hover:text-red-400'
-                                            }`}
-                                        title="Delete Album"
-                                    >
-                                        <X size={14} />
-                                    </span>
-                                )}
-                            </button>
-                        ))}
+                {isCheckingAccess ? (
+                    <div className="flex justify-center items-center py-20">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-pink-500"></div>
                     </div>
-                    <button
-                        onClick={handleCreateAlbum}
-                        className="flex-shrink-0 p-2.5 rounded-full bg-white/10 hover:bg-pink-500/20 text-slate-400 hover:text-pink-400 transition-all border border-white/5"
-                        title="Create New Album"
-                    >
-                        <Plus size={20} />
-                    </button>
-                </div>
-
-                {/* Masonry Grid */}
-                <div className="columns-2 md:columns-3 gap-6 space-y-6">
-                    {localMemories
-                        .filter(m => activeCategory === 'All Memories' || m.album?.toLowerCase().trim() === activeCategory.toLowerCase().trim())
-                        .map((memory) => {
-                            const imagePath = memory.image_url || memory.src || '';
-                            const fullImageUrl = imagePath.startsWith('http')
-                                ? imagePath
-                                : `${API_BASE_URL}/${imagePath.replace(/^\//, '')}`;
-
-                            return (
-                                <div
-                                    key={memory.id}
-                                    className="relative group break-inside-avoid rounded-2xl overflow-hidden bg-white/5 border border-white/10 shadow-xl cursor-pointer hover:-translate-y-2 hover:shadow-2xl transition-all duration-500 ease-out"
-                                >
-                                    <div className={`relative w-full ${memory.aspectRatio || 'aspect-[3/4]'}`}>
-                                        <img
-                                            src={fullImageUrl}
-                                            alt={memory.title}
-                                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                                        />
-                                    </div>
-
-                                    {/* Overlay Gradient */}
-                                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-60 group-hover:opacity-80 transition-opacity duration-300" />
-
-                                    {/* Heart Icon Overlay */}
-                                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 scale-75 group-hover:scale-100">
-                                        <div className="bg-white/20 backdrop-blur-md p-4 rounded-full border border-white/30 text-pink-400 drop-shadow-[0_0_15px_rgba(244,114,182,0.6)]">
-                                            <Heart size={32} fill="currentColor" />
-                                        </div>
-                                    </div>
-
-                                    {/* Delete Button (Top Right) */}
-                                    <button
-                                        onClick={(e) => handleDeletePhoto(memory, e)}
-                                        className="absolute top-2 right-2 bg-red-500/80 hover:bg-red-600 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 z-10 shadow-lg translate-y-[-10px] group-hover:translate-y-0"
-                                        title="Delete Photo"
-                                    >
-                                        <Trash2 size={16} />
-                                    </button>
-
-                                    {/* Text Content */}
-                                    <div className="absolute bottom-0 left-0 right-0 p-4 transform translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
-                                        <p className="text-white font-bold text-lg leading-tight drop-shadow-md">{memory.title}</p>
-                                        <p className="text-white/70 text-xs font-medium uppercase tracking-wider mt-1">{memory.subtitle}</p>
-                                    </div>
+                ) : userProfile && !userProfile.is_admin && userProfile.couple && userProfile.couple.partner_can_gallery === false ? (
+                    <div className="flex flex-col items-center justify-center py-32 text-center px-4">
+                        <div className="bg-slate-900/50 backdrop-blur-xl border border-white/10 p-8 rounded-3xl shadow-2xl max-w-sm w-full mx-auto relative overflow-hidden group">
+                            <div className="absolute inset-0 bg-gradient-to-br from-pink-500/10 to-purple-500/10 opacity-50 group-hover:opacity-100 transition-opacity duration-500"></div>
+                            <motion.div
+                                initial={{ scale: 0.8, opacity: 0 }}
+                                animate={{ scale: 1, opacity: 1 }}
+                                transition={{ type: "spring", stiffness: 200, damping: 15 }}
+                                className="relative z-10 flex flex-col items-center"
+                            >
+                                <div className="p-4 bg-slate-800/80 rounded-full text-pink-500 mb-6 shadow-[0_0_30px_rgba(236,72,153,0.2)]">
+                                    <Lock size={48} strokeWidth={1.5} />
                                 </div>
-                            );
-                        })}
-                </div>
+                                <h2 className="text-2xl font-bold text-white mb-2 font-[family-name:var(--font-primary)]">Gallery Locked</h2>
+                                <p className="text-slate-400 text-sm leading-relaxed">
+                                    This room has been locked by your partner. You need permission to view memories.
+                                </p>
+                            </motion.div>
+                        </div>
+                    </div>
+                ) : (
+                    <>
+                        {/* Categories & Create Album */}
+                        <div className="flex items-center gap-3 mb-8">
+                            <div className="flex overflow-x-auto gap-3 pb-2 no-scrollbar mask-gradient-right flex-1">
+                                {albums.map((album) => (
+                                    <button
+                                        key={album}
+                                        onClick={() => setActiveCategory(album)}
+                                        className={`whitespace-nowrap px-6 py-2.5 rounded-full text-sm font-semibold transition-all duration-300 flex items-center gap-2 ${activeCategory === album
+                                            ? 'bg-pink-500 text-white shadow-lg shadow-pink-500/25 scale-105'
+                                            : 'bg-white/5 text-slate-400 hover:bg-white/10 hover:text-white border border-white/5'
+                                            }`}
+                                    >
+                                        {album}
+                                        {album !== 'All Memories' && (
+                                            <span
+                                                onClick={(e) => handleDeleteAlbum(album, e)}
+                                                className={`p-0.5 rounded-full transition-colors ${activeCategory === album
+                                                    ? 'hover:bg-white/20'
+                                                    : 'hover:bg-white/10 hover:text-red-400'
+                                                    }`}
+                                                title="Delete Album"
+                                            >
+                                                <X size={14} />
+                                            </span>
+                                        )}
+                                    </button>
+                                ))}
+                            </div>
+                            <button
+                                onClick={handleCreateAlbum}
+                                className="flex-shrink-0 p-2.5 rounded-full bg-white/10 hover:bg-pink-500/20 text-slate-400 hover:text-pink-400 transition-all border border-white/5"
+                                title="Create New Album"
+                            >
+                                <Plus size={20} />
+                            </button>
+                        </div>
+
+                        {/* Masonry Grid */}
+                        <div className="columns-2 md:columns-3 gap-6 space-y-6">
+                            {localMemories
+                                .filter(m => activeCategory === 'All Memories' || m.album?.toLowerCase().trim() === activeCategory.toLowerCase().trim())
+                                .map((memory) => {
+                                    const imagePath = memory.image_url || memory.src || '';
+                                    const fullImageUrl = imagePath.startsWith('http')
+                                        ? imagePath
+                                        : `${API_BASE_URL}/${imagePath.replace(/^\//, '')}`;
+
+                                    return (
+                                        <div
+                                            key={memory.id}
+                                            className="relative group break-inside-avoid rounded-2xl overflow-hidden bg-white/5 border border-white/10 shadow-xl cursor-pointer hover:-translate-y-2 hover:shadow-2xl transition-all duration-500 ease-out"
+                                        >
+                                            <div className={`relative w-full ${memory.aspectRatio || 'aspect-[3/4]'}`}>
+                                                <img
+                                                    src={fullImageUrl}
+                                                    alt={memory.title}
+                                                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                                                />
+                                            </div>
+
+                                            {/* Overlay Gradient */}
+                                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-60 group-hover:opacity-80 transition-opacity duration-300" />
+
+                                            {/* Heart Icon Overlay */}
+                                            <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 scale-75 group-hover:scale-100">
+                                                <div className="bg-white/20 backdrop-blur-md p-4 rounded-full border border-white/30 text-pink-400 drop-shadow-[0_0_15px_rgba(244,114,182,0.6)]">
+                                                    <Heart size={32} fill="currentColor" />
+                                                </div>
+                                            </div>
+
+                                            {/* Delete Button (Top Right) */}
+                                            <button
+                                                onClick={(e) => handleDeletePhoto(memory, e)}
+                                                className="absolute top-2 right-2 bg-red-500/80 hover:bg-red-600 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 z-10 shadow-lg translate-y-[-10px] group-hover:translate-y-0"
+                                                title="Delete Photo"
+                                            >
+                                                <Trash2 size={16} />
+                                            </button>
+
+                                            {/* Text Content */}
+                                            <div className="absolute bottom-0 left-0 right-0 p-4 transform translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
+                                                <p className="text-white font-bold text-lg leading-tight drop-shadow-md">{memory.title}</p>
+                                                <p className="text-white/70 text-xs font-medium uppercase tracking-wider mt-1">{memory.subtitle}</p>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                        </div>
+                    </>
+                )}
             </main>
 
             {/* Upload Modal Overlay */}

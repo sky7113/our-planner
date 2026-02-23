@@ -7,10 +7,14 @@ import { useTheme } from '../../context/ThemeContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     Sun, Moon, Check, Upload, Sparkles, Camera, Save,
-    Calendar as CalendarIcon, ArrowLeft, Loader2, Pencil, Trash2, Plus
+    Calendar as CalendarIcon, ArrowLeft, Loader2, Pencil, Trash2, Plus, Lock
 } from 'lucide-react';
 import Link from 'next/link';
 import { X } from 'lucide-react';
+import axios from 'axios';
+import { useAuth } from '@clerk/nextjs';
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
 interface SkinLog {
     date: string;
@@ -28,6 +32,10 @@ interface RoutineItem {
 
 export default function SkincarePage() {
     const { theme } = useTheme();
+    const { userId } = useAuth();
+    const [userProfile, setUserProfile] = useState<any>(null);
+    const [isCheckingAccess, setIsCheckingAccess] = useState(true);
+
     const [activeTab, setActiveTab] = useState<'morning' | 'night'>('morning');
     const [checkedItems, setCheckedItems] = useState<Set<string>>(new Set());
 
@@ -56,7 +64,9 @@ export default function SkincarePage() {
     // Fetch Routine
     const fetchRoutine = useCallback(async () => {
         try {
-            const res = await fetch('https://our-backend-api.onrender.com/api/routine');
+            const res = await fetch(`${API_BASE_URL}/api/routine`, {
+                headers: { 'x-clerk-user-id': userId as string }
+            });
             if (res.ok) {
                 const data = await res.json();
                 setRoutineItems(data);
@@ -68,17 +78,36 @@ export default function SkincarePage() {
 
     // Fetch history on mount
     useEffect(() => {
-        const fetchHistory = async () => {
+        if (!userId) {
+            setIsCheckingAccess(false);
+            return;
+        }
+
+        const checkAccessAndFetch = async () => {
             try {
+                const resUser = await axios.get(`${API_BASE_URL}/api/users/me`, {
+                    headers: { 'x-clerk-user-id': userId }
+                });
+                setUserProfile(resUser.data);
+
+                // If not admin and partner locked journal, don't fetch data
+                if (!resUser.data.is_admin && resUser.data.couple && resUser.data.couple.partner_can_journal === false) {
+                    setIsCheckingAccess(false);
+                    return;
+                }
+
+                // Access granted, fetch real data
+                const headers = { 'x-clerk-user-id': userId };
+
                 // 1. Fetch History Dates
-                const resHist = await fetch('https://our-backend-api.onrender.com/api/skin/history');
+                const resHist = await fetch(`${API_BASE_URL}/api/skin/history`, { headers });
                 if (resHist.ok) {
                     const dates = await resHist.json();
                     setLoggedDates(dates);
                 }
 
                 // 2. Fetch Status (Missed/Gap)
-                const resStatus = await fetch('https://our-backend-api.onrender.com/api/skin/status');
+                const resStatus = await fetch(`${API_BASE_URL}/api/skin/status`, { headers });
                 if (resStatus.ok) {
                     const status = await resStatus.json();
                     setMissedDays(status.missed_days);
@@ -92,17 +121,24 @@ export default function SkincarePage() {
                         setShowCatchUpModal(true);
                     }
                 }
+
+                await fetchRoutine();
+
             } catch (e) {
                 console.error("Failed to fetch data", e);
+            } finally {
+                setIsCheckingAccess(false);
             }
         };
-        fetchHistory();
-        fetchRoutine();
-    }, [fetchRoutine]);
+
+        checkAccessAndFetch();
+    }, [userId, fetchRoutine]);
 
     const fetchLog = async (dateStr: string) => {
         try {
-            const res = await fetch(`https://our-backend-api.onrender.com/api/skin/log?date=${dateStr}`);
+            const res = await fetch(`${API_BASE_URL}/api/skin/log?date=${dateStr}`, {
+                headers: { 'x-clerk-user-id': userId as string }
+            });
             if (res.ok) {
                 const data = await res.json();
                 if (data.status === 'success') {
@@ -118,9 +154,12 @@ export default function SkincarePage() {
     const handleAddProduct = async () => {
         if (!newItemName.trim()) return;
         try {
-            const res = await fetch('https://our-backend-api.onrender.com/api/routine', {
+            const res = await fetch(`${API_BASE_URL}/api/routine`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'x-clerk-user-id': userId as string
+                },
                 body: JSON.stringify({
                     name: newItemName,
                     category: activeTab
@@ -138,8 +177,9 @@ export default function SkincarePage() {
     const handleDeleteProduct = async (id: number) => {
         if (!confirm('Remove this product?')) return;
         try {
-            const res = await fetch(`https://our-backend-api.onrender.com/api/routine/${id}`, {
-                method: 'DELETE'
+            const res = await fetch(`${API_BASE_URL}/api/routine/${id}`, {
+                method: 'DELETE',
+                headers: { 'x-clerk-user-id': userId as string }
             });
             if (res.ok) {
                 fetchRoutine();
@@ -180,9 +220,12 @@ export default function SkincarePage() {
         const dateStr = dateOverride || new Date().toISOString().split('T')[0];
 
         try {
-            const res = await fetch('https://our-backend-api.onrender.com/api/skin/log', {
+            const res = await fetch(`${API_BASE_URL}/api/skin/log`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'x-clerk-user-id': userId as string
+                },
                 body: JSON.stringify({
                     date: dateStr,
                     time: activeTab,
@@ -222,8 +265,9 @@ export default function SkincarePage() {
         });
 
         try {
-            const res = await fetch('https://our-backend-api.onrender.com/api/skin/analyze', {
+            const res = await fetch(`${API_BASE_URL}/api/skin/analyze`, {
                 method: 'POST',
+                headers: { 'x-clerk-user-id': userId as string },
                 body: formData
             });
             const data = await res.json();
@@ -302,232 +346,257 @@ export default function SkincarePage() {
                     </div>
                 </header>
 
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-
-                    {/* LEFT: Routine Tracker (7 cols) */}
-                    <div className="lg:col-span-7 space-y-6">
-                        <div className="backdrop-blur-xl bg-slate-900/40 border border-white/20 rounded-3xl p-6 shadow-xl">
-                            {/* Tabs */}
-                            <div className="flex items-center gap-4 mb-6">
-                                <div className="flex-1 flex p-1 bg-black/40 rounded-xl">
-                                    <button
-                                        onClick={() => setActiveTab('morning')}
-                                        className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-lg transition-all ${activeTab === 'morning' ? 'bg-white text-slate-900 shadow-md' : 'text-gray-400 hover:text-white'}`}
-                                    >
-                                        <Sun size={18} />
-                                        <span className="font-medium">Morning</span>
-                                    </button>
-                                    <button
-                                        onClick={() => setActiveTab('night')}
-                                        className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-lg transition-all ${activeTab === 'night' ? 'bg-slate-900 text-white shadow-md' : 'text-gray-400 hover:text-white'}`}
-                                    >
-                                        <Moon size={18} />
-                                        <span className="font-medium">Night</span>
-                                    </button>
+                {isCheckingAccess ? (
+                    <div className="flex justify-center items-center py-20">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500"></div>
+                    </div>
+                ) : userProfile && !userProfile.is_admin && userProfile.couple && userProfile.couple.partner_can_journal === false ? (
+                    <div className="flex flex-col items-center justify-center py-32 text-center px-4">
+                        <div className="bg-slate-900/50 backdrop-blur-xl border border-white/10 p-8 rounded-3xl shadow-2xl max-w-sm w-full mx-auto relative overflow-hidden group">
+                            <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 to-pink-500/10 opacity-50 group-hover:opacity-100 transition-opacity duration-500"></div>
+                            <motion.div
+                                initial={{ scale: 0.8, opacity: 0 }}
+                                animate={{ scale: 1, opacity: 1 }}
+                                transition={{ type: "spring", stiffness: 200, damping: 15 }}
+                                className="relative z-10 flex flex-col items-center"
+                            >
+                                <div className="p-4 bg-slate-800/80 rounded-full text-purple-400 mb-6 shadow-[0_0_30px_rgba(168,85,247,0.2)]">
+                                    <Lock size={48} strokeWidth={1.5} />
                                 </div>
-                                <button
-                                    onClick={() => setIsEditing(!isEditing)}
-                                    className={`p-3 rounded-xl border transition-all ${isEditing ? 'bg-purple-500 text-white border-purple-500' : 'bg-black/40 border-white/10 text-white/60 hover:text-white'}`}
-                                >
-                                    <Pencil size={20} />
-                                </button>
-                            </div>
-
-                            {/* Checklist */}
-                            <div className="space-y-3 mb-8">
-                                {currentRoutine.map((item) => (
-                                    <motion.div
-                                        key={item.id}
-                                        layout
-                                        initial={{ opacity: 0 }}
-                                        animate={{ opacity: 1 }}
-                                        exit={{ opacity: 0 }}
-                                        className="flex gap-2"
-                                    >
-                                        <motion.button
-                                            onClick={() => handleToggle(item.name)}
-                                            whileTap={{ scale: 0.98 }}
-                                            className={`flex-1 flex items-center gap-4 p-4 rounded-xl border transition-all ${checkedItems.has(item.name)
-                                                ? `bg-${theme.colors.accent}/30 border-${theme.colors.accent} border-opacity-60`
-                                                : 'bg-white/10 border-white/20 hover:bg-white/15'
-                                                }`}
-                                            style={{
-                                                backgroundColor: checkedItems.has(item.name) ? `${theme.colors.accent}30` : undefined,
-                                                borderColor: checkedItems.has(item.name) ? theme.colors.accent : undefined
-                                            }}
-                                        >
-                                            <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${checkedItems.has(item.name) ? 'bg-green-500 border-green-500' : 'border-white/30'
-                                                }`}>
-                                                {checkedItems.has(item.name) && <Check size={14} className="text-white" />}
-                                            </div>
-                                            <span className={`text-lg font-light text-gray-100 ${checkedItems.has(item.name) ? 'opacity-100' : 'opacity-80'}`}>
-                                                {item.name}
-                                            </span>
-                                        </motion.button>
-
-                                        <AnimatePresence>
-                                            {isEditing && (
-                                                <motion.button
-                                                    initial={{ opacity: 0, width: 0 }}
-                                                    animate={{ opacity: 1, width: 'auto' }}
-                                                    exit={{ opacity: 0, width: 0 }}
-                                                    onClick={() => handleDeleteProduct(item.id)}
-                                                    className="p-4 bg-red-500/20 text-red-400 rounded-xl hover:bg-red-500 hover:text-white transition-colors border border-red-500/30"
-                                                >
-                                                    <Trash2 size={24} />
-                                                </motion.button>
-                                            )}
-                                        </AnimatePresence>
-                                    </motion.div>
-                                ))}
-
-                                {isEditing && (
-                                    <motion.div
-                                        initial={{ opacity: 0, y: 10 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        className="flex gap-2 mt-4"
-                                    >
-                                        <input
-                                            type="text"
-                                            value={newItemName}
-                                            onChange={(e) => setNewItemName(e.target.value)}
-                                            placeholder="Add new product..."
-                                            className="flex-1 h-14 bg-black/20 border border-white/10 rounded-xl px-4 text-white text-lg placeholder-white/30 focus:outline-none focus:border-purple-500 transition-all"
-                                            onKeyDown={(e) => e.key === 'Enter' && handleAddProduct()}
-                                        />
-                                        <button
-                                            onClick={handleAddProduct}
-                                            className="w-14 h-14 bg-purple-600 rounded-xl text-white hover:bg-purple-500 transition-colors flex items-center justify-center shadow-lg"
-                                        >
-                                            <Plus size={28} />
-                                        </button>
-                                    </motion.div>
-                                )}
-                            </div>
-
-                            {/* Actions */}
-                            <div className="flex gap-4">
-                                <button
-                                    onClick={handleSelectAll}
-                                    className="px-6 py-3 rounded-xl border border-white/20 hover:bg-white/10 transition-colors text-sm text-white"
-                                >
-                                    Select All
-                                </button>
-                                <button
-                                    onClick={() => handleSaveLog(showCatchUpModal ? undefined : catchUpDate ?? undefined)}
-                                    className="flex-1 h-14 flex items-center justify-center gap-2 bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-400 hover:to-indigo-500 text-white text-lg font-medium rounded-xl shadow-lg transition-all hover:scale-[1.02]"
-                                >
-                                    <Save size={20} />
-                                    {catchUpDate && !showCatchUpModal ? `Save for ${catchUpDate}` : 'Save Routine'}
-                                </button>
-                            </div>
-                        </div>
-
-                        {/* Mini Calendar */}
-                        <div className="backdrop-blur-md bg-slate-900/30 border border-white/10 rounded-3xl p-6 text-white">
-                            <h3 className="text-lg font-medium mb-4 flex items-center gap-2">
-                                <CalendarIcon size={18} className="opacity-70" />
-                                <span>Consistency Tracker</span>
-                            </h3>
-                            <div className="grid grid-cols-7 gap-1 text-center">
-                                {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((d, i) => (
-                                    <div key={i} className="text-xs opacity-50 mb-2 text-white">{d}</div>
-                                ))}
-                                {renderCalendar()}
-                            </div>
+                                <h2 className="text-2xl font-bold text-white mb-2 font-[family-name:var(--font-primary)]">Royal Glow Locked</h2>
+                                <p className="text-white/60 text-sm leading-relaxed">
+                                    This room has been locked by your partner. You need permission to use the skincare tracking features.
+                                </p>
+                            </motion.div>
                         </div>
                     </div>
+                ) : (
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
 
-                    {/* RIGHT: Royal Mirror (AI Analysis) (5 cols) */}
-                    <div className="lg:col-span-5 space-y-6">
-                        <div className="backdrop-blur-xl bg-slate-900/40 border border-white/20 rounded-3xl p-6 shadow-xl h-full flex flex-col text-white">
-                            <h2 className="text-2xl font-light mb-1 text-white">The Royal Mirror</h2>
-                            <p className="text-sm opacity-60 mb-6 text-gray-300">Let the AI Dermatologist analyze your skin.</p>
-
-                            {/* Upload Area */}
-                            <div className="relative group mb-6">
-                                {photoGap > 7 && (
-                                    <div className="absolute -top-3 -right-3 z-30 bg-red-500 text-white text-[10px] font-bold px-2 py-1 rounded-full animate-bounce shadow-lg">
-                                        Time for a check! 📸
+                        {/* LEFT: Routine Tracker (7 cols) */}
+                        <div className="lg:col-span-7 space-y-6">
+                            <div className="backdrop-blur-xl bg-slate-900/40 border border-white/20 rounded-3xl p-6 shadow-xl">
+                                {/* Tabs */}
+                                <div className="flex items-center gap-4 mb-6">
+                                    <div className="flex-1 flex p-1 bg-black/40 rounded-xl">
+                                        <button
+                                            onClick={() => setActiveTab('morning')}
+                                            className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-lg transition-all ${activeTab === 'morning' ? 'bg-white text-slate-900 shadow-md' : 'text-gray-400 hover:text-white'}`}
+                                        >
+                                            <Sun size={18} />
+                                            <span className="font-medium">Morning</span>
+                                        </button>
+                                        <button
+                                            onClick={() => setActiveTab('night')}
+                                            className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-lg transition-all ${activeTab === 'night' ? 'bg-slate-900 text-white shadow-md' : 'text-gray-400 hover:text-white'}`}
+                                        >
+                                            <Moon size={18} />
+                                            <span className="font-medium">Night</span>
+                                        </button>
                                     </div>
-                                )}
-                                <input
-                                    type="file"
-                                    accept="image/*"
-                                    multiple
-                                    onChange={handleFileSelect}
-                                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20"
-                                />
-                                <div className={`min-h-[300px] rounded-2xl border-2 border-dashed flex flex-col items-center justify-center transition-all overflow-hidden relative ${previewUrls.length > 0 ? 'border-transparent bg-black/20' : 'border-white/20 hover:border-white/40 hover:bg-white/5'
-                                    }`}>
-                                    {previewUrls.length > 0 ? (
-                                        <div className="grid grid-cols-2 gap-2 p-2 w-full h-full">
-                                            {previewUrls.map((url, idx) => (
-                                                <div key={idx} className="relative aspect-square rounded-xl overflow-hidden">
-                                                    <img src={url} alt={`Preview ${idx}`} className="w-full h-full object-cover" />
+                                    <button
+                                        onClick={() => setIsEditing(!isEditing)}
+                                        className={`p-3 rounded-xl border transition-all ${isEditing ? 'bg-purple-500 text-white border-purple-500' : 'bg-black/40 border-white/10 text-white/60 hover:text-white'}`}
+                                    >
+                                        <Pencil size={20} />
+                                    </button>
+                                </div>
+
+                                {/* Checklist */}
+                                <div className="space-y-3 mb-8">
+                                    {currentRoutine.map((item) => (
+                                        <motion.div
+                                            key={item.id}
+                                            layout
+                                            initial={{ opacity: 0 }}
+                                            animate={{ opacity: 1 }}
+                                            exit={{ opacity: 0 }}
+                                            className="flex gap-2"
+                                        >
+                                            <motion.button
+                                                onClick={() => handleToggle(item.name)}
+                                                whileTap={{ scale: 0.98 }}
+                                                className={`flex-1 flex items-center gap-4 p-4 rounded-xl border transition-all ${checkedItems.has(item.name)
+                                                    ? `bg-${theme.colors.accent}/30 border-${theme.colors.accent} border-opacity-60`
+                                                    : 'bg-white/10 border-white/20 hover:bg-white/15'
+                                                    }`}
+                                                style={{
+                                                    backgroundColor: checkedItems.has(item.name) ? `${theme.colors.accent}30` : undefined,
+                                                    borderColor: checkedItems.has(item.name) ? theme.colors.accent : undefined
+                                                }}
+                                            >
+                                                <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${checkedItems.has(item.name) ? 'bg-green-500 border-green-500' : 'border-white/30'
+                                                    }`}>
+                                                    {checkedItems.has(item.name) && <Check size={14} className="text-white" />}
                                                 </div>
-                                            ))}
-                                            <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-10 pointer-events-none">
-                                                <div className="bg-black/60 px-4 py-2 rounded-full flex items-center gap-2 text-white text-sm">
-                                                    <Camera size={16} />
-                                                    <span>Change Photos</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    ) : (
-                                        <div className="text-center p-6 opacity-60 group-hover:opacity-100 transition-opacity">
-                                            <div className="w-16 h-16 rounded-full bg-white/10 flex items-center justify-center mx-auto mb-4">
-                                                <Upload size={32} />
-                                            </div>
-                                            <p className="font-medium">Upload Selfies</p>
-                                            <p className="text-xs mt-2 text-gray-300">Select multiple angles</p>
-                                        </div>
+                                                <span className={`text-lg font-light text-gray-100 ${checkedItems.has(item.name) ? 'opacity-100' : 'opacity-80'}`}>
+                                                    {item.name}
+                                                </span>
+                                            </motion.button>
+
+                                            <AnimatePresence>
+                                                {isEditing && (
+                                                    <motion.button
+                                                        initial={{ opacity: 0, width: 0 }}
+                                                        animate={{ opacity: 1, width: 'auto' }}
+                                                        exit={{ opacity: 0, width: 0 }}
+                                                        onClick={() => handleDeleteProduct(item.id)}
+                                                        className="p-4 bg-red-500/20 text-red-400 rounded-xl hover:bg-red-500 hover:text-white transition-colors border border-red-500/30"
+                                                    >
+                                                        <Trash2 size={24} />
+                                                    </motion.button>
+                                                )}
+                                            </AnimatePresence>
+                                        </motion.div>
+                                    ))}
+
+                                    {isEditing && (
+                                        <motion.div
+                                            initial={{ opacity: 0, y: 10 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            className="flex gap-2 mt-4"
+                                        >
+                                            <input
+                                                type="text"
+                                                value={newItemName}
+                                                onChange={(e) => setNewItemName(e.target.value)}
+                                                placeholder="Add new product..."
+                                                className="flex-1 h-14 bg-black/20 border border-white/10 rounded-xl px-4 text-white text-lg placeholder-white/30 focus:outline-none focus:border-purple-500 transition-all"
+                                                onKeyDown={(e) => e.key === 'Enter' && handleAddProduct()}
+                                            />
+                                            <button
+                                                onClick={handleAddProduct}
+                                                className="w-14 h-14 bg-purple-600 rounded-xl text-white hover:bg-purple-500 transition-colors flex items-center justify-center shadow-lg"
+                                            >
+                                                <Plus size={28} />
+                                            </button>
+                                        </motion.div>
                                     )}
                                 </div>
+
+                                {/* Actions */}
+                                <div className="flex gap-4">
+                                    <button
+                                        onClick={handleSelectAll}
+                                        className="px-6 py-3 rounded-xl border border-white/20 hover:bg-white/10 transition-colors text-sm text-white"
+                                    >
+                                        Select All
+                                    </button>
+                                    <button
+                                        onClick={() => handleSaveLog(showCatchUpModal ? undefined : catchUpDate ?? undefined)}
+                                        className="flex-1 h-14 flex items-center justify-center gap-2 bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-400 hover:to-indigo-500 text-white text-lg font-medium rounded-xl shadow-lg transition-all hover:scale-[1.02]"
+                                    >
+                                        <Save size={20} />
+                                        {catchUpDate && !showCatchUpModal ? `Save for ${catchUpDate}` : 'Save Routine'}
+                                    </button>
+                                </div>
                             </div>
 
+                            {/* Mini Calendar */}
+                            <div className="backdrop-blur-md bg-slate-900/30 border border-white/10 rounded-3xl p-6 text-white">
+                                <h3 className="text-lg font-medium mb-4 flex items-center gap-2">
+                                    <CalendarIcon size={18} className="opacity-70" />
+                                    <span>Consistency Tracker</span>
+                                </h3>
+                                <div className="grid grid-cols-7 gap-1 text-center">
+                                    {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((d, i) => (
+                                        <div key={i} className="text-xs opacity-50 mb-2 text-white">{d}</div>
+                                    ))}
+                                    {renderCalendar()}
+                                </div>
+                            </div>
+                        </div>
 
-                            {/* Action Button */}
-                            <button
-                                onClick={handleAnalyze}
-                                disabled={selectedFiles.length === 0 || isAnalyzing}
-                                className={`w-full h-16 rounded-xl flex items-center justify-center gap-2 font-medium text-lg transition-all ${selectedFiles.length === 0
-                                    ? 'bg-white/5 text-white/40 cursor-not-allowed'
-                                    : 'bg-white text-slate-900 shadow-lg hover:scale-[1.02]'
-                                    }`}
-                            >
-                                {isAnalyzing ? (
-                                    <>
-                                        <Loader2 size={24} className="animate-spin" />
-                                        <span>Analyzing Skin...</span>
-                                    </>
-                                ) : (
-                                    <>
-                                        <Sparkles size={24} className={selectedFiles.length > 0 ? 'text-purple-500' : ''} />
-                                        <span>Analyze Skin</span>
-                                    </>
-                                )}
-                            </button>
+                        {/* RIGHT: Royal Mirror (AI Analysis) (5 cols) */}
+                        <div className="lg:col-span-5 space-y-6">
+                            <div className="backdrop-blur-xl bg-slate-900/40 border border-white/20 rounded-3xl p-6 shadow-xl h-full flex flex-col text-white">
+                                <h2 className="text-2xl font-light mb-1 text-white">The Royal Mirror</h2>
+                                <p className="text-sm opacity-60 mb-6 text-gray-300">Let the AI Dermatologist analyze your skin.</p>
 
-                            {/* Result */}
-                            <AnimatePresence>
-                                {analysisResult && (
-                                    <motion.div
-                                        initial={{ opacity: 0, y: 10 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        className="mt-6 p-5 rounded-2xl bg-white/90 text-slate-900 border border-white/40 shadow-lg"
-                                    >
-                                        <h3 className="text-xs font-bold uppercase tracking-wider text-purple-700 mb-2">Analysis Result</h3>
-                                        <p className="text-sm leading-relaxed font-medium">
-                                            "{analysisResult}"
-                                        </p>
-                                    </motion.div>
-                                )}
-                            </AnimatePresence>
+                                {/* Upload Area */}
+                                <div className="relative group mb-6">
+                                    {photoGap > 7 && (
+                                        <div className="absolute -top-3 -right-3 z-30 bg-red-500 text-white text-[10px] font-bold px-2 py-1 rounded-full animate-bounce shadow-lg">
+                                            Time for a check! 📸
+                                        </div>
+                                    )}
+                                    <input
+                                        type="file"
+                                        accept="image/*"
+                                        multiple
+                                        onChange={handleFileSelect}
+                                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20"
+                                    />
+                                    <div className={`min-h-[300px] rounded-2xl border-2 border-dashed flex flex-col items-center justify-center transition-all overflow-hidden relative ${previewUrls.length > 0 ? 'border-transparent bg-black/20' : 'border-white/20 hover:border-white/40 hover:bg-white/5'
+                                        }`}>
+                                        {previewUrls.length > 0 ? (
+                                            <div className="grid grid-cols-2 gap-2 p-2 w-full h-full">
+                                                {previewUrls.map((url, idx) => (
+                                                    <div key={idx} className="relative aspect-square rounded-xl overflow-hidden">
+                                                        <img src={url} alt={`Preview ${idx}`} className="w-full h-full object-cover" />
+                                                    </div>
+                                                ))}
+                                                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-10 pointer-events-none">
+                                                    <div className="bg-black/60 px-4 py-2 rounded-full flex items-center gap-2 text-white text-sm">
+                                                        <Camera size={16} />
+                                                        <span>Change Photos</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <div className="text-center p-6 opacity-60 group-hover:opacity-100 transition-opacity">
+                                                <div className="w-16 h-16 rounded-full bg-white/10 flex items-center justify-center mx-auto mb-4">
+                                                    <Upload size={32} />
+                                                </div>
+                                                <p className="font-medium">Upload Selfies</p>
+                                                <p className="text-xs mt-2 text-gray-300">Select multiple angles</p>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+
+
+                                {/* Action Button */}
+                                <button
+                                    onClick={handleAnalyze}
+                                    disabled={selectedFiles.length === 0 || isAnalyzing}
+                                    className={`w-full h-16 rounded-xl flex items-center justify-center gap-2 font-medium text-lg transition-all ${selectedFiles.length === 0
+                                        ? 'bg-white/5 text-white/40 cursor-not-allowed'
+                                        : 'bg-white text-slate-900 shadow-lg hover:scale-[1.02]'
+                                        }`}
+                                >
+                                    {isAnalyzing ? (
+                                        <>
+                                            <Loader2 size={24} className="animate-spin" />
+                                            <span>Analyzing Skin...</span>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Sparkles size={24} className={selectedFiles.length > 0 ? 'text-purple-500' : ''} />
+                                            <span>Analyze Skin</span>
+                                        </>
+                                    )}
+                                </button>
+
+                                {/* Result */}
+                                <AnimatePresence>
+                                    {analysisResult && (
+                                        <motion.div
+                                            initial={{ opacity: 0, y: 10 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            className="mt-6 p-5 rounded-2xl bg-white/90 text-slate-900 border border-white/40 shadow-lg"
+                                        >
+                                            <h3 className="text-xs font-bold uppercase tracking-wider text-purple-700 mb-2">Analysis Result</h3>
+                                            <p className="text-sm leading-relaxed font-medium">
+                                                "{analysisResult}"
+                                            </p>
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
+                            </div>
                         </div>
                     </div>
-
-                </div>
+                )}
             </div>
 
             {/* Diary Modal */}
@@ -577,7 +646,7 @@ export default function SkincarePage() {
                                             {selectedLog.images.map((imgUrl, idx) => (
                                                 <div key={idx} className="rounded-xl overflow-hidden border border-white/10">
                                                     <img
-                                                        src={`https://our-backend-api.onrender.com${imgUrl}`}
+                                                        src={imgUrl.startsWith('http') ? imgUrl : `${API_BASE_URL}${imgUrl}`}
                                                         alt={`Skin Log ${idx}`}
                                                         className="w-full object-cover h-32"
                                                     />

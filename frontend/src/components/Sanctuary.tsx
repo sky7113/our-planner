@@ -2,7 +2,11 @@
 
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Sparkles, X } from 'lucide-react';
+import { Sparkles, X, Lock } from 'lucide-react';
+import axios from 'axios';
+import { useAuth } from '@clerk/nextjs';
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
 const messages = [
     "Kya ho gya Labubu My princess?",
@@ -12,8 +16,35 @@ const messages = [
 ];
 
 export default function Sanctuary() {
+    const { userId } = useAuth();
+    const [userProfile, setUserProfile] = useState<any>(null);
+    const [isCheckingAccess, setIsCheckingAccess] = useState(true);
+
     const [isOpen, setIsOpen] = useState(false);
     const [messageIndex, setMessageIndex] = useState(0);
+
+    // Fetch Profile on Mount
+    useEffect(() => {
+        if (!userId) {
+            setIsCheckingAccess(false);
+            return;
+        }
+
+        const checkAccess = async () => {
+            try {
+                const res = await axios.get(`${API_BASE_URL}/api/users/me`, {
+                    headers: { 'x-clerk-user-id': userId }
+                });
+                setUserProfile(res.data);
+            } catch (error) {
+                console.error("Error fetching user profile:", error);
+            } finally {
+                setIsCheckingAccess(false);
+            }
+        };
+
+        checkAccess();
+    }, [userId]);
 
     // Cycle messages
     useEffect(() => {
@@ -84,52 +115,84 @@ export default function Sanctuary() {
                         exit={{ opacity: 0 }}
                         className="fixed inset-0 z-[60] flex flex-col items-center justify-center bg-purple-950/90 backdrop-blur-xl text-center px-6"
                     >
-                        {/* Breathing Circle */}
-                        <motion.div
-                            animate={{
-                                scale: [1, 1.3, 1],
-                                opacity: [0.8, 1, 0.8],
-                                boxShadow: [
-                                    "0 0 50px rgba(168,85,247,0.3)",
-                                    "0 0 100px rgba(168,85,247,0.6)",
-                                    "0 0 50px rgba(168,85,247,0.3)"
-                                ]
-                            }}
-                            transition={{
-                                duration: 4,
-                                repeat: Infinity,
-                                ease: "easeInOut"
-                            }}
-                            className="w-64 h-64 md:w-80 md:h-80 rounded-full flex items-center justify-center bg-purple-500/10 border border-purple-400/20 backdrop-blur-sm mb-12 relative overflow-hidden"
-                        >
-                            <div className="absolute inset-0 bg-gradient-to-tr from-purple-500/10 to-teal-500/10 rounded-full" />
-
-                            {/* Message */}
-                            <AnimatePresence mode="wait">
-                                <motion.p
-                                    key={messageIndex}
-                                    initial={{ opacity: 0, y: 10 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    exit={{ opacity: 0, y: -10 }}
-                                    transition={{ duration: 0.5 }}
-                                    className="relative z-10 text-xl md:text-2xl font-light text-purple-100 italic leading-relaxed max-w-[80%]"
-                                    style={{ fontFamily: 'Georgia, serif' }} // Using a gentle serif as requested for "elegant"
+                        {isCheckingAccess ? (
+                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-400"></div>
+                        ) : userProfile && !userProfile.is_admin && userProfile.couple && userProfile.couple.partner_can_chat === false ? (
+                            <div className="flex flex-col items-center justify-center text-center px-4 w-full">
+                                <div className="bg-slate-900/50 backdrop-blur-xl border border-white/10 p-8 rounded-3xl shadow-2xl max-w-sm w-full mx-auto relative overflow-hidden group">
+                                    <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 to-teal-500/10 opacity-50 group-hover:opacity-100 transition-opacity duration-500"></div>
+                                    <motion.div
+                                        initial={{ scale: 0.8, opacity: 0 }}
+                                        animate={{ scale: 1, opacity: 1 }}
+                                        transition={{ type: "spring", stiffness: 200, damping: 15 }}
+                                        className="relative z-10 flex flex-col items-center"
+                                    >
+                                        <div className="p-4 bg-slate-800/80 rounded-full text-purple-400 mb-6 shadow-[0_0_30px_rgba(168,85,247,0.2)]">
+                                            <Lock size={48} strokeWidth={1.5} />
+                                        </div>
+                                        <h2 className="text-2xl font-bold text-white mb-2 font-[family-name:var(--font-primary)]">Sanctuary Locked</h2>
+                                        <p className="text-purple-200/70 text-sm leading-relaxed mb-6">
+                                            This room has been locked by your partner. You need permission to use the sanctuary.
+                                        </p>
+                                        <button
+                                            onClick={() => setIsOpen(false)}
+                                            className="px-8 py-3 rounded-full bg-purple-500/20 hover:bg-purple-500/30 border border-purple-500/30 text-purple-200 transition-all duration-300"
+                                        >
+                                            Return
+                                        </button>
+                                    </motion.div>
+                                </div>
+                            </div>
+                        ) : (
+                            <>
+                                {/* Breathing Circle */}
+                                <motion.div
+                                    animate={{
+                                        scale: [1, 1.3, 1],
+                                        opacity: [0.8, 1, 0.8],
+                                        boxShadow: [
+                                            "0 0 50px rgba(168,85,247,0.3)",
+                                            "0 0 100px rgba(168,85,247,0.6)",
+                                            "0 0 50px rgba(168,85,247,0.3)"
+                                        ]
+                                    }}
+                                    transition={{
+                                        duration: 4,
+                                        repeat: Infinity,
+                                        ease: "easeInOut"
+                                    }}
+                                    className="w-64 h-64 md:w-80 md:h-80 rounded-full flex items-center justify-center bg-purple-500/10 border border-purple-400/20 backdrop-blur-sm mb-12 relative overflow-hidden"
                                 >
-                                    "{messages[messageIndex]}"
-                                </motion.p>
-                            </AnimatePresence>
-                        </motion.div>
+                                    <div className="absolute inset-0 bg-gradient-to-tr from-purple-500/10 to-teal-500/10 rounded-full" />
 
-                        {/* Close Button */}
-                        <motion.button
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 1 }}
-                            onClick={() => setIsOpen(false)}
-                            className="mt-8 px-8 py-3 rounded-full bg-teal-500/20 hover:bg-teal-500/30 border border-teal-500/30 text-teal-100 transition-all duration-300"
-                        >
-                            I am feeling better now
-                        </motion.button>
+                                    {/* Message */}
+                                    <AnimatePresence mode="wait">
+                                        <motion.p
+                                            key={messageIndex}
+                                            initial={{ opacity: 0, y: 10 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            exit={{ opacity: 0, y: -10 }}
+                                            transition={{ duration: 0.5 }}
+                                            className="relative z-10 text-xl md:text-2xl font-light text-purple-100 italic leading-relaxed max-w-[80%]"
+                                            style={{ fontFamily: 'Georgia, serif' }}
+                                        >
+                                            "{messages[messageIndex]}"
+                                        </motion.p>
+                                    </AnimatePresence>
+                                </motion.div>
+
+                                {/* Close Button */}
+                                <motion.button
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: 1 }}
+                                    onClick={() => setIsOpen(false)}
+                                    className="mt-8 px-8 py-3 rounded-full bg-teal-500/20 hover:bg-teal-500/30 border border-teal-500/30 text-teal-100 transition-all duration-300"
+                                >
+                                    I am feeling better now
+                                </motion.button>
+                            </>
+                        )}
                     </motion.div>
                 )}
             </AnimatePresence>

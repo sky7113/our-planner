@@ -3,9 +3,10 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Heart, Home, Image as ImageIcon, Book, Settings, Plus, Trash2, Folder } from 'lucide-react';
+import { Heart, Home, Image as ImageIcon, Book, Settings, Plus, Trash2, Folder, Lock } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import axios from 'axios';
+import { useAuth } from '@clerk/nextjs';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
@@ -17,17 +18,51 @@ interface Album {
 }
 
 export default function GalleryPage() {
+    const { userId } = useAuth();
+    const [userProfile, setUserProfile] = useState<any>(null);
+    const [isCheckingAccess, setIsCheckingAccess] = useState(true);
+
     const [albums, setAlbums] = useState<Album[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
     // Fetch Albums on Mount
     useEffect(() => {
-        fetchAlbums();
-    }, []);
+        if (!userId) {
+            setIsCheckingAccess(false);
+            return;
+        }
+
+        const checkAccessAndFetch = async () => {
+            try {
+                const res = await axios.get(`${API_BASE_URL}/api/users/me`, {
+                    headers: { 'x-clerk-user-id': userId }
+                });
+                setUserProfile(res.data);
+
+                // If not admin and partner locked gallery, don't fetch data
+                if (!res.data.is_admin && res.data.couple && res.data.couple.partner_can_gallery === false) {
+                    setIsCheckingAccess(false);
+                    setIsLoading(false);
+                    return;
+                }
+
+                await fetchAlbums();
+            } catch (error) {
+                console.error("Error fetching user profile:", error);
+                setIsLoading(false);
+            } finally {
+                setIsCheckingAccess(false);
+            }
+        };
+
+        checkAccessAndFetch();
+    }, [userId]);
 
     const fetchAlbums = async () => {
         try {
-            const res = await axios.get(`${API_BASE_URL}/api/albums`);
+            const res = await axios.get(`${API_BASE_URL}/api/albums`, {
+                headers: { 'x-clerk-user-id': userId }
+            });
             setAlbums(res.data);
         } catch (error) {
             console.error("Error fetching albums:", error);
@@ -42,7 +77,9 @@ export default function GalleryPage() {
         if (!confirm(`Are you sure you want to delete album "${albumName}"?`)) return;
 
         try {
-            await axios.delete(`${API_BASE_URL}/api/albums/${albumName}`);
+            await axios.delete(`${API_BASE_URL}/api/albums/${albumName}`, {
+                headers: { 'x-clerk-user-id': userId }
+            });
 
             // Update UI immediately
             setAlbums(prev => prev.filter(a => a.name !== albumName));
@@ -74,9 +111,29 @@ export default function GalleryPage() {
 
             <main className="max-w-4xl mx-auto px-4 pt-6 relative z-10">
 
-                {isLoading ? (
+                {isCheckingAccess || isLoading ? (
                     <div className="flex justify-center items-center py-20">
                         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-pink-500"></div>
+                    </div>
+                ) : userProfile && !userProfile.is_admin && userProfile.couple && userProfile.couple.partner_can_gallery === false ? (
+                    <div className="flex flex-col items-center justify-center py-32 text-center px-4">
+                        <div className="bg-slate-900/50 backdrop-blur-xl border border-white/10 p-8 rounded-3xl shadow-2xl max-w-sm w-full mx-auto relative overflow-hidden group">
+                            <div className="absolute inset-0 bg-gradient-to-br from-pink-500/10 to-purple-500/10 opacity-50 group-hover:opacity-100 transition-opacity duration-500"></div>
+                            <motion.div
+                                initial={{ scale: 0.8, opacity: 0 }}
+                                animate={{ scale: 1, opacity: 1 }}
+                                transition={{ type: "spring", stiffness: 200, damping: 15 }}
+                                className="relative z-10 flex flex-col items-center"
+                            >
+                                <div className="p-4 bg-slate-800/80 rounded-full text-pink-500 mb-6 shadow-[0_0_30px_rgba(236,72,153,0.2)]">
+                                    <Lock size={48} strokeWidth={1.5} />
+                                </div>
+                                <h2 className="text-2xl font-bold text-white mb-2 font-[family-name:var(--font-primary)]">Gallery Locked</h2>
+                                <p className="text-slate-400 text-sm leading-relaxed">
+                                    This room has been locked by your partner. You need permission to view albums.
+                                </p>
+                            </motion.div>
+                        </div>
                     </div>
                 ) : albums.length === 0 ? (
                     <div className="text-center py-20 text-slate-500">
