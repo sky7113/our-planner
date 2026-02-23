@@ -251,6 +251,19 @@ export default function CouplePairing() {
                         <p className="text-xs text-white/40 mt-4 leading-relaxed">
                             Share this elite code with your partner to grant them access to your world.
                         </p>
+
+                        <button
+                            onClick={() => {
+                                if (window.confirm("Are you sure? This will disconnect your current partner.")) {
+                                    handleGenerate();
+                                }
+                            }}
+                            disabled={generateLoading}
+                            className="mt-6 w-full py-3 rounded-xl border border-red-500/30 bg-red-500/10 hover:bg-red-500/20 text-red-300 font-medium transition-colors text-sm flex items-center justify-center gap-2"
+                        >
+                            {generateLoading && <div className="w-4 h-4 border-2 border-red-300 border-t-transparent rounded-full animate-spin" />}
+                            Regenerate Code
+                        </button>
                     </div>
 
                     {/* Permissions */}

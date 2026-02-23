@@ -1736,8 +1736,8 @@ def generate_couple(clerk_id: str = Depends(get_current_user_clerk_id)):
         if not user:
             raise HTTPException(status_code=404, detail="User not found")
             
-        if user.couple_id:
-            return {"status": "info", "message": "User already in a couple"}
+        old_couple_id = user.couple_id
+        was_admin = user.is_admin
             
         # Generate unique code and create couple
         code = generate_pairing_code()
@@ -1751,6 +1751,15 @@ def generate_couple(clerk_id: str = Depends(get_current_user_clerk_id)):
         
         user.couple_id = new_couple.id
         user.is_admin = True
+        
+        # Cleanup the old couple if it was just them
+        if old_couple_id and was_admin:
+            remaining_members = session.query(User).filter(User.couple_id == old_couple_id, User.id != user.id).count()
+            if remaining_members == 0:
+                old_couple = session.query(Couple).filter(Couple.id == old_couple_id).first()
+                if old_couple:
+                    session.delete(old_couple)
+
         session.commit()
         
         return {
