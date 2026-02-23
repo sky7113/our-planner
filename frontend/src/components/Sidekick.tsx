@@ -43,9 +43,9 @@ export default function Sidekick({ className = '', image, themeId }: SidekickPro
     // 1. PEEKERS (Anya) - Up/Down
     if (currentThemeId.includes('anya')) {
         return (
-            <div className="fixed inset-0 pointer-events-none z-[9999] overflow-hidden">
+            <div className="pointer-events-none z-[10] md:z-[9999] relative flex justify-center w-full mt-4 mb-4 md:mt-0 md:mb-0 md:fixed md:inset-0 md:overflow-hidden">
                 <motion.div
-                    className={`absolute top-24 w-32 md:w-48 ${theme.position === 'left' ? 'left-2' : 'right-2'} ${className}`}
+                    className={`md:absolute md:top-24 w-auto ${theme.position === 'left' ? 'md:left-4' : 'md:right-4'} ${className}`}
                     initial={{ y: '100%' }}
                     animate={{
                         y: ['100%', '0%', '0%', '100%'], // Up, Stay, Down
@@ -64,7 +64,7 @@ export default function Sidekick({ className = '', image, themeId }: SidekickPro
                             src={currentImage}
                             alt="Anya Peeking"
                             animate={controls}
-                            className="w-full drop-shadow-2xl"
+                            className="h-48 w-auto md:h-80 object-contain drop-shadow-2xl"
                             style={{
                                 pointerEvents: 'auto',
                                 filter: `drop-shadow(0 0 20px ${theme.colors.accent}80)`
@@ -79,9 +79,9 @@ export default function Sidekick({ className = '', image, themeId }: SidekickPro
     // 2. FLOATERS (Rimuru, Gojo, Shinobu) - Hover
     if (['rimuru', 'gojo', 'shinobu'].includes(currentThemeId)) {
         return (
-            <div className="fixed inset-0 pointer-events-none z-[9999] overflow-hidden">
+            <div className="pointer-events-none z-[10] md:z-[9999] relative flex justify-center w-full mt-4 mb-4 md:mt-0 md:mb-0 md:fixed md:inset-0 md:overflow-hidden">
                 <motion.div
-                    className={`absolute top-24 w-32 md:w-48 ${theme.position === 'left' ? 'left-2' : 'right-2'} ${className}`}
+                    className={`md:absolute md:top-24 w-auto ${theme.position === 'left' ? 'md:left-4' : 'md:right-4'} ${className}`}
                     animate={{
                         y: [0, -15, 0],
                     }}
@@ -96,7 +96,7 @@ export default function Sidekick({ className = '', image, themeId }: SidekickPro
                         src={currentImage}
                         alt={theme.name}
                         animate={controls}
-                        className="w-full drop-shadow-2xl"
+                        className="h-48 w-auto md:h-80 object-contain drop-shadow-2xl"
                         style={{
                             pointerEvents: 'auto',
                             filter: `drop-shadow(0 0 20px ${theme.colors.accent}80)`
@@ -120,9 +120,9 @@ export default function Sidekick({ className = '', image, themeId }: SidekickPro
     // 3. BOUNCERS (Luffy) - Jump
     if (currentThemeId === 'luffy') {
         return (
-            <div className="fixed inset-0 pointer-events-none z-[9999] overflow-hidden">
+            <div className="pointer-events-none z-[10] md:z-[9999] relative flex justify-center w-full mt-4 mb-4 md:mt-0 md:mb-0 md:fixed md:inset-0 md:overflow-hidden">
                 <motion.div
-                    className={`absolute top-24 w-32 md:w-48 ${theme.position === 'left' ? 'left-2' : 'right-2'} ${className}`}
+                    className={`md:absolute md:top-24 w-auto ${theme.position === 'left' ? 'md:left-4' : 'md:right-4'} ${className}`}
                     animate={{
                         y: [0, -30, 0], // Jump
                         scaleY: [1, 1.05, 0.95, 1], // Stretch
@@ -138,7 +138,7 @@ export default function Sidekick({ className = '', image, themeId }: SidekickPro
                         src={currentImage}
                         alt={theme.name}
                         animate={controls}
-                        className="w-full drop-shadow-xl"
+                        className="h-48 w-auto md:h-80 object-contain drop-shadow-xl"
                         style={{
                             pointerEvents: 'auto',
                             filter: `drop-shadow(0 0 20px ${theme.colors.accent}80)`
@@ -152,9 +152,9 @@ export default function Sidekick({ className = '', image, themeId }: SidekickPro
     // 4. SLIDERS (Rys) - Slide In/Out
     if (currentThemeId === 'rys') {
         return (
-            <div className="fixed inset-0 pointer-events-none z-[9999] overflow-hidden">
+            <div className="pointer-events-none z-[10] md:z-[9999] relative flex justify-center w-full mt-4 mb-4 md:mt-0 md:mb-0 md:fixed md:inset-0 md:overflow-hidden">
                 <motion.div
-                    className={`absolute top-24 w-32 md:w-48 ${theme.position === 'left' ? 'left-2' : 'right-2'} ${className}`}
+                    className={`md:absolute md:top-24 w-auto ${theme.position === 'left' ? 'md:left-4' : 'md:right-4'} ${className}`}
                     initial={{ x: '-100%', opacity: 0 }}
                     animate={{
                         x: ['-100%', '0%', '0%', '-100%'],
@@ -173,7 +173,7 @@ export default function Sidekick({ className = '', image, themeId }: SidekickPro
                         src={currentImage}
                         alt={theme.name}
                         animate={controls}
-                        className="w-full drop-shadow-2xl"
+                        className="h-48 w-auto md:h-80 object-contain drop-shadow-2xl"
                         style={{
                             pointerEvents: 'auto',
                             filter: `drop-shadow(0 0 20px ${theme.colors.accent}80)`
@@ -187,9 +187,9 @@ export default function Sidekick({ className = '', image, themeId }: SidekickPro
 
     // DEFAULT (Standard Stand)
     return (
-        <div className="fixed inset-0 pointer-events-none z-[9999] overflow-hidden">
+        <div className="pointer-events-none z-[10] md:z-[9999] relative flex justify-center w-full mt-4 mb-4 md:mt-0 md:mb-0 md:fixed md:inset-0 md:overflow-hidden">
             <motion.div
-                className={`absolute top-24 w-32 md:w-48 ${theme.position === 'left' ? 'left-2' : 'right-2'} ${className}`}
+                className={`md:absolute md:top-24 w-auto ${theme.position === 'left' ? 'md:left-4' : 'md:right-4'} ${className}`}
                 initial={{ y: 20, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 onClick={handleInteraction}
@@ -198,7 +198,7 @@ export default function Sidekick({ className = '', image, themeId }: SidekickPro
                     src={currentImage}
                     alt={theme.name}
                     animate={controls}
-                    className="w-full transition-transform duration-400 ease-out"
+                    className="h-48 w-auto md:h-80 object-contain transition-transform duration-400 ease-out"
                     style={{
                         pointerEvents: 'auto',
                         filter: `drop-shadow(0 0 20px ${theme.colors.accent}80)`

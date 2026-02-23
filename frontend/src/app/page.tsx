@@ -112,6 +112,14 @@ export default function Home() {
         </div>
       </div>
 
+      {hasEntered && (
+        <Sidekick
+          className="!z-0"
+          image={theme.sidekickImage || theme.characterImage}
+          themeId={theme.id}
+        />
+      )}
+
       <div className="flex flex-col space-y-6 w-full max-w-md mx-auto z-10 px-4">
         {[
           {
@@ -178,13 +186,6 @@ export default function Home() {
         ))}
       </div>
 
-      {hasEntered && (
-        <Sidekick
-          className="!z-0 hidden md:block"
-          image={theme.sidekickImage || theme.characterImage}
-          themeId={theme.id}
-        />
-      )}
     </main>
   );
 }
