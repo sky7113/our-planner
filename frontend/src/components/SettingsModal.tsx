@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useTheme } from '../context/ThemeContext';
 import { X, RefreshCw, Smartphone, Monitor } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import CouplePairing from './CouplePairing';
 
 interface SettingsModalProps {
     isOpen: boolean;
@@ -92,6 +93,11 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                                     <p className="text-sm text-white/50">Re-enter the palace to change your mood</p>
                                 </div>
                             </button>
+
+                            {/* Couple Pairing Section */}
+                            <div className="pt-4 border-t border-white/10 w-full mb-8">
+                                <CouplePairing />
+                            </div>
 
                             {/* Quick Switch Section */}
                             <div className="pt-4 border-t border-white/10">
