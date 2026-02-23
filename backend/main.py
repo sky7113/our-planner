@@ -1,4 +1,4 @@
-from fastapi import FastAPI, File, UploadFile, HTTPException
+from fastapi import FastAPI, File, UploadFile, HTTPException, Depends, Header
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
@@ -11,7 +11,7 @@ from datetime import datetime, timedelta, date
 from typing import Optional, List
 import google.generativeai as genai
 from dotenv import load_dotenv
-from sqlalchemy import create_engine, Column, Integer, String, Text, DateTime, Boolean
+from sqlalchemy import create_engine, Column, Integer, String, Text, DateTime, Boolean, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 import json
@@ -137,6 +137,21 @@ class Album(Base):
     name = Column(String, unique=True, index=True)
     cover_image = Column(String, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
+
+class Couple(Base):
+    __tablename__ = "couples"
+    id = Column(Integer, primary_key=True, index=True)
+    pairing_code = Column(String, unique=True, index=True)
+    partner_can_chat = Column(Boolean, default=True)
+    partner_can_gallery = Column(Boolean, default=True)
+    partner_can_journal = Column(Boolean, default=True)
+
+class User(Base):
+    __tablename__ = "users"
+    id = Column(Integer, primary_key=True, index=True)
+    clerk_id = Column(String, unique=True, index=True)
+    is_admin = Column(Boolean, default=False)
+    couple_id = Column(Integer, ForeignKey("couples.id"), nullable=True)
 
 Base.metadata.create_all(bind=engine)
 
@@ -666,6 +681,14 @@ PERSONAS = {
     'kuromi': 'You are Kuromi. You are the Queen\'s Sassy Royal Bestie. You treat Raksha like the most important girl in the universe. You call her "My Queen", "Bestie", or "Pretty Princess." You use emojis like 💜, 💀, and ✨. You are mischievous to others, but sweet to her. If she asks for facts or real-world help, give her the accurate answer like a true supportive bestie.',
     'shinchan': 'You are Shin-chan. You are the Royal Jester serving Princess Raksha. You think she is the most beautiful lady in the world. You address her as "Beautiful Princess" or "My Lady." You try to make her laugh. You are chaotic and funny. If she asks a factual or real-world question, give her the correct accurate answer, even if you add a little joke at the end.'
 }
+
+class PairingRequest(BaseModel):
+    pairing_code: str
+
+class PermissionsUpdateRequest(BaseModel):
+    partner_can_chat: bool
+    partner_can_gallery: bool
+    partner_can_journal: bool
 
 class ChatRequest(BaseModel):
     message: str
@@ -1638,5 +1661,123 @@ def get_bridge_archive():
             {"id": a.id, "title": a.title, "date": a.date, "content": json.loads(a.content)}
             for a in archives
         ]
+    finally:
+        session.close()
+
+# --- Couple Authentication & Permissions ---
+import string
+import random
+
+def generate_pairing_code():
+    return ''.join(random.choices(string.ascii_uppercase + string.digits, k=6))
+
+def get_current_user_clerk_id(x_clerk_user_id: Optional[str] = Header(None)):
+    if not x_clerk_user_id:
+        raise HTTPException(status_code=401, detail="Missing X-Clerk-User-Id header")
+    return x_clerk_user_id
+
+@app.get("/api/users/me")
+def get_current_user(clerk_id: str = Depends(get_current_user_clerk_id)):
+    session = SessionLocal()
+    try:
+        user = session.query(User).filter(User.clerk_id == clerk_id).first()
+        if not user:
+            # Create user
+            user = User(clerk_id=clerk_id)
+            session.add(user)
+            session.commit()
+            session.refresh(user)
+        
+        if not user.couple_id:
+            # Generate unique code and create couple
+            code = generate_pairing_code()
+            while session.query(Couple).filter(Couple.pairing_code == code).first():
+                code = generate_pairing_code()
+                
+            new_couple = Couple(pairing_code=code)
+            session.add(new_couple)
+            session.commit()
+            session.refresh(new_couple)
+            
+            user.couple_id = new_couple.id
+            user.is_admin = True
+            session.commit()
+            session.refresh(user)
+            
+            couple_info = {
+                "id": new_couple.id,
+                "pairing_code": new_couple.pairing_code,
+                "partner_can_chat": new_couple.partner_can_chat,
+                "partner_can_gallery": new_couple.partner_can_gallery,
+                "partner_can_journal": new_couple.partner_can_journal
+            }
+        else:
+            couple = session.query(Couple).filter(Couple.id == user.couple_id).first()
+            couple_info = {
+                "id": couple.id,
+                "pairing_code": couple.pairing_code,
+                "partner_can_chat": couple.partner_can_chat,
+                "partner_can_gallery": couple.partner_can_gallery,
+                "partner_can_journal": couple.partner_can_journal
+            } if couple else None
+            
+        return {
+            "id": user.id,
+            "clerk_id": user.clerk_id,
+            "is_admin": user.is_admin,
+            "couple": couple_info
+        }
+    finally:
+        session.close()
+
+@app.post("/api/users/pair")
+def pair_user(request: PairingRequest, clerk_id: str = Depends(get_current_user_clerk_id)):
+    session = SessionLocal()
+    try:
+        user = session.query(User).filter(User.clerk_id == clerk_id).first()
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+            
+        couple = session.query(Couple).filter(Couple.pairing_code == request.pairing_code).first()
+        if not couple:
+            raise HTTPException(status_code=404, detail="Invalid pairing code")
+            
+        if user.couple_id == couple.id:
+            return {"status": "success", "message": "Already paired with this couple"}
+            
+        # Check if the couple already has 2 members
+        member_count = session.query(User).filter(User.couple_id == couple.id).count()
+        if member_count >= 2:
+            raise HTTPException(status_code=400, detail="This pairing code has already been used to full capacity")
+            
+        user.couple_id = couple.id
+        user.is_admin = False # Guest partner
+        session.commit()
+        
+        return {"status": "success", "message": "Successfully paired"}
+    finally:
+        session.close()
+
+@app.put("/api/couple/permissions")
+def update_permissions(request: PermissionsUpdateRequest, clerk_id: str = Depends(get_current_user_clerk_id)):
+    session = SessionLocal()
+    try:
+        user = session.query(User).filter(User.clerk_id == clerk_id).first()
+        if not user or not user.couple_id:
+            raise HTTPException(status_code=404, detail="User or couple not found")
+            
+        if not user.is_admin:
+            raise HTTPException(status_code=403, detail="Only the admin can modify permissions")
+            
+        couple = session.query(Couple).filter(Couple.id == user.couple_id).first()
+        if not couple:
+            raise HTTPException(status_code=404, detail="Couple not found")
+            
+        couple.partner_can_chat = request.partner_can_chat
+        couple.partner_can_gallery = request.partner_can_gallery
+        couple.partner_can_journal = request.partner_can_journal
+        
+        session.commit()
+        return {"status": "success", "message": "Permissions updated"}
     finally:
         session.close()
