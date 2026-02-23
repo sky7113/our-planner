@@ -30,6 +30,9 @@ export default function CouplePairing() {
     const [joinSuccess, setJoinSuccess] = useState(false);
     const [joinLoading, setJoinLoading] = useState(false);
 
+    // Generate state
+    const [generateLoading, setGenerateLoading] = useState(false);
+
     // Admin state
     const [copied, setCopied] = useState(false);
     const [updatingPermissions, setUpdatingPermissions] = useState(false);
@@ -101,6 +104,34 @@ export default function CouplePairing() {
             setError(err.message);
         } finally {
             setJoinLoading(false);
+        }
+    };
+
+    const handleGenerate = async () => {
+        if (!userId) return;
+
+        try {
+            setGenerateLoading(true);
+            setError(null);
+            const res = await fetch(`${API_BASE_URL}/api/couple/generate`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'x-clerk-user-id': userId
+                }
+            });
+
+            const data = await res.json();
+
+            if (!res.ok) {
+                throw new Error(data.detail || 'Failed to generate code');
+            }
+
+            await fetchProfile(); // Refresh to get updated couple data (should be admin now)
+        } catch (err: any) {
+            setError(err.message);
+        } finally {
+            setGenerateLoading(false);
         }
     };
 
@@ -299,47 +330,88 @@ export default function CouplePairing() {
                     </div>
                 </div>
             ) : (
-                /* Joiner View */
-                <form onSubmit={handleJoin} className="space-y-6">
-                    <div className="space-y-2">
-                        <label htmlFor="joinCode" className="block text-sm font-medium uppercase tracking-widest text-purple-300/80 pl-2">
-                            Have a partner code?
-                        </label>
-                        <div className="relative">
-                            <input
-                                id="joinCode"
-                                type="text"
-                                value={joinCode}
-                                onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
-                                placeholder="ENTER 6-DIGIT CODE"
-                                maxLength={6}
-                                className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 text-xl tracking-[0.2em] font-mono text-center text-white placeholder-white/20 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 transition-all uppercase"
-                                disabled={joinLoading}
-                            />
-                        </div>
+                /* Unpaired View (Option A and B) */
+                <div className="space-y-10">
+                    {/* Option A: Generate */}
+                    <div className="text-center">
+                        <h3 className="text-lg font-medium text-white mb-2">Create a New Sanctuary</h3>
+                        <p className="text-sm text-purple-200/60 mb-6">Generate an elite code to invite your partner.</p>
+                        <button
+                            onClick={handleGenerate}
+                            disabled={generateLoading}
+                            className="w-full relative group overflow-hidden rounded-2xl bg-gradient-to-r from-purple-600 to-indigo-600 p-[1px] transition-all disabled:opacity-50 disabled:cursor-not-allowed hidden md:block"
+                        >
+                            <div className="absolute inset-0 bg-white/20 scale-x-0 group-hover:scale-x-100 origin-left transition-transform duration-500" />
+                            <div className="relative flex items-center justify-center gap-3 bg-black/40 backdrop-blur-sm px-6 py-4 rounded-2xl group-hover:bg-transparent transition-colors">
+                                {generateLoading ? (
+                                    <div className="w-6 h-6 border-2 border-white/80 border-t-transparent rounded-full animate-spin" />
+                                ) : (
+                                    <>
+                                        <Shield className="w-5 h-5 text-white" />
+                                        <span className="font-semibold tracking-wide text-white">Generate My Code</span>
+                                    </>
+                                )}
+                            </div>
+                        </button>
+                        {/* Mobile specific button sizing */}
+                        <button
+                            onClick={handleGenerate}
+                            disabled={generateLoading}
+                            className="w-full md:hidden bg-gradient-to-r from-purple-600 to-indigo-600 px-6 py-4 rounded-2xl text-white font-semibold flex items-center justify-center gap-3"
+                        >
+                            {generateLoading ? (
+                                <div className="w-6 h-6 border-2 border-white/80 border-t-transparent rounded-full animate-spin" />
+                            ) : (
+                                <>
+                                    <Shield className="w-5 h-5 text-white" />
+                                    <span className="font-semibold tracking-wide">Generate My Code</span>
+                                </>
+                            )}
+                        </button>
                     </div>
 
-                    <button
-                        type="submit"
-                        disabled={joinLoading || joinCode.length < 6}
-                        className="w-full relative group overflow-hidden rounded-2xl bg-gradient-to-r from-purple-600 to-indigo-600 p-[1px] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                        <div className="absolute inset-0 bg-white/20 scale-x-0 group-hover:scale-x-100 origin-left transition-transform duration-500" />
-                        <div className="relative flex items-center justify-center gap-3 bg-black/40 backdrop-blur-sm px-6 py-4 rounded-2xl group-hover:bg-transparent transition-colors">
+                    <div className="relative flex items-center py-2">
+                        <div className="flex-grow border-t border-white/10"></div>
+                        <span className="flex-shrink-0 mx-4 text-white/30 text-xs uppercase tracking-widest">OR</span>
+                        <div className="flex-grow border-t border-white/10"></div>
+                    </div>
+
+                    {/* Option B: Join */}
+                    <form onSubmit={handleJoin} className="space-y-6">
+                        <div className="space-y-2">
+                            <label htmlFor="joinCode" className="block text-sm font-medium uppercase tracking-widest text-purple-300/80 pl-2">
+                                Have a partner code?
+                            </label>
+                            <div className="relative">
+                                <input
+                                    id="joinCode"
+                                    type="text"
+                                    value={joinCode}
+                                    onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
+                                    placeholder="ENTER 6-DIGIT CODE"
+                                    maxLength={6}
+                                    className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 text-xl tracking-[0.2em] font-mono text-center text-white placeholder-white/20 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 transition-all uppercase"
+                                    disabled={joinLoading}
+                                />
+                            </div>
+                        </div>
+
+                        <button
+                            type="submit"
+                            disabled={joinLoading || joinCode.length < 6}
+                            className="w-full bg-white/5 hover:bg-white/10 border border-white/20 px-6 py-4 rounded-2xl text-white font-semibold transition-all disabled:opacity-50 flex items-center justify-center gap-3"
+                        >
                             {joinLoading ? (
                                 <div className="w-6 h-6 border-2 border-white/80 border-t-transparent rounded-full animate-spin" />
                             ) : (
                                 <>
                                     <Link2 className="w-5 h-5 text-white" />
-                                    <span className="font-semibold tracking-wide text-white">Link Accounts</span>
+                                    <span>Enter Partner Code</span>
                                 </>
                             )}
-                        </div>
-                    </button>
-                    <p className="text-center text-xs text-white/40 leading-relaxed px-4">
-                        Linking your account will give you access based on your partner&apos;s configured permissions.
-                    </p>
-                </form>
+                        </button>
+                    </form>
+                </div>
             )}
         </div>
     );

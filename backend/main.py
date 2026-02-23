@@ -1689,28 +1689,7 @@ def get_current_user(clerk_id: str = Depends(get_current_user_clerk_id)):
             session.refresh(user)
         
         if not user.couple_id:
-            # Generate unique code and create couple
-            code = generate_pairing_code()
-            while session.query(Couple).filter(Couple.pairing_code == code).first():
-                code = generate_pairing_code()
-                
-            new_couple = Couple(pairing_code=code)
-            session.add(new_couple)
-            session.commit()
-            session.refresh(new_couple)
-            
-            user.couple_id = new_couple.id
-            user.is_admin = True
-            session.commit()
-            session.refresh(user)
-            
-            couple_info = {
-                "id": new_couple.id,
-                "pairing_code": new_couple.pairing_code,
-                "partner_can_chat": new_couple.partner_can_chat,
-                "partner_can_gallery": new_couple.partner_can_gallery,
-                "partner_can_journal": new_couple.partner_can_journal
-            }
+            couple_info = None
         else:
             couple = session.query(Couple).filter(Couple.id == user.couple_id).first()
             couple_info = {
@@ -1726,6 +1705,39 @@ def get_current_user(clerk_id: str = Depends(get_current_user_clerk_id)):
             "clerk_id": user.clerk_id,
             "is_admin": user.is_admin,
             "couple": couple_info
+        }
+    finally:
+        session.close()
+
+@app.post("/api/couple/generate")
+def generate_couple(clerk_id: str = Depends(get_current_user_clerk_id)):
+    session = SessionLocal()
+    try:
+        user = session.query(User).filter(User.clerk_id == clerk_id).first()
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+            
+        if user.couple_id:
+            return {"status": "info", "message": "User already in a couple"}
+            
+        # Generate unique code and create couple
+        code = generate_pairing_code()
+        while session.query(Couple).filter(Couple.pairing_code == code).first():
+            code = generate_pairing_code()
+            
+        new_couple = Couple(pairing_code=code)
+        session.add(new_couple)
+        session.commit()
+        session.refresh(new_couple)
+        
+        user.couple_id = new_couple.id
+        user.is_admin = True
+        session.commit()
+        
+        return {
+            "status": "success",
+            "message": "Couple generated",
+            "pairing_code": new_couple.pairing_code
         }
     finally:
         session.close()

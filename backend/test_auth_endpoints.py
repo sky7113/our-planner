@@ -18,30 +18,43 @@ def test_auth_flow():
     session.commit()
     session.close()
 
-    print("--- 1. Testing GET /api/users/me (User 1) ---")
+    print("--- 1. Testing GET /api/users/me (User 1 - Unpaired) ---")
     response1 = client.get("/api/users/me", headers={"x-clerk-user-id": clerk_id_1})
     assert response1.status_code == 200
     data1 = response1.json()
-    print("User 1 Data:", json.dumps(data1, indent=2))
+    print("User 1 Data (Before):", json.dumps(data1, indent=2))
     
     assert data1["clerk_id"] == clerk_id_1
-    assert data1["is_admin"] == True
-    assert "couple" in data1
-    assert data1["couple"]["pairing_code"] is not None
+    assert data1["is_admin"] == False
+    assert data1["couple"] is None
     
-    pairing_code = data1["couple"]["pairing_code"]
-    couple_id = data1["couple"]["id"]
+    print("\n--- 2. Testing POST /api/couple/generate (User 1) ---")
+    response_gen = client.post("/api/couple/generate", headers={"x-clerk-user-id": clerk_id_1})
+    assert response_gen.status_code == 200
+    gen_data = response_gen.json()
+    print("Generate Response:", gen_data)
+    assert "pairing_code" in gen_data
+    
+    pairing_code = gen_data["pairing_code"]
+    
+    # Re-fetch User 1 to get couple ID
+    response1_after_gen = client.get("/api/users/me", headers={"x-clerk-user-id": clerk_id_1})
+    data1_after_gen = response1_after_gen.json()
+    assert data1_after_gen["is_admin"] == True
+    assert data1_after_gen["couple"]["pairing_code"] == pairing_code
+    couple_id = data1_after_gen["couple"]["id"]
 
-    print("\n--- 2. Testing GET /api/users/me (User 2) ---")
+    print("\n--- 3. Testing GET /api/users/me (User 2) ---")
     response2 = client.get("/api/users/me", headers={"x-clerk-user-id": clerk_id_2})
     assert response2.status_code == 200
     data2 = response2.json()
     print("User 2 Data:", json.dumps(data2, indent=2))
     
     assert data2["clerk_id"] == clerk_id_2
-    assert data2["is_admin"] == True  # Currently creates their own couple
+    assert data2["is_admin"] == False
+    assert data2["couple"] is None
     
-    print("\n--- 3. Testing POST /api/users/pair (User 2 joins User 1's couple) ---")
+    print("\n--- 4. Testing POST /api/users/pair (User 2 joins User 1's couple) ---")
     response_pair = client.post("/api/users/pair", 
                                 headers={"x-clerk-user-id": clerk_id_2},
                                 json={"pairing_code": pairing_code})
@@ -54,7 +67,7 @@ def test_auth_flow():
     assert data2_after["is_admin"] == False
     assert data2_after["couple"]["id"] == couple_id
 
-    print("\n--- 4. Testing PUT /api/couple/permissions (By Admin: User 1) ---")
+    print("\n--- 5. Testing PUT /api/couple/permissions (By Admin: User 1) ---")
     response_perm = client.put("/api/couple/permissions",
                                headers={"x-clerk-user-id": clerk_id_1},
                                json={
@@ -77,7 +90,7 @@ def test_auth_flow():
     data2_perm_check = response2_perm_check.json()
     assert data2_perm_check["couple"]["partner_can_chat"] == False
 
-    print("\n--- 5. Testing PUT /api/couple/permissions (By Non-Admin -> SHOULD FAIL) ---")
+    print("\n--- 6. Testing PUT /api/couple/permissions (By Non-Admin -> SHOULD FAIL) ---")
     response_perm_fail = client.put("/api/couple/permissions",
                                headers={"x-clerk-user-id": clerk_id_2},
                                json={
