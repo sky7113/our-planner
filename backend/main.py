@@ -1762,8 +1762,21 @@ def pair_user(request: PairingRequest, clerk_id: str = Depends(get_current_user_
         if member_count >= 2:
             raise HTTPException(status_code=400, detail="This pairing code has already been used to full capacity")
             
+        # Safe overwrite logic: check if the user is leaving an empty couple
+        old_couple_id = user.couple_id
+        was_admin = user.is_admin
+
         user.couple_id = couple.id
         user.is_admin = False # Guest partner
+        
+        # Cleanup the old couple if it was just them
+        if old_couple_id and was_admin:
+            remaining_members = session.query(User).filter(User.couple_id == old_couple_id, User.id != user.id).count()
+            if remaining_members == 0:
+                old_couple = session.query(Couple).filter(Couple.id == old_couple_id).first()
+                if old_couple:
+                    session.delete(old_couple)
+
         session.commit()
         
         return {"status": "success", "message": "Successfully paired"}

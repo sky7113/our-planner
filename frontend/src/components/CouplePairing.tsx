@@ -328,6 +328,48 @@ export default function CouplePairing() {
                             </div>
                         </div>
                     </div>
+
+                    <div className="relative flex items-center py-2">
+                        <div className="flex-grow border-t border-white/10"></div>
+                        <span className="flex-shrink-0 mx-4 text-white/30 text-xs uppercase tracking-widest">OR JOIN SOMEONE ELSE</span>
+                        <div className="flex-grow border-t border-white/10"></div>
+                    </div>
+
+                    {/* Option B: Join (Available for standalone admins) */}
+                    <form onSubmit={handleJoin} className="space-y-6">
+                        <div className="space-y-2">
+                            <label htmlFor="joinCodeAdmin" className="block text-sm font-medium uppercase tracking-widest text-purple-300/80 pl-2">
+                                Have a partner code?
+                            </label>
+                            <div className="relative">
+                                <input
+                                    id="joinCodeAdmin"
+                                    type="text"
+                                    value={joinCode}
+                                    onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
+                                    placeholder="ENTER 6-DIGIT CODE"
+                                    maxLength={6}
+                                    className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 text-xl tracking-[0.2em] font-mono text-center text-white placeholder-white/20 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 transition-all uppercase"
+                                    disabled={joinLoading}
+                                />
+                            </div>
+                        </div>
+
+                        <button
+                            type="submit"
+                            disabled={joinLoading || joinCode.length < 6}
+                            className="w-full bg-white/5 hover:bg-white/10 border border-white/20 px-6 py-4 rounded-2xl text-white font-semibold transition-all disabled:opacity-50 flex items-center justify-center gap-3"
+                        >
+                            {joinLoading ? (
+                                <div className="w-6 h-6 border-2 border-white/80 border-t-transparent rounded-full animate-spin" />
+                            ) : (
+                                <>
+                                    <Link2 className="w-5 h-5 text-white" />
+                                    <span>Enter Partner Code</span>
+                                </>
+                            )}
+                        </button>
+                    </form>
                 </div>
             ) : (
                 /* Unpaired View (Option A and B) */
