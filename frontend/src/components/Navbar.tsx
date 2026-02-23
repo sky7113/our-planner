@@ -30,7 +30,7 @@ export default function Navbar() {
     };
 
     return (
-        <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-[110] w-[90%] max-w-lg">
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[110] w-[90%] max-w-md pb-2">
             <div className="flex items-center justify-around w-full gap-1 sm:gap-3 px-2 sm:px-6 py-3 sm:py-4 rounded-full bg-white/80 dark:bg-black/40 backdrop-blur-xl border border-gray-200 dark:border-white/10 shadow-xl">
                 {navItems.map((item) => {
                     const isActive = pathname === item.path;

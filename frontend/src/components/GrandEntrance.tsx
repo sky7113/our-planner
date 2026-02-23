@@ -242,7 +242,7 @@ export default function GrandEntrance({ onEnterComplete }: GrandEntranceProps) {
                 {stage === 'character' && (
                     <motion.div
                         key="character"
-                        className="absolute inset-0 z-[80] flex flex-col items-center justify-center bg-black/90 backdrop-blur-md"
+                        className="absolute inset-0 z-[80] flex flex-col items-center justify-start pt-24 pb-32 overflow-y-auto bg-black/90 backdrop-blur-md px-4"
                         initial={{ opacity: 0, x: 100 }}
                         animate={{ opacity: 1, x: 0 }}
                         exit={{ opacity: 0, scale: 0.9 }}
