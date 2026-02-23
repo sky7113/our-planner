@@ -30,8 +30,8 @@ export default function Navbar() {
     };
 
     return (
-        <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-[110]">
-            <div className="flex items-center gap-3 px-6 py-4 rounded-full bg-white/80 dark:bg-black/40 backdrop-blur-xl border border-gray-200 dark:border-white/10 shadow-xl">
+        <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-[110] w-[90%] max-w-lg">
+            <div className="flex items-center justify-around w-full gap-1 sm:gap-3 px-2 sm:px-6 py-3 sm:py-4 rounded-full bg-white/80 dark:bg-black/40 backdrop-blur-xl border border-gray-200 dark:border-white/10 shadow-xl">
                 {navItems.map((item) => {
                     const isActive = pathname === item.path;
                     return (
@@ -39,8 +39,9 @@ export default function Navbar() {
                             key={item.path}
                             href={item.path}
                             onClick={(e) => handleProtectedLinkClick(e, item.path)}
+                            className="flex-shrink-0"
                         >
-                            <div className="relative flex flex-col items-center justify-center w-12 h-12 rounded-full transition-all duration-300 group">
+                            <div className="relative flex flex-col items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-full transition-all duration-300 group">
                                 {isActive && (
                                     <motion.div
                                         layoutId="nav-pill"
@@ -50,7 +51,7 @@ export default function Navbar() {
                                     />
                                 )}
                                 <item.icon
-                                    className={`relative z-10 w-9 h-9 transition-colors duration-300 ${isActive ? 'text-pink-600 dark:text-pink-400' : 'text-gray-600 dark:text-gray-400 group-hover:text-black dark:group-hover:text-white'}`}
+                                    className={`relative z-10 w-7 h-7 sm:w-9 sm:h-9 transition-colors duration-300 ${isActive ? 'text-pink-600 dark:text-pink-400' : 'text-gray-600 dark:text-gray-400 group-hover:text-black dark:group-hover:text-white'}`}
                                 />
                                 {isActive && (
                                     <motion.div

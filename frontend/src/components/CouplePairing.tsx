@@ -200,13 +200,13 @@ export default function CouplePairing() {
     const trulyPaired = profile.couple && (!isAdmin || (isAdmin && false)); // Usually we'd check if couple has 2 members, but based on current API, if joiner, couple is set.
 
     return (
-        <div className="w-full max-w-md mx-auto p-6 md:p-8 bg-black/40 backdrop-blur-2xl border border-purple-500/20 rounded-[2rem] shadow-[0_0_40px_rgba(168,85,247,0.1)] text-white">
-            <div className="mb-8 text-center">
-                <div className="w-16 h-16 bg-gradient-to-br from-purple-500/20 to-pink-500/20 border border-purple-500/30 rounded-2xl mx-auto flex items-center justify-center mb-4 shadow-inner">
-                    <Shield className="w-8 h-8 text-purple-300" />
+        <div className="w-full max-w-md mx-auto p-4 md:p-8 bg-black/40 backdrop-blur-2xl border border-purple-500/20 rounded-2xl md:rounded-[2rem] shadow-[0_0_40px_rgba(168,85,247,0.1)] text-white">
+            <div className="mb-6 md:mb-8 text-center">
+                <div className="w-12 h-12 md:w-16 md:h-16 bg-gradient-to-br from-purple-500/20 to-pink-500/20 border border-purple-500/30 rounded-2xl mx-auto flex items-center justify-center mb-3 md:mb-4 shadow-inner">
+                    <Shield className="w-6 h-6 md:w-8 md:h-8 text-purple-300" />
                 </div>
-                <h2 className="text-2xl tracking-wide font-light">Partner Connection</h2>
-                <p className="text-sm text-purple-200/60 mt-1">Manage your shared digital sanctuary</p>
+                <h2 className="text-xl md:text-2xl tracking-wide font-light">Partner Connection</h2>
+                <p className="text-xs md:text-sm text-purple-200/60 mt-1">Manage your shared digital sanctuary</p>
             </div>
 
             {error && (
@@ -236,19 +236,19 @@ export default function CouplePairing() {
 
                         <p className="text-xs uppercase tracking-widest text-purple-300/60 mb-3 font-medium">Your Pairing Code</p>
 
-                        <div className="flex items-center justify-between gap-4">
-                            <span className="text-4xl font-mono tracking-[0.2em] text-white">
+                        <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+                            <span className="text-3xl md:text-4xl font-mono tracking-[0.2em] text-white break-all text-center sm:text-left">
                                 {profile.couple?.pairing_code}
                             </span>
                             <button
                                 onClick={handleCopyCode}
-                                className="p-3 bg-purple-500/20 hover:bg-purple-500/40 text-purple-200 rounded-xl transition-all border border-purple-500/30 hover:shadow-[0_0_15px_rgba(168,85,247,0.4)]"
+                                className="w-full sm:w-auto p-3 flex justify-center bg-purple-500/20 hover:bg-purple-500/40 text-purple-200 rounded-xl transition-all border border-purple-500/30 hover:shadow-[0_0_15px_rgba(168,85,247,0.4)]"
                                 title="Copy to clipboard"
                             >
                                 {copied ? <Check className="w-5 h-5" /> : <Copy className="w-5 h-5" />}
                             </button>
                         </div>
-                        <p className="text-xs text-white/40 mt-4 leading-relaxed">
+                        <p className="text-xs md:text-sm text-white/40 mt-4 leading-relaxed text-center sm:text-left">
                             Share this elite code with your partner to grant them access to your world.
                         </p>
 
@@ -272,14 +272,14 @@ export default function CouplePairing() {
 
                         <div className="bg-black/20 rounded-3xl border border-white/5 p-2 space-y-1">
                             {/* Chat Toggle */}
-                            <div className="flex items-center justify-between p-4 rounded-2xl hover:bg-white/5 transition-colors">
-                                <div className="flex items-center gap-4">
-                                    <div className="bg-purple-900/50 p-2.5 rounded-xl border border-purple-500/20">
-                                        <MessageCircle className="w-5 h-5 text-purple-300" />
+                            <div className="flex items-center justify-between p-3 md:p-4 rounded-2xl hover:bg-white/5 transition-colors">
+                                <div className="flex items-center gap-3 md:gap-4">
+                                    <div className="bg-purple-900/50 p-2 md:p-2.5 rounded-xl border border-purple-500/20">
+                                        <MessageCircle className="w-4 h-4 md:w-5 md:h-5 text-purple-300" />
                                     </div>
                                     <div>
-                                        <h4 className="text-purple-100 font-medium text-sm">Chat Access</h4>
-                                        <p className="text-xs text-purple-200/50 mt-0.5">Allow interacting with AI</p>
+                                        <h4 className="text-purple-100 font-medium text-xs md:text-sm">Chat Access</h4>
+                                        <p className="text-[10px] md:text-xs text-purple-200/50 mt-0.5">Allow interacting with AI</p>
                                     </div>
                                 </div>
                                 <label className="relative inline-flex items-center cursor-pointer">
@@ -295,14 +295,14 @@ export default function CouplePairing() {
                             </div>
 
                             {/* Gallery Toggle */}
-                            <div className="flex items-center justify-between p-4 rounded-2xl hover:bg-white/5 transition-colors">
-                                <div className="flex items-center gap-4">
-                                    <div className="bg-pink-900/50 p-2.5 rounded-xl border border-pink-500/20">
-                                        <ImageIcon className="w-5 h-5 text-pink-300" />
+                            <div className="flex items-center justify-between p-3 md:p-4 rounded-2xl hover:bg-white/5 transition-colors">
+                                <div className="flex items-center gap-3 md:gap-4">
+                                    <div className="bg-pink-900/50 p-2 md:p-2.5 rounded-xl border border-pink-500/20">
+                                        <ImageIcon className="w-4 h-4 md:w-5 md:h-5 text-pink-300" />
                                     </div>
                                     <div>
-                                        <h4 className="text-purple-100 font-medium text-sm">Gallery Access</h4>
-                                        <p className="text-xs text-purple-200/50 mt-0.5">View shared memories</p>
+                                        <h4 className="text-purple-100 font-medium text-xs md:text-sm">Gallery Access</h4>
+                                        <p className="text-[10px] md:text-xs text-purple-200/50 mt-0.5">View shared memories</p>
                                     </div>
                                 </div>
                                 <label className="relative inline-flex items-center cursor-pointer">
@@ -318,14 +318,14 @@ export default function CouplePairing() {
                             </div>
 
                             {/* Journal Toggle */}
-                            <div className="flex items-center justify-between p-4 rounded-2xl hover:bg-white/5 transition-colors">
-                                <div className="flex items-center gap-4">
-                                    <div className="bg-indigo-900/50 p-2.5 rounded-xl border border-indigo-500/20">
-                                        <Book className="w-5 h-5 text-indigo-300" />
+                            <div className="flex items-center justify-between p-3 md:p-4 rounded-2xl hover:bg-white/5 transition-colors">
+                                <div className="flex items-center gap-3 md:gap-4">
+                                    <div className="bg-indigo-900/50 p-2 md:p-2.5 rounded-xl border border-indigo-500/20">
+                                        <Book className="w-4 h-4 md:w-5 md:h-5 text-indigo-300" />
                                     </div>
                                     <div>
-                                        <h4 className="text-purple-100 font-medium text-sm">Journal Access</h4>
-                                        <p className="text-xs text-purple-200/50 mt-0.5">Read private entries</p>
+                                        <h4 className="text-purple-100 font-medium text-xs md:text-sm">Journal Access</h4>
+                                        <p className="text-[10px] md:text-xs text-purple-200/50 mt-0.5">Read private entries</p>
                                     </div>
                                 </div>
                                 <label className="relative inline-flex items-center cursor-pointer">

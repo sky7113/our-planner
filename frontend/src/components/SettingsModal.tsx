@@ -51,7 +51,7 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                         initial={{ opacity: 0, scale: 0.9, y: 20 }}
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                        className={`relative w-[95%] max-w-lg bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-6 shadow-2xl overflow-hidden`}
+                        className={`relative w-full max-w-md mx-4 bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-4 md:p-6 shadow-2xl overflow-hidden flex flex-col max-h-[90vh]`}
                         style={{ borderColor: theme.colors.accent }}
                     >
                         {/* Decorative background glow */}
@@ -63,34 +63,34 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                         {/* Close Button */}
                         <button
                             onClick={onClose}
-                            className="absolute top-4 right-4 p-2 rounded-full hover:bg-white/10 transition-colors text-white/70 hover:text-white"
+                            className="absolute top-2 right-2 md:top-4 md:right-4 p-2 rounded-full hover:bg-white/10 transition-colors text-white/70 hover:text-white z-10"
                         >
                             <X size={20} />
                         </button>
 
                         <h2
-                            className="text-3xl font-light mb-2 text-center text-white"
+                            className="text-2xl md:text-3xl font-light mb-1 md:mb-2 text-center text-white mt-4 md:mt-0"
                             style={{ fontFamily: theme.font }}
                         >
                             Royal Settings
                         </h2>
-                        <p className="text-white/50 text-center mb-8 text-lg">
+                        <p className="text-white/50 text-center mb-6 text-sm md:text-lg">
                             Manage your personal dominion
                         </p>
 
                         {/* Scrollable Container for Modal Inner Content */}
-                        <div className="space-y-4 overflow-y-auto max-h-[70vh] pb-32 -mx-2 px-2 scrollbar-none">
+                        <div className="space-y-4 overflow-y-auto pb-8 -mx-2 px-2 scrollbar-none flex-1">
                             {/* Restart Journey Button */}
                             <button
                                 onClick={handleRestart}
-                                className="w-full group relative overflow-hidden bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/30 rounded-xl p-4 transition-all duration-300 flex items-center gap-4"
+                                className="w-full group relative overflow-hidden bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/30 rounded-xl p-4 transition-all duration-300 flex flex-col md:flex-row items-center gap-3 md:gap-4 text-center md:text-left"
                             >
-                                <div className={`p-4 rounded-full bg-white/10 group-hover:bg-white/20 transition-colors text-white`}>
-                                    <RefreshCw size={48} />
+                                <div className={`p-3 md:p-4 rounded-full bg-white/10 group-hover:bg-white/20 transition-colors text-white`}>
+                                    <RefreshCw className="w-8 h-8 md:w-12 md:h-12" />
                                 </div>
-                                <div className="text-left">
-                                    <h3 className={`text-xl font-medium text-white`}>Restart Journey</h3>
-                                    <p className="text-sm text-white/50">Re-enter the palace to change your mood</p>
+                                <div>
+                                    <h3 className={`text-lg md:text-xl font-medium text-white`}>Restart Journey</h3>
+                                    <p className="text-xs md:text-sm text-white/50">Re-enter the palace to change your mood</p>
                                 </div>
                             </button>
 

@@ -82,7 +82,7 @@ export default function Home() {
       <div className="w-full max-w-md mb-12 z-10 relative flex flex-col items-center">
         <div className="relative group">
           <LiveAvatar
-            size="w-32 h-32"
+            size="w-24 h-24 md:w-32 md:h-32"
             className="mb-6 shadow-2xl shadow-white/10"
             isPointing={!!focusedCard}
           />
@@ -92,21 +92,21 @@ export default function Home() {
             initial={{ opacity: 0, scale: 0.8, y: 10 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             transition={{ delay: 1, duration: 0.5 }}
-            className="absolute -right-24 -top-4 bg-white text-slate-900 px-3 py-2 rounded-xl rounded-bl-none text-xs font-medium shadow-lg pointer-events-none"
+            className="absolute -right-4 md:-right-24 -top-8 md:-top-4 bg-white text-slate-900 px-2 py-1 md:px-3 md:py-2 rounded-xl rounded-bl-none text-[10px] md:text-xs font-medium shadow-lg pointer-events-none"
           >
             Welcome back, My Lady!
           </motion.div>
         </div>
-        <div className="w-full text-left pl-6">
+        <div className="w-full text-center md:text-left px-4 md:pl-6">
           <h1
-            className="text-4xl md:text-5xl font-light mb-3 drop-shadow-lg transition-colors duration-500 text-gray-900 dark:text-white pt-4 pb-4 md:py-4"
+            className="text-3xl md:text-5xl font-light mb-3 drop-shadow-lg transition-colors duration-500 text-gray-900 dark:text-white pt-4 pb-4 md:py-4"
             style={{
               fontFamily: theme?.font
             }}
           >
             {theme?.id === 'default' ? 'The Royal Dominion' : theme?.name}
           </h1>
-          <p className={`text-lg opacity-80 text-gray-700 dark:text-gray-300 font-light tracking-wider`}>
+          <p className={`text-base md:text-lg opacity-80 text-gray-700 dark:text-gray-300 font-light tracking-wider`}>
             {theme?.greeting || "Welcome Home, My Queen"}
           </p>
         </div>
@@ -166,11 +166,11 @@ export default function Home() {
                 <item.icon size={40} />
               </div>
               <h3
-                className="text-2xl font-bold mb-1 text-gray-900 dark:text-gray-100"
+                className="text-xl md:text-2xl font-bold mb-1 text-gray-900 dark:text-gray-100"
               >
                 {item.name}
               </h3>
-              <p className="text-base text-gray-600 dark:text-gray-400">
+              <p className="text-sm md:text-base text-gray-600 dark:text-gray-400">
                 {item.desc}
               </p>
             </div>
