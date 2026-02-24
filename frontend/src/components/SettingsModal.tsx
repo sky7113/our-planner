@@ -223,8 +223,9 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                                             <button
                                                 onClick={handleSaveProfile}
                                                 disabled={savingProfile || !editDisplayName}
-                                                className="w-full py-3 bg-white/10 hover:bg-white/20 border border-white/20 rounded-xl text-white text-sm font-medium transition-colors"
+                                                className="w-full py-3 bg-white/10 hover:bg-white/20 border border-white/20 rounded-xl text-white text-sm font-medium transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                                             >
+                                                {savingProfile && <div className="w-4 h-4 border-2 border-white/80 border-t-transparent rounded-full animate-spin" />}
                                                 {savingProfile ? 'Saving...' : 'Save Profile Changes'}
                                             </button>
 
@@ -232,8 +233,9 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                                                 <button
                                                     onClick={handleDisconnect}
                                                     disabled={disconnecting}
-                                                    className="w-full py-3 mt-4 bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 rounded-xl text-red-400 text-sm font-medium transition-colors"
+                                                    className="w-full py-3 mt-4 bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 rounded-xl text-red-400 text-sm font-medium transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                                                 >
+                                                    {disconnecting && <div className="w-4 h-4 border-2 border-red-400 border-t-transparent rounded-full animate-spin" />}
                                                     {disconnecting ? 'Disconnecting...' : 'Disconnect Partner'}
                                                 </button>
                                             )}

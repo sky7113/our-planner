@@ -249,8 +249,13 @@ export default function MemoriesPage() {
 
             <main className="max-w-4xl mx-auto px-4 pt-6 relative z-10">
                 {isCheckingAccess ? (
-                    <div className="flex justify-center items-center py-20">
-                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-pink-500"></div>
+                    <div className="columns-2 md:columns-3 gap-6 space-y-6">
+                        {Array.from({ length: 6 }).map((_, i) => (
+                            <div
+                                key={i}
+                                className="relative break-inside-avoid rounded-2xl overflow-hidden bg-white/5 border border-white/10 shadow-xl aspect-[3/4] animate-pulse"
+                            ></div>
+                        ))}
                     </div>
                 ) : userProfile && !userProfile.is_admin && userProfile.couple && userProfile.couple.partner_can_gallery === false ? (
                     <div className="flex flex-col items-center justify-center py-32 text-center px-4">

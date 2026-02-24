@@ -175,8 +175,17 @@ export default function CouplePairing() {
 
     if (!isLoaded || loading) {
         return (
-            <div className="flex justify-center items-center h-48 w-full">
-                <div className="w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full animate-spin"></div>
+            <div className="w-full max-w-md mx-auto p-4 md:p-8 bg-black/40 backdrop-blur-2xl border border-purple-500/10 rounded-2xl md:rounded-[2rem] shadow-[0_0_40px_rgba(168,85,247,0.05)] text-white">
+                <div className="mb-6 md:mb-8 text-center animate-pulse">
+                    <div className="w-12 h-12 md:w-16 md:h-16 bg-white/10 rounded-2xl mx-auto mb-3 md:mb-4" />
+                    <div className="h-6 md:h-8 w-3/4 bg-white/10 rounded-lg mx-auto mb-2" />
+                    <div className="h-4 md:h-5 w-1/2 bg-white/5 rounded-md mx-auto" />
+                </div>
+                <div className="space-y-4 animate-pulse">
+                    <div className="h-24 w-full bg-white/5 rounded-3xl" />
+                    <div className="h-16 w-full bg-white/5 rounded-2xl" />
+                    <div className="h-16 w-full bg-white/5 rounded-2xl" />
+                </div>
             </div>
         );
     }
