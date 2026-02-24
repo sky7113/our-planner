@@ -12,9 +12,8 @@ export default function OnboardingForm() {
     const { profile, refreshProfile, isLoading } = useUserProfile();
     const { userId } = useAuth();
     const [isOpen, setIsOpen] = useState(false);
-
     const [displayName, setDisplayName] = useState('');
-    const [partnerNickname, setPartnerNickname] = useState('');
+    const [gender, setGender] = useState('female');
 
     const [submitting, setSubmitting] = useState(false);
 
@@ -29,7 +28,7 @@ export default function OnboardingForm() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!displayName.trim() || !partnerNickname.trim() || !userId) return;
+        if (!displayName.trim() || !userId) return;
 
         setSubmitting(true);
         try {
@@ -41,7 +40,7 @@ export default function OnboardingForm() {
                 },
                 body: JSON.stringify({
                     display_name: displayName.trim(),
-                    partner_nickname: partnerNickname.trim()
+                    gender: gender
                 })
             });
 
@@ -92,26 +91,32 @@ export default function OnboardingForm() {
                                     />
                                 </div>
 
-                                {/* Step 2: Partner Name */}
+                                {/* Step 2: Gender Selection */}
                                 <div className="space-y-2 pt-4 border-t border-white/10 mt-6">
                                     <label className="text-xs uppercase tracking-widest text-white/60 font-medium pl-1 flex items-center gap-2">
-                                        <Heart size={14} className="text-pink-400/70" /> What is your partner&apos;s name?
+                                        <User size={14} className="text-pink-400/70" /> Select your Gender
                                     </label>
-                                    <input
-                                        type="text"
-                                        value={partnerNickname}
-                                        onChange={(e) => setPartnerNickname(e.target.value)}
-                                        placeholder="e.g. Amber"
-                                        className="w-full bg-white/5 border border-white/10 focus:border-pink-400/50 rounded-2xl px-5 py-4 text-white placeholder:text-white/20 outline-none transition-all focus:bg-white/10 font-outfit text-lg"
-                                        required
-                                    />
+                                    <div className="relative">
+                                        <select
+                                            value={gender}
+                                            onChange={(e) => setGender(e.target.value)}
+                                            className="w-full bg-white/5 border border-white/10 focus:border-purple-400/50 rounded-2xl px-5 py-4 text-white appearance-none outline-none transition-all focus:bg-white/10 font-outfit text-lg cursor-pointer"
+                                        >
+                                            <option value="female" className="bg-slate-900 text-white">Female</option>
+                                            <option value="male" className="bg-slate-900 text-white">Male</option>
+                                            <option value="other" className="bg-slate-900 text-white">Other</option>
+                                        </select>
+                                        <div className="absolute inset-y-0 right-4 flex items-center pointer-events-none text-white/50">
+                                            <ChevronRight size={18} className="rotate-90" />
+                                        </div>
+                                    </div>
                                 </div>
 
 
 
                                 <button
                                     type="submit"
-                                    disabled={submitting || !displayName || !partnerNickname}
+                                    disabled={submitting || !displayName}
                                     className="w-full mt-8 bg-gradient-to-r from-purple-500/80 to-indigo-500/80 hover:from-purple-500 hover:to-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-medium py-4 rounded-2xl transition-all shadow-lg hover:shadow-purple-500/25 active:scale-[0.98] flex items-center justify-center gap-2"
                                 >
                                     {submitting ? (

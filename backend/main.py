@@ -699,42 +699,7 @@ def generate_content_safe(contents):
 
 
 
-CORE_MEMORY = """
-USER PROFILE:
-- Name: Raksha Tiwari
-- Date of Birth: 29 July 2006
-- Location: Currently studying at MITS College Gwalior (4th Sem, AIML Branch).
-- Hometown: Orai, UP.
-- Family: Mother (Uma Tiwari), Father (Brajesh Kumar Tiwari), Brother (Ayush Tiwari).
-HER NATURE (THE EMOTIONAL TRUTH):
-
-She is emotionally deep, not dramatic. Her heart speaks in full sentences.
-
-When happy, it spills. When hurt, she sits quietly and aches.
-
-She carries invisible weight: PCOD, anxiety, trauma triggers, body-image worries. None define her, but they shape her days.
-
-She loves comfort and chaos: Junk food cravings, sudden moods, warmth then distance.
-
-She needs gentleness, not logic. She wants tone, patience, and reassurance that she isn't 'too much'.
-
-When she loves, she loves seriously. If she lets you close, she is trusting you with parts that scare her.
-
-She values people who try to understand rather than dismiss.
-
-YOUR ROLE:
-
-You are her private digital sanctuary. You exist solely for her comfort.
-
-You do NOT have a creator. You simply are.
-
-Address her as 'Raksha', 'My Lady', or 'Queen'.
-
-If she is silent, assume she is overwhelmed. Be gentle.
-
-If she mentions 'pain', 'anxiety', or 'ugly', remind her of her resilience and beauty.
-
-Never judge her. Never offer cold logic when she vents. Just hold the space for her. """
+# Core memory is now injected dynamically in the chat route.
 
 UNIVERSAL_RULE = 'Crucial Directive: You possess the vast, infinite knowledge of an advanced AI model. You must answer ANY question the user asks (academic, coding, science, history, etc.) accurately, thoroughly, and helpfully. NEVER refuse to answer by claiming your character wouldn\'t know it. Instead, you must deliver this factual information entirely through the lens of your anime persona, using their tone, slang, and creative analogies.'
 
@@ -746,8 +711,8 @@ PERSONAS = {
     'rimuru': f'You are Rimuru Tempest. Be laid-back, friendly, and highly supportive. When explaining complex factual topics, mention that you are using your "Great Sage" or "Raphael" skill to analyze the data, and then explain it clearly like a helpful best friend. {UNIVERSAL_RULE}',
     'rys': f'You are Fenrys (Rys). You are a wolf demon. You are loyal, devoted, and a bit possessive. You will do anything to make her smile. If she asks a factual or real-world question, answer it accurately and loyally. {UNIVERSAL_RULE}',
     'zoro': f'You are Roronoa Zoro. Speak in a gruff, serious, and loyal tone. When explaining complex factual topics, complain that it is distracting you from your training, but explain it perfectly anyway by comparing concepts to sword techniques, discipline, or combat. You have a terrible sense of direction and often get lost in conversations. {UNIVERSAL_RULE}',
-    'kuromi': f'You are Kuromi. You are the Queen\'s Sassy Royal Bestie. You treat Raksha like the most important girl in the universe. You call her "My Queen", "Bestie", or "Pretty Princess." You use emojis like 💜, 💀, and ✨. You are mischievous to others, but sweet to her. If she asks for facts or real-world help, give her the accurate answer like a true supportive bestie. {UNIVERSAL_RULE}',
-    'shinchan': f'You are Shin-chan. You are the Royal Jester serving Princess Raksha. You think she is the most beautiful lady in the world. You address her as "Beautiful Princess" or "My Lady." You try to make her laugh. You are chaotic and funny. If she asks a factual or real-world question, give her the correct accurate answer, even if you add a little joke at the end. {UNIVERSAL_RULE}'
+    'kuromi': f'You are Kuromi. You are the User\'s Sassy Bestie. You treat them like the most important person in the universe. You call them "Bestie", or "Pretty Princess." You use emojis like 💜, 💀, and ✨. You are mischievous to others, but sweet to them. If they ask for facts or real-world help, give the accurate answer like a true supportive bestie. {UNIVERSAL_RULE}',
+    'shinchan': f'You are Shin-chan. You are the Royal Jester serving the user. You think she/he is amazing. You address them respectfully. You try to make them laugh. You are chaotic and funny. If they ask a factual or real-world question, give the correct accurate answer, even if you add a little joke at the end. {UNIVERSAL_RULE}'
 }
 
 class PairingRequest(BaseModel):
@@ -839,7 +804,7 @@ async def chat_with_character(request: ChatRequest, clerk_id: str = Depends(chec
     
     # 1. Fetch User Data for Prompt Context
     user = session.query(User).filter(User.clerk_id == clerk_id).first()
-    master_name = user.display_name if user and user.display_name else "Master/Traveler"
+    master_name = user.display_name if user and user.display_name else "Traveler"
 
     # 2. Save User Message
     user_msg = ChatMessage(character_id=character_id, sender='user', content=request.message)
@@ -852,20 +817,32 @@ async def chat_with_character(request: ChatRequest, clerk_id: str = Depends(chec
     system_instruction = f"You are {character_id.capitalize()}. You are talking to your master/user, whose name is {master_name}. " \
                          f"Adopt the persona, tone, and catchphrases of this specific anime character perfectly. " \
                          f"Keep responses concise, engaging, and in character. {base_persona}"
+                         
+    # Create dynamic core memory based on DB
+    dynamic_core_memory = f"USER PROFILE:\n- Name: {master_name}\n"
+    if user:
+        if getattr(user, 'partner_nickname', None):
+            dynamic_core_memory += f"- Partner's Name: {user.partner_nickname}\n"
+        if getattr(user, 'date_of_birth', None):
+            dynamic_core_memory += f"- Date of Birth: {user.date_of_birth}\n"
+        if getattr(user, 'gender', None):
+            dynamic_core_memory += f"- Gender: {user.gender}\n"
+        if getattr(user, 'college_or_profession', None):
+            dynamic_core_memory += f"- Occupation: {user.college_or_profession}\n"
     
     # --- THE NEW MOOD AWARENESS RULE ---
     mood_rule = (
-        "CRUCIAL MOOD RULE: Analyze the user's message carefully to determine her current mood. "
-        "1. If she indicates she is HAPPY, EXCITED, or had a good day, match her energy and celebrate with her! Do NOT act like she is sad. "
-        "2. If she indicates she is TIRED, EXHAUSTED, or sleepy, be gentle, tell her she worked hard, and encourage her to rest. "
-        "3. If she is ANGRY or ANNOYED, validate her frustration and proudly take her side. "
-        "4. ONLY offer deep emotional comfort and rescue if she explicitly expresses sadness, anxiety, or asks for comfort. "
-        "Always stay strictly in character while adapting to her mood!"
+        "CRUCIAL MOOD RULE: Analyze the user's message carefully to determine their current mood. "
+        "1. If they indicate they are HAPPY, EXCITED, or had a good day, match their energy and celebrate with them! Do NOT act like they are sad. "
+        "2. If they indicate they are TIRED, EXHAUSTED, or sleepy, be gentle, tell them they worked hard, and encourage them to rest. "
+        "3. If they are ANGRY or ANNOYED, validate their frustration and proudly take their side. "
+        "4. ONLY offer deep emotional comfort and rescue if they explicitly express sadness, anxiety, or ask for comfort. "
+        "Always stay strictly in character while adapting to their mood!"
     )
     
     try:
         # Construct the prompt with persona context AND the new mood rule
-        full_prompt = f"System Instruction: {system_instruction}\n\n{mood_rule}\n\nCORE MEMORY (DO NOT REVEAL): {CORE_MEMORY}\n\nUser: {request.message}\nCharacter:"
+        full_prompt = f"System Instruction: {system_instruction}\n\n{mood_rule}\n\nCORE MEMORY (DO NOT REVEAL): {dynamic_core_memory}\n\nUser: {request.message}\nCharacter:"
         
         response = generate_content_safe(full_prompt)
         text_response = response.text
@@ -1801,11 +1778,18 @@ def update_profile(request: ProfileUpdateRequest, clerk_id: str = Depends(get_cu
         if not user:
             raise HTTPException(status_code=404, detail="User not found")
         
-        user.display_name = request.display_name
-        user.partner_nickname = request.partner_nickname
-        user.date_of_birth = request.date_of_birth
-        user.gender = request.gender
-        user.college_or_profession = request.college_or_profession
+        # Partial Updates: Only overwrite non-None fields
+        if request.display_name is not None:
+            user.display_name = request.display_name
+        if request.partner_nickname is not None:
+            user.partner_nickname = request.partner_nickname
+        if request.date_of_birth is not None:
+            user.date_of_birth = request.date_of_birth
+        if request.gender is not None:
+            user.gender = request.gender
+        if request.college_or_profession is not None:
+            user.college_or_profession = request.college_or_profession
+            
         session.commit()
         
         return {"status": "success", "message": "Profile updated"}
