@@ -19,7 +19,7 @@ export default function OnboardingForm() {
 
     useEffect(() => {
         // Show modal if profile is loaded, user is logged in, and display_name is missing
-        if (!isLoading && profile && !profile.display_name && userId) {
+        if (!isLoading && profile && (!profile.display_name || !profile.display_name.trim()) && userId) {
             setIsOpen(true);
         } else {
             setIsOpen(false);

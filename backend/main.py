@@ -11,7 +11,7 @@ from datetime import datetime, timedelta, date
 from typing import Optional, List
 import google.generativeai as genai
 from dotenv import load_dotenv
-from sqlalchemy import create_engine, Column, Integer, String, Text, DateTime, Boolean, ForeignKey
+from sqlalchemy import create_engine, Column, Integer, String, Text, DateTime, Boolean, ForeignKey, text
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 import json
@@ -179,6 +179,18 @@ class User(Base):
     partner_nickname = Column(String, nullable=True)
 
 Base.metadata.create_all(bind=engine)
+
+try:
+    with engine.begin() as conn:
+        conn.execute(text("ALTER TABLE users ADD COLUMN display_name VARCHAR"))
+except Exception as e:
+    print("display_name column might already exist or error:", e)
+
+try:
+    with engine.begin() as conn:
+        conn.execute(text("ALTER TABLE users ADD COLUMN partner_nickname VARCHAR"))
+except Exception as e:
+    print("partner_nickname column might already exist or error:", e)
 
 app = FastAPI()
 
