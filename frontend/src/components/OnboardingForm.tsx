@@ -39,8 +39,10 @@ export default function OnboardingForm() {
                     'Content-Type': 'application/json',
                     'x-clerk-user-id': userId
                 },
-                display_name: displayName.trim(),
-                partner_nickname: partnerNickname.trim()
+                body: JSON.stringify({
+                    display_name: displayName.trim(),
+                    partner_nickname: partnerNickname.trim()
+                })
             });
 
             if (res.ok) {
