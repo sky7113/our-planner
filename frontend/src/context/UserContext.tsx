@@ -12,7 +12,7 @@ interface UserProfile {
     display_name: string | null;
     partner_nickname: string | null;
     date_of_birth: string | null;
-    hometown: string | null;
+    gender: string | null;
     college_or_profession: string | null;
     couple: any;
 }

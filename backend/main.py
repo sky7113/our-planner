@@ -178,7 +178,7 @@ class User(Base):
     display_name = Column(String, nullable=True)
     partner_nickname = Column(String, nullable=True)
     date_of_birth = Column(String, nullable=True)
-    hometown = Column(String, nullable=True)
+    gender = Column(String, nullable=True)
     college_or_profession = Column(String, nullable=True)
 
 Base.metadata.create_all(bind=engine)
@@ -203,7 +203,13 @@ except Exception as e:
 
 try:
     with engine.begin() as conn:
-        conn.execute(text("ALTER TABLE users ADD COLUMN hometown VARCHAR"))
+        conn.execute(text("ALTER TABLE users ADD COLUMN gender VARCHAR"))
+except Exception as e:
+    pass
+
+try:
+    with engine.begin() as conn:
+        conn.execute(text("ALTER TABLE users DROP COLUMN hometown"))
 except Exception as e:
     pass
 
@@ -753,7 +759,7 @@ class ProfileUpdateRequest(BaseModel):
     display_name: str
     partner_nickname: Optional[str] = None
     date_of_birth: Optional[str] = None
-    hometown: Optional[str] = None
+    gender: Optional[str] = None
     college_or_profession: Optional[str] = None
 
 class ChatRequest(BaseModel):
@@ -1768,7 +1774,7 @@ def get_current_user(clerk_id: str = Depends(get_current_user_clerk_id)):
             "display_name": user.display_name,
             "partner_nickname": user.partner_nickname,
             "date_of_birth": user.date_of_birth,
-            "hometown": user.hometown,
+            "gender": user.gender,
             "college_or_profession": user.college_or_profession,
             "couple": couple_info
         }
@@ -1786,11 +1792,39 @@ def update_profile(request: ProfileUpdateRequest, clerk_id: str = Depends(get_cu
         user.display_name = request.display_name
         user.partner_nickname = request.partner_nickname
         user.date_of_birth = request.date_of_birth
-        user.hometown = request.hometown
+        user.gender = request.gender
         user.college_or_profession = request.college_or_profession
         session.commit()
         
         return {"status": "success", "message": "Profile updated"}
+    finally:
+        session.close()
+
+@app.post("/api/couple/disconnect")
+def disconnect_couple(clerk_id: str = Depends(get_current_user_clerk_id)):
+    session = SessionLocal()
+    try:
+        user = session.query(User).filter(User.clerk_id == clerk_id).first()
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+            
+        old_couple_id = user.couple_id
+        
+        # Disconnect the user
+        user.couple_id = None
+        user.is_admin = False
+        user.partner_nickname = None
+        
+        # Clean up the old couple if empty
+        if old_couple_id:
+            remaining_members = session.query(User).filter(User.couple_id == old_couple_id, User.id != user.id).count()
+            if remaining_members == 0:
+                old_couple = session.query(Couple).filter(Couple.id == old_couple_id).first()
+                if old_couple:
+                    session.delete(old_couple)
+                    
+        session.commit()
+        return {"status": "success", "message": "Successfully disconnected"}
     finally:
         session.close()
 

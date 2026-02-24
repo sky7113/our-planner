@@ -15,7 +15,7 @@ export default function OnboardingForm() {
 
     const [displayName, setDisplayName] = useState('');
     const [dateOfBirth, setDateOfBirth] = useState('');
-    const [hometown, setHometown] = useState('');
+    const [gender, setGender] = useState('');
     const [collegeOrProfession, setCollegeOrProfession] = useState('');
 
     const [hasPartner, setHasPartner] = useState(false);
@@ -47,7 +47,7 @@ export default function OnboardingForm() {
                     display_name: displayName.trim(),
                     partner_nickname: hasPartner ? partnerNickname.trim() : null,
                     date_of_birth: dateOfBirth.trim() || null,
-                    hometown: hometown.trim() || null,
+                    gender: gender || null,
                     college_or_profession: collegeOrProfession.trim() || null
                 })
             });
@@ -113,15 +113,32 @@ export default function OnboardingForm() {
                                     </div>
                                     <div className="space-y-2">
                                         <label className="text-xs uppercase tracking-widest text-white/60 font-medium pl-1 flex items-center gap-2">
-                                            <MapPin size={14} /> Hometown
+                                            <User size={14} /> Gender
                                         </label>
-                                        <input
-                                            type="text"
-                                            value={hometown}
-                                            onChange={(e) => setHometown(e.target.value)}
-                                            placeholder="City, State"
-                                            className="w-full bg-white/5 border border-white/10 focus:border-purple-400/50 rounded-2xl px-5 py-4 text-white placeholder:text-white/20 outline-none transition-all focus:bg-white/10 font-outfit"
-                                        />
+                                        <div className="flex gap-4">
+                                            <label className="flex-1 flex items-center justify-center gap-2 bg-white/5 border border-white/10 rounded-2xl px-5 py-4 cursor-pointer hover:bg-white/10 transition-colors has-[:checked]:bg-purple-900/40 has-[:checked]:border-purple-400/50">
+                                                <input
+                                                    type="radio"
+                                                    name="gender"
+                                                    value="Female"
+                                                    checked={gender === 'Female'}
+                                                    onChange={(e) => setGender(e.target.value)}
+                                                    className="hidden"
+                                                />
+                                                <span className="text-white font-outfit">Female</span>
+                                            </label>
+                                            <label className="flex-1 flex items-center justify-center gap-2 bg-white/5 border border-white/10 rounded-2xl px-5 py-4 cursor-pointer hover:bg-white/10 transition-colors has-[:checked]:bg-purple-900/40 has-[:checked]:border-purple-400/50">
+                                                <input
+                                                    type="radio"
+                                                    name="gender"
+                                                    value="Male"
+                                                    checked={gender === 'Male'}
+                                                    onChange={(e) => setGender(e.target.value)}
+                                                    className="hidden"
+                                                />
+                                                <span className="text-white font-outfit">Male</span>
+                                            </label>
+                                        </div>
                                     </div>
                                 </div>
 

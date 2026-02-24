@@ -1,10 +1,15 @@
 'use client';
 
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTheme } from '../context/ThemeContext';
 import { X, RefreshCw, Smartphone, Monitor } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { useAuth } from '@clerk/nextjs';
+import { useUserProfile } from '../context/UserContext';
 import CouplePairing from './CouplePairing';
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
 interface SettingsModalProps {
     isOpen: boolean;
@@ -14,6 +19,26 @@ interface SettingsModalProps {
 export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
     const { theme, setTheme } = useTheme();
     const router = useRouter();
+    const { userId } = useAuth();
+    const { profile, refreshProfile } = useUserProfile();
+
+    const [isEditingProfile, setIsEditingProfile] = useState(false);
+
+    // Edit Form State
+    const [editDisplayName, setEditDisplayName] = useState('');
+    const [editGender, setEditGender] = useState('');
+    const [editPartnerNickname, setEditPartnerNickname] = useState('');
+    const [savingProfile, setSavingProfile] = useState(false);
+    const [disconnecting, setDisconnecting] = useState(false);
+
+    // Initialize edit state when profile loads or modal opens
+    React.useEffect(() => {
+        if (profile && isOpen) {
+            setEditDisplayName(profile.display_name || '');
+            setEditGender(profile.gender || '');
+            setEditPartnerNickname(profile.partner_nickname || '');
+        }
+    }, [profile, isOpen]);
 
     if (!isOpen) return null;
 
@@ -31,6 +56,55 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
     const handleQuickSwitch = (id: any) => {
         setTheme(id);
         // Don't close immediately, let them see the change
+    };
+
+    const handleSaveProfile = async () => {
+        if (!userId) return;
+        setSavingProfile(true);
+        try {
+            const res = await fetch(`${API_BASE_URL}/api/users/profile`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'x-clerk-user-id': userId
+                },
+                body: JSON.stringify({
+                    display_name: editDisplayName.trim(),
+                    gender: editGender,
+                    partner_nickname: editPartnerNickname.trim() || null,
+                    date_of_birth: profile?.date_of_birth, // preserve existing
+                    college_or_profession: profile?.college_or_profession // preserve existing
+                })
+            });
+            if (res.ok) {
+                await refreshProfile();
+                setIsEditingProfile(false);
+            }
+        } catch (error) {
+            console.error('Error saving profile:', error);
+        } finally {
+            setSavingProfile(false);
+        }
+    };
+
+    const handleDisconnect = async () => {
+        if (!userId || !window.confirm("Are you sure you want to disconnect from your partner? This will reset your sanctuary connection.")) return;
+        setDisconnecting(true);
+        try {
+            const res = await fetch(`${API_BASE_URL}/api/couple/disconnect`, {
+                method: 'POST',
+                headers: {
+                    'x-clerk-user-id': userId
+                }
+            });
+            if (res.ok) {
+                await refreshProfile();
+            }
+        } catch (error) {
+            console.error('Error disconnecting:', error);
+        } finally {
+            setDisconnecting(false);
+        }
     };
 
     return (
@@ -93,6 +167,80 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                                     <p className="text-xs md:text-sm text-white/50">Re-enter the palace to change your mood</p>
                                 </div>
                             </button>
+
+                            {/* Edit Profile Section */}
+                            <div className="pt-4 border-t border-white/10 w-full mb-4">
+                                <button
+                                    onClick={() => setIsEditingProfile(!isEditingProfile)}
+                                    className="w-full flex items-center justify-between p-3 rounded-xl bg-white/5 hover:bg-white/10 transition-colors text-white"
+                                >
+                                    <span className="font-medium text-sm tracking-wide">Edit Profile Settings</span>
+                                    <span className="text-white/50 text-xs">{isEditingProfile ? 'Close' : 'Expand'}</span>
+                                </button>
+
+                                <AnimatePresence>
+                                    {isEditingProfile && (
+                                        <motion.div
+                                            initial={{ opacity: 0, height: 0 }}
+                                            animate={{ opacity: 1, height: 'auto' }}
+                                            exit={{ opacity: 0, height: 0 }}
+                                            className="overflow-hidden space-y-4 pt-4 px-2"
+                                        >
+                                            <div className="space-y-1">
+                                                <label className="text-xs text-white/60 uppercase tracking-widest pl-1">Your Name</label>
+                                                <input
+                                                    type="text"
+                                                    value={editDisplayName}
+                                                    onChange={(e) => setEditDisplayName(e.target.value)}
+                                                    className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-purple-500/50"
+                                                />
+                                            </div>
+
+                                            <div className="space-y-1">
+                                                <label className="text-xs text-white/60 uppercase tracking-widest pl-1">Gender</label>
+                                                <div className="flex gap-2">
+                                                    <label className="flex-1 flex items-center justify-center bg-black/20 border border-white/10 rounded-xl px-4 py-3 cursor-pointer hover:bg-white/5 has-[:checked]:bg-purple-900/40 has-[:checked]:border-purple-400/50">
+                                                        <input type="radio" name="editGender" value="Female" checked={editGender === 'Female'} onChange={(e) => setEditGender(e.target.value)} className="hidden" />
+                                                        <span className="text-sm text-white">Female</span>
+                                                    </label>
+                                                    <label className="flex-1 flex items-center justify-center bg-black/20 border border-white/10 rounded-xl px-4 py-3 cursor-pointer hover:bg-white/5 has-[:checked]:bg-purple-900/40 has-[:checked]:border-purple-400/50">
+                                                        <input type="radio" name="editGender" value="Male" checked={editGender === 'Male'} onChange={(e) => setEditGender(e.target.value)} className="hidden" />
+                                                        <span className="text-sm text-white">Male</span>
+                                                    </label>
+                                                </div>
+                                            </div>
+
+                                            <div className="space-y-1">
+                                                <label className="text-xs text-white/60 uppercase tracking-widest pl-1">Partner&apos;s Name</label>
+                                                <input
+                                                    type="text"
+                                                    value={editPartnerNickname}
+                                                    onChange={(e) => setEditPartnerNickname(e.target.value)}
+                                                    className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-pink-500/50"
+                                                />
+                                            </div>
+
+                                            <button
+                                                onClick={handleSaveProfile}
+                                                disabled={savingProfile || !editDisplayName}
+                                                className="w-full py-3 bg-white/10 hover:bg-white/20 border border-white/20 rounded-xl text-white text-sm font-medium transition-colors"
+                                            >
+                                                {savingProfile ? 'Saving...' : 'Save Profile Changes'}
+                                            </button>
+
+                                            {profile?.couple && (
+                                                <button
+                                                    onClick={handleDisconnect}
+                                                    disabled={disconnecting}
+                                                    className="w-full py-3 mt-4 bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 rounded-xl text-red-400 text-sm font-medium transition-colors"
+                                                >
+                                                    {disconnecting ? 'Disconnecting...' : 'Disconnect Partner'}
+                                                </button>
+                                            )}
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
+                            </div>
 
                             {/* Couple Pairing Section */}
                             <div className="pt-4 border-t border-white/10 w-full mb-8">

@@ -18,6 +18,7 @@ interface UserProfile {
     is_admin: boolean;
     display_name: string | null;
     partner_nickname: string | null;
+    gender: string | null;
     couple: CoupleData | null;
 }
 
@@ -198,7 +199,10 @@ export default function CouplePairing() {
     }
 
     const isAdmin = profile.is_admin;
-    const hasPartner = profile.partner_nickname && profile.couple;
+    const hasPartner = profile.partner_nickname;
+    const isFemale = profile.gender === 'Female';
+    const isMale = profile.gender === 'Male';
+    const isConnected = profile.couple !== null;
 
     return (
         <div className="w-full max-w-md mx-auto p-4 md:p-8 bg-black/40 backdrop-blur-2xl border border-purple-500/20 rounded-2xl md:rounded-[2rem] shadow-[0_0_40px_rgba(168,85,247,0.1)] text-white">
@@ -214,6 +218,12 @@ export default function CouplePairing() {
                 </p>
             </div>
 
+            {isConnected && (
+                <div className="mb-6 mx-auto bg-pink-500/20 border border-pink-400/50 rounded-2xl p-4 text-center shadow-[0_0_20px_rgba(236,72,153,0.2)]">
+                    <p className="text-pink-100 font-medium">Status: Connected to {profile.partner_nickname || 'Partner'} 💖</p>
+                </div>
+            )}
+
             {error && (
                 <div className="mb-6 p-4 rounded-2xl bg-red-950/50 border border-red-500/30 text-red-200 flex items-start gap-3 text-sm">
                     <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
@@ -221,19 +231,19 @@ export default function CouplePairing() {
                 </div>
             )}
 
-            {/* Success State for Joiner */}
-            {(!isAdmin && profile.couple) || joinSuccess ? (
+            {/* Success State for Joiner (Male) */}
+            {!isAdmin && isConnected ? (
                 <div className="text-center p-6 bg-gradient-to-br from-purple-900/30 to-indigo-900/30 rounded-3xl border border-purple-500/30">
                     <div className="w-16 h-16 bg-gradient-to-br from-green-400 to-emerald-600 rounded-full mx-auto flex items-center justify-center mb-4 shadow-[0_0_30px_rgba(52,211,153,0.3)]">
                         <Check className="w-8 h-8 text-white" />
                     </div>
-                    <h3 className="text-xl font-medium text-purple-100 mb-2">Beautifully Linked</h3>
+                    <h3 className="text-xl font-medium text-purple-100 mb-2">Sanctuary Joined</h3>
                     <p className="text-sm text-purple-200/70">
-                        You are successfully connected with your partner&apos;s sanctuary. They manage your access permissions.
+                        You have entered her sanctuary.
                     </p>
                 </div>
-            ) : isAdmin && hasPartner ? (
-                /* Admin View (Paired) */
+            ) : isAdmin && isConnected ? (
+                /* Admin View (Female) */
                 <div className="space-y-8">
                     {/* Code Display */}
                     <div className="bg-white/5 rounded-3xl p-6 border border-white/10 relative overflow-hidden group">
@@ -347,130 +357,77 @@ export default function CouplePairing() {
                         </div>
                     </div>
 
-                    <div className="relative flex items-center py-2">
-                        <div className="flex-grow border-t border-white/10"></div>
-                        <span className="flex-shrink-0 mx-4 text-white/30 text-xs uppercase tracking-widest">OR JOIN SOMEONE ELSE</span>
-                        <div className="flex-grow border-t border-white/10"></div>
-                    </div>
-
-                    {/* Option B: Join (Available for standalone admins) */}
-                    <form onSubmit={handleJoin} className="space-y-6">
-                        <div className="space-y-2">
-                            <label htmlFor="joinCodeAdmin" className="block text-sm font-medium uppercase tracking-widest text-purple-300/80 pl-2">
-                                Have a partner code?
-                            </label>
-                            <div className="relative">
-                                <input
-                                    id="joinCodeAdmin"
-                                    type="text"
-                                    value={joinCode}
-                                    onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
-                                    placeholder="ENTER 6-DIGIT CODE"
-                                    maxLength={6}
-                                    className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 text-xl tracking-[0.2em] font-mono text-center text-white placeholder-white/20 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 transition-all uppercase"
-                                    disabled={joinLoading}
-                                />
-                            </div>
-                        </div>
-
-                        <button
-                            type="submit"
-                            disabled={joinLoading || joinCode.length < 6}
-                            className="w-full bg-white/5 hover:bg-white/10 border border-white/20 px-6 py-4 rounded-2xl text-white font-semibold transition-all disabled:opacity-50 flex items-center justify-center gap-3"
-                        >
-                            {joinLoading ? (
-                                <div className="w-6 h-6 border-2 border-white/80 border-t-transparent rounded-full animate-spin" />
-                            ) : (
-                                <>
-                                    <Link2 className="w-5 h-5 text-white" />
-                                    <span>Enter Partner Code</span>
-                                </>
-                            )}
-                        </button>
-                    </form>
                 </div>
             ) : (
-                /* Unpaired View (Option A and B) */
+                /* Unpaired View */
                 <div className="space-y-10">
-                    {/* Option A: Generate */}
-                    <div className="text-center">
-                        <h3 className="text-lg font-medium text-white mb-2">Invite a Partner</h3>
-                        <p className="text-sm text-purple-200/60 mb-6">Generate an elite code to invite your partner to your sanctuary.</p>
-                        <button
-                            onClick={handleGenerate}
-                            disabled={generateLoading}
-                            className="w-full relative group overflow-hidden rounded-2xl bg-gradient-to-r from-purple-600 to-indigo-600 p-[1px] transition-all disabled:opacity-50 disabled:cursor-not-allowed hidden md:block"
-                        >
-                            <div className="absolute inset-0 bg-white/20 scale-x-0 group-hover:scale-x-100 origin-left transition-transform duration-500" />
-                            <div className="relative flex items-center justify-center gap-3 bg-black/40 backdrop-blur-sm px-6 py-4 rounded-2xl group-hover:bg-transparent transition-colors">
+                    {isFemale && (
+                        <div className="text-center">
+                            <h3 className="text-lg font-medium text-white mb-2">Invite a Partner</h3>
+                            <p className="text-sm text-purple-200/60 mb-6">Generate an elite code to invite your partner to your sanctuary.</p>
+                            <button
+                                onClick={handleGenerate}
+                                disabled={generateLoading}
+                                className="w-full relative group overflow-hidden rounded-2xl bg-gradient-to-r from-purple-600 to-indigo-600 p-4 transition-all disabled:opacity-50 text-white font-semibold flex items-center justify-center gap-3"
+                            >
                                 {generateLoading ? (
                                     <div className="w-6 h-6 border-2 border-white/80 border-t-transparent rounded-full animate-spin" />
                                 ) : (
                                     <>
                                         <Shield className="w-5 h-5 text-white" />
-                                        <span className="font-semibold tracking-wide text-white">Generate My Code</span>
+                                        <span className="font-semibold tracking-wide">Generate My Code</span>
                                     </>
                                 )}
-                            </div>
-                        </button>
-                        {/* Mobile specific button sizing */}
-                        <button
-                            onClick={handleGenerate}
-                            disabled={generateLoading}
-                            className="w-full md:hidden bg-gradient-to-r from-purple-600 to-indigo-600 px-6 py-4 rounded-2xl text-white font-semibold flex items-center justify-center gap-3"
-                        >
-                            {generateLoading ? (
-                                <div className="w-6 h-6 border-2 border-white/80 border-t-transparent rounded-full animate-spin" />
-                            ) : (
-                                <>
-                                    <Shield className="w-5 h-5 text-white" />
-                                    <span className="font-semibold tracking-wide">Generate My Code</span>
-                                </>
-                            )}
-                        </button>
-                    </div>
-
-                    <div className="relative flex items-center py-2">
-                        <div className="flex-grow border-t border-white/10"></div>
-                        <span className="flex-shrink-0 mx-4 text-white/30 text-xs uppercase tracking-widest">OR</span>
-                        <div className="flex-grow border-t border-white/10"></div>
-                    </div>
-
-                    {/* Option B: Join */}
-                    <form onSubmit={handleJoin} className="space-y-6">
-                        <div className="space-y-2">
-                            <label htmlFor="joinCode" className="block text-sm font-medium uppercase tracking-widest text-purple-300/80 pl-2">
-                                Have a partner code?
-                            </label>
-                            <div className="relative">
-                                <input
-                                    id="joinCode"
-                                    type="text"
-                                    value={joinCode}
-                                    onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
-                                    placeholder="ENTER 6-DIGIT CODE"
-                                    maxLength={6}
-                                    className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 text-xl tracking-[0.2em] font-mono text-center text-white placeholder-white/20 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 transition-all uppercase"
-                                    disabled={joinLoading}
-                                />
-                            </div>
+                            </button>
                         </div>
+                    )}
 
-                        <button
-                            type="submit"
-                            disabled={joinLoading || joinCode.length < 6}
-                            className="w-full bg-white/5 hover:bg-white/10 border border-white/20 px-6 py-4 rounded-2xl text-white font-semibold transition-all disabled:opacity-50 flex items-center justify-center gap-3"
-                        >
-                            {joinLoading ? (
-                                <div className="w-6 h-6 border-2 border-white/80 border-t-transparent rounded-full animate-spin" />
-                            ) : (
-                                <>
-                                    <Link2 className="w-5 h-5 text-white" />
-                                    <span>Enter Partner Code</span>
-                                </>
-                            )}
-                        </button>
-                    </form>
+                    {isMale && (
+                        <form onSubmit={handleJoin} className="space-y-6">
+                            <div className="text-center mb-4">
+                                <h3 className="text-lg font-medium text-white mb-2">Join Her Sanctuary</h3>
+                                <p className="text-sm text-purple-200/60">Enter the pairing code she gave you.</p>
+                            </div>
+                            <div className="space-y-2">
+                                <label htmlFor="joinCode" className="block text-sm font-medium uppercase tracking-widest text-purple-300/80 pl-2">
+                                    Pairing Code
+                                </label>
+                                <div className="relative">
+                                    <input
+                                        id="joinCode"
+                                        type="text"
+                                        value={joinCode}
+                                        onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
+                                        placeholder="ENTER 6-DIGIT CODE"
+                                        maxLength={6}
+                                        className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 text-xl tracking-[0.2em] font-mono text-center text-white placeholder-white/20 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 transition-all uppercase"
+                                        disabled={joinLoading}
+                                    />
+                                </div>
+                            </div>
+
+                            <button
+                                type="submit"
+                                disabled={joinLoading || joinCode.length < 6}
+                                className="w-full bg-white/5 hover:bg-white/10 border border-white/20 px-6 py-4 rounded-2xl text-white font-semibold transition-all disabled:opacity-50 flex items-center justify-center gap-3"
+                            >
+                                {joinLoading ? (
+                                    <div className="w-6 h-6 border-2 border-white/80 border-t-transparent rounded-full animate-spin" />
+                                ) : (
+                                    <>
+                                        <Link2 className="w-5 h-5 text-white" />
+                                        <span>Enter Partner Code</span>
+                                    </>
+                                )}
+                            </button>
+                        </form>
+                    )}
+
+                    {!isFemale && !isMale && (
+                        <div className="text-center text-white/50 text-sm">
+                            Please set your gender in Edit Profile to unlock partner features.
+                        </div>
+                    )}
                 </div>
             )}
         </div>
