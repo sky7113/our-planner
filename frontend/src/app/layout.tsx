@@ -33,7 +33,7 @@ const fredoka = Fredoka({
 
 export const metadata: Metadata = {
   title: "The Butterfly Mansion",
-  description: "Raksha's Personal HQ",
+  description: "Personal Sanctuary",
 };
 
 export const viewport = {

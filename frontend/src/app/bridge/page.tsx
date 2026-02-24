@@ -164,8 +164,8 @@ export default function BridgePage() {
 
     if (!theme) return null;
 
-    const amberName = profile?.partner_nickname || 'Amber';
-    const rakshaName = profile?.display_name || 'Raksha';
+    const amberName = profile?.partner_nickname || 'Partner';
+    const rakshaName = profile?.display_name || 'You';
 
     return (
         <main className={`min-h-screen ${theme.colors.backgroundClass} text-white relative overflow-hidden flex flex-col transition-colors duration-700 pb-32`}>
