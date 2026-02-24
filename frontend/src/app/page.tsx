@@ -10,6 +10,7 @@ import SettingsModal from '../components/SettingsModal';
 import LiveAvatar from '../components/LiveAvatar';
 import Sidekick from '../components/Sidekick';
 import { useTheme } from '../context/ThemeContext';
+import { useUserProfile } from '../context/UserContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth, useClerk } from '@clerk/nextjs';
 
@@ -20,6 +21,7 @@ export default function Home() {
   const [focusedCard, setFocusedCard] = useState<string | null>(null);
   const [hasEntered, setHasEntered] = useState(false);
   const { theme } = useTheme();
+  const { profile } = useUserProfile();
   const { isSignedIn, isLoaded } = useAuth();
   const clerk = useClerk();
 
@@ -94,7 +96,7 @@ export default function Home() {
             transition={{ delay: 1, duration: 0.5 }}
             className="absolute -right-4 md:-right-24 -top-8 md:-top-4 bg-white text-slate-900 px-2 py-1 md:px-3 md:py-2 rounded-xl rounded-bl-none text-[10px] md:text-xs font-medium shadow-lg pointer-events-none"
           >
-            Welcome back, My Lady!
+            Welcome back, {profile?.display_name || 'Traveler'}!
           </motion.div>
         </div>
         <div className="w-full text-center md:text-left px-4 md:pl-6">
@@ -107,7 +109,7 @@ export default function Home() {
             {theme?.id === 'default' ? 'The Royal Dominion' : theme?.name}
           </h1>
           <p className={`text-base md:text-lg opacity-80 text-gray-700 dark:text-gray-300 font-light tracking-wider`}>
-            {theme?.greeting || "Welcome Home, My Queen"}
+            {theme?.greeting ? theme.greeting.replace(/My Queen|My Lady|Princess Raksha/gi, profile?.display_name || 'Traveler') : `Welcome Home, ${profile?.display_name || 'Traveler'}`}
           </p>
         </div>
       </div>

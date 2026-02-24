@@ -175,6 +175,8 @@ class User(Base):
     clerk_id = Column(String, unique=True, index=True)
     is_admin = Column(Boolean, default=False)
     couple_id = Column(Integer, ForeignKey("couples.id"), nullable=True)
+    display_name = Column(String, nullable=True)
+    partner_nickname = Column(String, nullable=True)
 
 Base.metadata.create_all(bind=engine)
 
@@ -713,6 +715,10 @@ class PermissionsUpdateRequest(BaseModel):
     partner_can_chat: bool
     partner_can_gallery: bool
     partner_can_journal: bool
+
+class ProfileUpdateRequest(BaseModel):
+    display_name: str
+    partner_nickname: str
 
 class ChatRequest(BaseModel):
     message: str
@@ -1723,8 +1729,26 @@ def get_current_user(clerk_id: str = Depends(get_current_user_clerk_id)):
             "id": user.id,
             "clerk_id": user.clerk_id,
             "is_admin": user.is_admin,
+            "display_name": user.display_name,
+            "partner_nickname": user.partner_nickname,
             "couple": couple_info
         }
+    finally:
+        session.close()
+
+@app.put("/api/users/profile")
+def update_profile(request: ProfileUpdateRequest, clerk_id: str = Depends(get_current_user_clerk_id)):
+    session = SessionLocal()
+    try:
+        user = session.query(User).filter(User.clerk_id == clerk_id).first()
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+        
+        user.display_name = request.display_name
+        user.partner_nickname = request.partner_nickname
+        session.commit()
+        
+        return {"status": "success", "message": "Profile updated"}
     finally:
         session.close()
 

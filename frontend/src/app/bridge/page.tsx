@@ -4,6 +4,7 @@ export const dynamic = 'force-dynamic';
 
 import { useState, useEffect, useRef } from 'react';
 import { useTheme } from '../../context/ThemeContext';
+import { useUserProfile } from '../../context/UserContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Send, User, Sparkles, Heart, Save, Book, X, RefreshCw } from 'lucide-react';
 
@@ -24,6 +25,7 @@ interface SavedBridgeChat {
 
 export default function BridgePage() {
     const { theme } = useTheme();
+    const { profile } = useUserProfile();
     const [currentUser, setCurrentUser] = useState<'Amber' | 'Raksha'>('Amber');
     const [messages, setMessages] = useState<BridgeMessage[]>([]);
     const [inputText, setInputText] = useState('');
@@ -162,6 +164,9 @@ export default function BridgePage() {
 
     if (!theme) return null;
 
+    const amberName = profile?.partner_nickname || 'Amber';
+    const rakshaName = profile?.display_name || 'Raksha';
+
     return (
         <main className={`min-h-screen ${theme.colors.backgroundClass} text-white relative overflow-hidden flex flex-col transition-colors duration-700 pb-32`}>
 
@@ -212,7 +217,7 @@ export default function BridgePage() {
                                 : 'text-white/40 hover:text-white/60'
                                 }`}
                         >
-                            Amber
+                            {amberName}
                         </button>
                         <button
                             onClick={() => setCurrentUser('Raksha')}
@@ -221,7 +226,7 @@ export default function BridgePage() {
                                 : 'text-white/40 hover:text-white/60'
                                 }`}
                         >
-                            Raksha
+                            {rakshaName}
                         </button>
                     </div>
 
@@ -273,7 +278,7 @@ export default function BridgePage() {
                                 >
                                     <div className={`text-xs font-bold mb-1 uppercase tracking-wider ${msg.sender === 'Amber' ? 'text-blue-400' : 'text-pink-400'
                                         }`}>
-                                        {msg.sender}
+                                        {msg.sender === 'Amber' ? amberName : rakshaName}
                                     </div>
                                     <p className="text-white/90 leading-relaxed font-light">{msg.message}</p>
                                 </motion.div>
@@ -317,7 +322,7 @@ export default function BridgePage() {
                             value={inputText}
                             onChange={(e) => setInputText(e.target.value)}
                             onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
-                            placeholder={`Tell the Mediator how you feel, ${currentUser}...`}
+                            placeholder={`Tell the Mediator how you feel, ${currentUser === 'Amber' ? amberName : rakshaName}...`}
                             className="flex-1 bg-transparent border-none focus:outline-none text-white text-lg placeholder-white/30 h-full"
                             disabled={isLoading}
                         />
@@ -443,7 +448,7 @@ export default function BridgePage() {
                                         >
                                             <div className={`text-xs font-bold mb-1 uppercase tracking-wider ${msg.sender === 'Amber' ? 'text-blue-500' : 'text-pink-500'
                                                 }`}>
-                                                {msg.sender}
+                                                {msg.sender === 'Amber' ? amberName : rakshaName}
                                             </div>
                                             <p className="text-white/70 leading-relaxed font-light">{msg.message}</p>
                                         </div>

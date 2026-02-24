@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { useTheme, CharacterId } from '../context/ThemeContext';
+import { useUserProfile } from '../context/UserContext';
 import { Smile, Frown, BatteryCharging, ArrowLeft, ArrowRight } from 'lucide-react';
 
 interface GrandEntranceProps {
@@ -12,6 +13,7 @@ interface GrandEntranceProps {
 
 export default function GrandEntrance({ onEnterComplete }: GrandEntranceProps) {
     const { setMood, setTheme, setIsSadMode, isSadMode } = useTheme();
+    const { profile } = useUserProfile();
     const router = useRouter();
     // Stages: 'welcome' -> 'mood' -> 'character' -> 'gate' -> 'finished'
     const [stage, setStage] = useState<'welcome' | 'mood' | 'character' | 'gate' | 'finished'>('welcome');
@@ -167,7 +169,7 @@ export default function GrandEntrance({ onEnterComplete }: GrandEntranceProps) {
                             className="pt-24 pb-8 text-center px-4 relative z-20"
                         >
                             <h1 className="text-5xl md:text-7xl font-serif text-yellow-400 font-bold drop-shadow-[0_4px_4px_rgba(0,0,0,0.8)]">
-                                Welcome Home, My Queen
+                                Welcome Home, {profile?.display_name || 'Traveler'}
                             </h1>
                         </motion.div>
 
