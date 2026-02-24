@@ -245,6 +245,7 @@ app.add_middleware(
 )
 
 @app.get("/")
+@app.head("/")
 def read_root():
     return {"status": "ok", "message": "Server is awake!"}
 
