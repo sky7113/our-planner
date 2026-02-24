@@ -16,6 +16,8 @@ interface UserProfile {
     id: number;
     clerk_id: string;
     is_admin: boolean;
+    display_name: string | null;
+    partner_nickname: string | null;
     couple: CoupleData | null;
 }
 
@@ -196,8 +198,7 @@ export default function CouplePairing() {
     }
 
     const isAdmin = profile.is_admin;
-    const hasPartner = profile.couple !== null && !isAdmin && profile.couple.id !== profile.id; // basic heuristic if not admin
-    const trulyPaired = profile.couple && (!isAdmin || (isAdmin && false)); // Usually we'd check if couple has 2 members, but based on current API, if joiner, couple is set.
+    const hasPartner = profile.partner_nickname && profile.couple;
 
     return (
         <div className="w-full max-w-md mx-auto p-4 md:p-8 bg-black/40 backdrop-blur-2xl border border-purple-500/20 rounded-2xl md:rounded-[2rem] shadow-[0_0_40px_rgba(168,85,247,0.1)] text-white">
@@ -205,8 +206,12 @@ export default function CouplePairing() {
                 <div className="w-12 h-12 md:w-16 md:h-16 bg-gradient-to-br from-purple-500/20 to-pink-500/20 border border-purple-500/30 rounded-2xl mx-auto flex items-center justify-center mb-3 md:mb-4 shadow-inner">
                     <Shield className="w-6 h-6 md:w-8 md:h-8 text-purple-300" />
                 </div>
-                <h2 className="text-xl md:text-2xl tracking-wide font-light">Partner Connection</h2>
-                <p className="text-xs md:text-sm text-purple-200/60 mt-1">Manage your shared digital sanctuary</p>
+                <h2 className="text-xl md:text-2xl tracking-wide font-light">
+                    {hasPartner ? "Partner Connection" : "Personal Sanctuary"}
+                </h2>
+                <p className="text-xs md:text-sm text-purple-200/60 mt-1">
+                    {hasPartner ? "Manage your shared digital sanctuary" : "Your private space is secure"}
+                </p>
             </div>
 
             {error && (
@@ -227,8 +232,8 @@ export default function CouplePairing() {
                         You are successfully connected with your partner&apos;s sanctuary. They manage your access permissions.
                     </p>
                 </div>
-            ) : isAdmin ? (
-                /* Admin View */
+            ) : isAdmin && hasPartner ? (
+                /* Admin View (Paired) */
                 <div className="space-y-8">
                     {/* Code Display */}
                     <div className="bg-white/5 rounded-3xl p-6 border border-white/10 relative overflow-hidden group">
@@ -389,8 +394,8 @@ export default function CouplePairing() {
                 <div className="space-y-10">
                     {/* Option A: Generate */}
                     <div className="text-center">
-                        <h3 className="text-lg font-medium text-white mb-2">Create a New Sanctuary</h3>
-                        <p className="text-sm text-purple-200/60 mb-6">Generate an elite code to invite your partner.</p>
+                        <h3 className="text-lg font-medium text-white mb-2">Invite a Partner</h3>
+                        <p className="text-sm text-purple-200/60 mb-6">Generate an elite code to invite your partner to your sanctuary.</p>
                         <button
                             onClick={handleGenerate}
                             disabled={generateLoading}

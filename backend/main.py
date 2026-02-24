@@ -177,6 +177,9 @@ class User(Base):
     couple_id = Column(Integer, ForeignKey("couples.id"), nullable=True)
     display_name = Column(String, nullable=True)
     partner_nickname = Column(String, nullable=True)
+    date_of_birth = Column(String, nullable=True)
+    hometown = Column(String, nullable=True)
+    college_or_profession = Column(String, nullable=True)
 
 Base.metadata.create_all(bind=engine)
 
@@ -184,13 +187,31 @@ try:
     with engine.begin() as conn:
         conn.execute(text("ALTER TABLE users ADD COLUMN display_name VARCHAR"))
 except Exception as e:
-    print("display_name column might already exist or error:", e)
+    pass
 
 try:
     with engine.begin() as conn:
         conn.execute(text("ALTER TABLE users ADD COLUMN partner_nickname VARCHAR"))
 except Exception as e:
-    print("partner_nickname column might already exist or error:", e)
+    pass
+
+try:
+    with engine.begin() as conn:
+        conn.execute(text("ALTER TABLE users ADD COLUMN date_of_birth VARCHAR"))
+except Exception as e:
+    pass
+
+try:
+    with engine.begin() as conn:
+        conn.execute(text("ALTER TABLE users ADD COLUMN hometown VARCHAR"))
+except Exception as e:
+    pass
+
+try:
+    with engine.begin() as conn:
+        conn.execute(text("ALTER TABLE users ADD COLUMN college_or_profession VARCHAR"))
+except Exception as e:
+    pass
 
 app = FastAPI()
 
@@ -730,7 +751,10 @@ class PermissionsUpdateRequest(BaseModel):
 
 class ProfileUpdateRequest(BaseModel):
     display_name: str
-    partner_nickname: str
+    partner_nickname: Optional[str] = None
+    date_of_birth: Optional[str] = None
+    hometown: Optional[str] = None
+    college_or_profession: Optional[str] = None
 
 class ChatRequest(BaseModel):
     message: str
@@ -1743,6 +1767,9 @@ def get_current_user(clerk_id: str = Depends(get_current_user_clerk_id)):
             "is_admin": user.is_admin,
             "display_name": user.display_name,
             "partner_nickname": user.partner_nickname,
+            "date_of_birth": user.date_of_birth,
+            "hometown": user.hometown,
+            "college_or_profession": user.college_or_profession,
             "couple": couple_info
         }
     finally:
@@ -1758,6 +1785,9 @@ def update_profile(request: ProfileUpdateRequest, clerk_id: str = Depends(get_cu
         
         user.display_name = request.display_name
         user.partner_nickname = request.partner_nickname
+        user.date_of_birth = request.date_of_birth
+        user.hometown = request.hometown
+        user.college_or_profession = request.college_or_profession
         session.commit()
         
         return {"status": "success", "message": "Profile updated"}
