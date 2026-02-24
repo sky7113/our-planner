@@ -12,6 +12,8 @@ interface Message {
     sender: 'user' | 'companion';
 }
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+
 export default function ComfortCompanion() {
     const { theme, setIsSadMode, mood } = useTheme();
     const router = useRouter();
@@ -33,7 +35,7 @@ export default function ComfortCompanion() {
         const initSession = async () => {
             // 1. Reset Backend Memory on Entry
             try {
-                await fetch('https://our-backend-api.onrender.com/api/chat/reset', { method: 'DELETE' });
+                await fetch(`${API_BASE_URL}/api/chat/reset`, { method: 'DELETE' });
             } catch (e) {
                 console.error("Failed to reset memory:", e);
             }
@@ -83,7 +85,7 @@ export default function ComfortCompanion() {
         setIsTyping(true);
 
         try {
-            const response = await fetch('https://our-backend-api.onrender.com/api/chat', {
+            const response = await fetch(`${API_BASE_URL}/api/chat`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -123,7 +125,7 @@ export default function ComfortCompanion() {
 
     const handleConfirmSave = async () => {
         try {
-            await fetch('https://our-backend-api.onrender.com/api/chat/save', {
+            await fetch(`${API_BASE_URL}/api/chat/save`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -140,7 +142,7 @@ export default function ComfortCompanion() {
 
     const handleOpenLibrary = async () => {
         try {
-            const res = await fetch('https://our-backend-api.onrender.com/api/chat/saved');
+            const res = await fetch(`${API_BASE_URL}/api/chat/saved`);
             const data = await res.json();
             setSavedChats(data);
             setIsLibraryOpen(true);
@@ -151,7 +153,7 @@ export default function ComfortCompanion() {
 
     const loadSavedChat = async (id: number) => {
         try {
-            const res = await fetch(`https://our-backend-api.onrender.com/api/chat/saved/${id}`);
+            const res = await fetch(`${API_BASE_URL}/api/chat/saved/${id}`);
             const data = await res.json();
             if (data.messages) {
                 setMessages(data.messages);

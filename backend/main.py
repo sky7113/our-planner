@@ -835,12 +835,21 @@ async def chat_with_character(request: ChatRequest, clerk_id: str = Depends(chec
     character_id = request.characterId.lower()
     session = SessionLocal()
     
-    # 1. Save User Message
+    # 1. Fetch User Data for Prompt Context
+    user = session.query(User).filter(User.clerk_id == clerk_id).first()
+    master_name = user.display_name if user and user.display_name else "Master/Traveler"
+
+    # 2. Save User Message
     user_msg = ChatMessage(character_id=character_id, sender='user', content=request.message)
     session.add(user_msg)
     session.commit()
 
-    system_instruction = PERSONAS.get(character_id, "You are a helpful, comforting assistant.")
+    base_persona = PERSONAS.get(character_id, "You are a helpful, comforting assistant.")
+    
+    # Strictly bind the AI to this persona and user identity
+    system_instruction = f"You are {character_id.capitalize()}. You are talking to your master/user, whose name is {master_name}. " \
+                         f"Adopt the persona, tone, and catchphrases of this specific anime character perfectly. " \
+                         f"Keep responses concise, engaging, and in character. {base_persona}"
     
     # --- THE NEW MOOD AWARENESS RULE ---
     mood_rule = (
