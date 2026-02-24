@@ -41,8 +41,9 @@ export default function ComfortCompanion() {
                 await fetch(`${API_BASE_URL}/api/chat/reset`, {
                     method: 'DELETE',
                     headers: {
+                        'Content-Type': 'application/json',
                         'Authorization': `Bearer ${token}`,
-                        'X-Clerk-User-Id': userId || ''
+                        'x-clerk-user-id': userId || ''
                     }
                 });
             } catch (e) {
@@ -100,7 +101,7 @@ export default function ComfortCompanion() {
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`,
-                    'X-Clerk-User-Id': userId || ''
+                    'x-clerk-user-id': userId || ''
                 },
                 body: JSON.stringify({
                     message: inputValue,
@@ -145,7 +146,7 @@ export default function ComfortCompanion() {
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`,
-                    'X-Clerk-User-Id': userId || ''
+                    'x-clerk-user-id': userId || ''
                 },
                 body: JSON.stringify({
                     title: saveTitle,
@@ -164,8 +165,9 @@ export default function ComfortCompanion() {
             const token = await getToken();
             const res = await fetch(`${API_BASE_URL}/api/chat/saved`, {
                 headers: {
+                    'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`,
-                    'X-Clerk-User-Id': userId || ''
+                    'x-clerk-user-id': userId || ''
                 }
             });
             const data = await res.json();
@@ -181,8 +183,9 @@ export default function ComfortCompanion() {
             const token = await getToken();
             const res = await fetch(`${API_BASE_URL}/api/chat/saved/${id}`, {
                 headers: {
+                    'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`,
-                    'X-Clerk-User-Id': userId || ''
+                    'x-clerk-user-id': userId || ''
                 }
             });
             const data = await res.json();
