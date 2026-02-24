@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Send, Sparkles, XCircle, ArrowRight, Save, Book, Trash2 } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useTheme } from '../context/ThemeContext';
+import { useAuth } from '@clerk/nextjs';
 
 interface Message {
     id: number;
@@ -18,6 +19,7 @@ export default function ComfortCompanion() {
     const { theme, setIsSadMode, mood } = useTheme();
     const router = useRouter();
     const searchParams = useSearchParams();
+    const { getToken, userId } = useAuth();
     const [messages, setMessages] = useState<Message[]>([]);
     const [inputValue, setInputValue] = useState('');
     const [isTyping, setIsTyping] = useState(false);
@@ -35,7 +37,14 @@ export default function ComfortCompanion() {
         const initSession = async () => {
             // 1. Reset Backend Memory on Entry
             try {
-                await fetch(`${API_BASE_URL}/api/chat/reset`, { method: 'DELETE' });
+                const token = await getToken();
+                await fetch(`${API_BASE_URL}/api/chat/reset`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'X-Clerk-User-Id': userId || ''
+                    }
+                });
             } catch (e) {
                 console.error("Failed to reset memory:", e);
             }
@@ -85,9 +94,14 @@ export default function ComfortCompanion() {
         setIsTyping(true);
 
         try {
+            const token = await getToken();
             const response = await fetch(`${API_BASE_URL}/api/chat`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                    'X-Clerk-User-Id': userId || ''
+                },
                 body: JSON.stringify({
                     message: inputValue,
                     characterId: theme.id
@@ -125,9 +139,14 @@ export default function ComfortCompanion() {
 
     const handleConfirmSave = async () => {
         try {
+            const token = await getToken();
             await fetch(`${API_BASE_URL}/api/chat/save`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                    'X-Clerk-User-Id': userId || ''
+                },
                 body: JSON.stringify({
                     title: saveTitle,
                     messages: messages
@@ -142,7 +161,13 @@ export default function ComfortCompanion() {
 
     const handleOpenLibrary = async () => {
         try {
-            const res = await fetch(`${API_BASE_URL}/api/chat/saved`);
+            const token = await getToken();
+            const res = await fetch(`${API_BASE_URL}/api/chat/saved`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'X-Clerk-User-Id': userId || ''
+                }
+            });
             const data = await res.json();
             setSavedChats(data);
             setIsLibraryOpen(true);
@@ -153,7 +178,13 @@ export default function ComfortCompanion() {
 
     const loadSavedChat = async (id: number) => {
         try {
-            const res = await fetch(`${API_BASE_URL}/api/chat/saved/${id}`);
+            const token = await getToken();
+            const res = await fetch(`${API_BASE_URL}/api/chat/saved/${id}`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'X-Clerk-User-Id': userId || ''
+                }
+            });
             const data = await res.json();
             if (data.messages) {
                 setMessages(data.messages);
