@@ -246,7 +246,7 @@ app.add_middleware(
 
 @app.get("/")
 def read_root():
-    return {"message": "Butterfly Mansion System Online"}
+    return {"status": "ok", "message": "Server is awake!"}
 
 @app.get("/api/status")
 def get_status():
