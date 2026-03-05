@@ -261,6 +261,18 @@ def reset_database():
     Base.metadata.create_all(bind=engine)
     return {"message": "Database reset successfully! You can now upload photos."}
 
+@app.get("/api/admin/migrate")
+def run_migrations():
+    """
+    Temporary endpoint to run database migrations on Render
+    """
+    try:
+        with engine.begin() as conn:
+            conn.execute(text("ALTER TABLE messages ADD COLUMN clerk_id VARCHAR"))
+            return {"status": "Migration successful"}
+    except Exception as e:
+        # If the column already exists, this will raise an exception, which we can safely return as a success-ish state
+        return {"status": "Migration attempted. It may have already been applied.", "error": str(e)}
 @app.get("/api/albums")
 def get_albums():
     """
