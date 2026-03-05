@@ -446,7 +446,7 @@ export default function ComfortCompanion() {
                     </div>
 
                     {/* Input Area */}
-                    <div className={`p-3 md:p-6 border-t border-white/10 bg-black/40`}>
+                    <div className={`p-3 pb-28 md:p-6 flex-shrink-0 border-t border-white/10 bg-black/40`}>
                         <div className="relative">
                             <textarea
                                 value={inputValue}
