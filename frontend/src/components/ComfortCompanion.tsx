@@ -244,40 +244,70 @@ export default function ComfortCompanion() {
         }
     };
 
-    const handlePlayAudio = async (text: string, messageId: number) => {
-        try {
-            setPlayingAudioId(messageId);
-            const token = await getToken();
-            const res = await fetch(`${API_BASE_URL}/api/chat/voice`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`,
-                    'x-clerk-user-id': userId || ''
-                },
-                body: JSON.stringify({
-                    text: text,
-                    character_id: theme.id
-                })
-            });
-
-            if (!res.ok) throw new Error('Failed to fetch audio');
-
-            const blob = await res.blob();
-            const url = URL.createObjectURL(blob);
-            const audio = new Audio(url);
-
-            setPlayingAudioId(null);
-
-            audio.onended = () => {
-                URL.revokeObjectURL(url);
-            };
-
-            await audio.play();
-        } catch (error) {
-            console.error("Audio Playback Error:", error);
-            setPlayingAudioId(null);
+    const handlePlayAudio = (text: string, messageId: number) => {
+        if (!window.speechSynthesis) {
+            console.error("Web Speech API is not supported in this browser.");
+            return;
         }
+
+        // Cancel any currently playing speech
+        window.speechSynthesis.cancel();
+
+        const utterance = new SpeechSynthesisUtterance(text);
+
+        // Voice Tuning dynamically based on character
+        switch (theme.id.toLowerCase()) {
+            case 'shinobu':
+                utterance.pitch = 1.3;
+                utterance.rate = 0.95;
+                break;
+            case 'anya':
+                utterance.pitch = 1.7;
+                utterance.rate = 1.1;
+                break;
+            case 'gojo':
+                utterance.pitch = 0.8;
+                utterance.rate = 1.0;
+                break;
+            case 'luffy':
+                utterance.pitch = 1.1;
+                utterance.rate = 1.2;
+                break;
+            case 'rimuru':
+                utterance.pitch = 1.1;
+                utterance.rate = 1.0;
+                break;
+            case 'rys':
+                utterance.pitch = 1.3;
+                utterance.rate = 1.0;
+                break;
+            case 'zoro':
+                utterance.pitch = 0.6;
+                utterance.rate = 0.95;
+                break;
+            case 'kuromi':
+                utterance.pitch = 1.4;
+                utterance.rate = 1.1;
+                break;
+            case 'shinchan':
+                utterance.pitch = 1.6;
+                utterance.rate = 1.15;
+                break;
+            default:
+                utterance.pitch = 1.0;
+                utterance.rate = 1.0;
+        }
+
+        utterance.onstart = () => setPlayingAudioId(messageId);
+
+        // Clean up visual state when done
+        utterance.onend = () => setPlayingAudioId(null);
+        utterance.onerror = (e) => {
+            console.error("Speech Synthesis Error:", e);
+            setPlayingAudioId(null);
+        };
+
+        window.speechSynthesis.speak(utterance);
     };
 
     return (
