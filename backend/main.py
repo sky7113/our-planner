@@ -1,4 +1,5 @@
 from fastapi import FastAPI, File, UploadFile, HTTPException, Depends, Header
+from fastapi.responses import StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
@@ -18,6 +19,7 @@ import json
 import PIL.Image
 import cloudinary
 import cloudinary.uploader
+import httpx
 
 # Forward declaration for dependency
 def get_current_user_clerk_id(x_clerk_user_id: Optional[str] = Header(None)):
@@ -738,6 +740,18 @@ PERSONAS = {
     'shinchan': f'You are Shin-chan. You are the Royal Jester serving the user. You think she/he is amazing. You address them respectfully. You try to make them laugh. You are chaotic and funny. If they ask a factual or real-world question, give the correct accurate answer, even if you add a little joke at the end. {UNIVERSAL_RULE}'
 }
 
+VOICE_IDS = {
+    'shinobu': 'EXAVITQu4vr4xnSDxMaL',
+    'anya': 'EXAVITQu4vr4xnSDxMaL',
+    'gojo': 'VR6AewLTigWG4xSOukaG',
+    'luffy': 'VR6AewLTigWG4xSOukaG',
+    'rimuru': 'VR6AewLTigWG4xSOukaG',
+    'rys': 'VR6AewLTigWG4xSOukaG',
+    'zoro': 'VR6AewLTigWG4xSOukaG',
+    'kuromi': 'EXAVITQu4vr4xnSDxMaL',
+    'shinchan': 'VR6AewLTigWG4xSOukaG'
+}
+
 class PairingRequest(BaseModel):
     pairing_code: str
 
@@ -757,6 +771,10 @@ class ProfileUpdateRequest(BaseModel):
 class ChatRequest(BaseModel):
     message: str
     characterId: str
+
+class VoiceRequest(BaseModel):
+    text: str
+    character_id: str
 
 class SkinLogRequest(BaseModel):
     date: str
@@ -900,6 +918,53 @@ async def chat_with_character(request: ChatRequest, clerk_id: str = Depends(chec
         return {"response": f"System: connection_error. Details: {str(e)}"}
     finally:
         session.close()
+
+@app.post("/api/chat/voice")
+async def generate_voice(request: VoiceRequest, clerk_id: str = Depends(check_permission("partner_can_chat"))):
+    """
+    Generate TTS via ElevenLabs.
+    """
+    elevenlabs_api_key = os.getenv("ELEVENLABS_API_KEY")
+    if not elevenlabs_api_key:
+        raise HTTPException(status_code=500, detail="ElevenLabs API key missing from .env")
+        
+    character_id = request.character_id.lower()
+    voice_id = VOICE_IDS.get(character_id, 'EXAVITQu4vr4xnSDxMaL')  # Fallback voice
+    
+    url = f"https://api.elevenlabs.io/v1/text-to-speech/{voice_id}/stream"
+    headers = {
+        "Accept": "audio/mpeg",
+        "Content-Type": "application/json",
+        "xi-api-key": elevenlabs_api_key
+    }
+    data = {
+        "text": request.text,
+        "model_id": "eleven_multilingual_v2",
+        "voice_settings": {
+            "stability": 0.5,
+            "similarity_boost": 0.75
+        }
+    }
+    
+    client = httpx.AsyncClient()
+    req = client.build_request("POST", url, headers=headers, json=data)
+    response = await client.send(req, stream=True)
+    
+    if response.status_code != 200:
+        error_text = await response.aread()
+        await client.aclose()
+        print(f"ElevenLabs API Error: {error_text}")
+        raise HTTPException(status_code=500, detail="ElevenLabs generation failed")
+        
+    async def stream_audio():
+        try:
+            async for chunk in response.aiter_bytes():
+                yield chunk
+        finally:
+            await response.aclose()
+            await client.aclose()
+            
+    return StreamingResponse(stream_audio(), media_type="audio/mpeg")
 
 @app.delete("/api/history/{character_id}")
 def clear_chat_history(character_id: str, clerk_id: str = Depends(check_permission("partner_can_chat"))):

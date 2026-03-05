@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Send, Sparkles, XCircle, ArrowRight, Save, Book, Trash2 } from 'lucide-react';
+import { Send, Sparkles, XCircle, ArrowRight, Save, Book, Trash2, Volume2 } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '@clerk/nextjs';
@@ -29,6 +29,7 @@ export default function ComfortCompanion() {
     const [isLibraryOpen, setIsLibraryOpen] = useState(false);
     const [saveTitle, setSaveTitle] = useState('');
     const [savedChats, setSavedChats] = useState<any[]>([]);
+    const [playingAudioId, setPlayingAudioId] = useState<number | null>(null);
 
     const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -243,6 +244,42 @@ export default function ComfortCompanion() {
         }
     };
 
+    const handlePlayAudio = async (text: string, messageId: number) => {
+        try {
+            setPlayingAudioId(messageId);
+            const token = await getToken();
+            const res = await fetch(`${API_BASE_URL}/api/chat/voice`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                    'x-clerk-user-id': userId || ''
+                },
+                body: JSON.stringify({
+                    text: text,
+                    character_id: theme.id
+                })
+            });
+
+            if (!res.ok) throw new Error('Failed to fetch audio');
+
+            const blob = await res.blob();
+            const url = URL.createObjectURL(blob);
+            const audio = new Audio(url);
+
+            setPlayingAudioId(null);
+
+            audio.onended = () => {
+                URL.revokeObjectURL(url);
+            };
+
+            await audio.play();
+        } catch (error) {
+            console.error("Audio Playback Error:", error);
+            setPlayingAudioId(null);
+        }
+    };
+
     return (
         <motion.div
             initial={{ opacity: 0 }}
@@ -338,12 +375,27 @@ export default function ComfortCompanion() {
                                     </div>
                                 )}
                                 <div
-                                    className={`max-w-[85%] p-4 md:p-5 rounded-2xl text-lg md:text-xl leading-relaxed shadow-lg ${msg.sender === 'user'
+                                    className={`relative max-w-[85%] p-4 md:p-5 rounded-2xl text-lg md:text-xl leading-relaxed shadow-lg ${msg.sender === 'user'
                                         ? `bg-indigo-600 text-white font-medium rounded-tr-none ml-12 shadow-indigo-500/20`
                                         : `bg-white/10 backdrop-blur-md text-white border border-white/10 rounded-tl-none mr-4 md:mr-12`
                                         }`}
                                 >
                                     {msg.text}
+
+                                    {msg.sender === 'companion' && (
+                                        <button
+                                            onClick={() => handlePlayAudio(msg.text, msg.id)}
+                                            disabled={playingAudioId === msg.id}
+                                            className="absolute -right-8 bottom-1 p-2 rounded-full bg-white/5 hover:bg-white/20 transition-colors text-white/50 hover:text-white disabled:opacity-50"
+                                            title="Play Voice"
+                                        >
+                                            {playingAudioId === msg.id ? (
+                                                <div className="w-4 h-4 border-2 border-white/50 border-t-white rounded-full animate-spin" />
+                                            ) : (
+                                                <Volume2 size={16} />
+                                            )}
+                                        </button>
+                                    )}
                                 </div>
                             </motion.div>
                         ))}
