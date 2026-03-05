@@ -181,6 +181,7 @@ class User(Base):
     date_of_birth = Column(String, nullable=True)
     gender = Column(String, nullable=True)
     college_or_profession = Column(String, nullable=True)
+    core_memory = Column(String, nullable=True)
 
 Base.metadata.create_all(bind=engine)
 
@@ -221,6 +222,15 @@ except Exception as e:
     pass
 
 app = FastAPI()
+
+@app.get("/api/admin/migrate_user")
+def migrate_user():
+    try:
+        with engine.begin() as conn:
+            conn.execute(text("ALTER TABLE users ADD COLUMN core_memory VARCHAR"))
+        return {"status": "Migration successful"}
+    except Exception as e:
+        return {"status": "Migration already applied or error", "error": str(e)}
 
 # Ensure images directory exists on startup
 os.makedirs("images", exist_ok=True)
@@ -742,6 +752,7 @@ class ProfileUpdateRequest(BaseModel):
     date_of_birth: Optional[str] = None
     gender: Optional[str] = None
     college_or_profession: Optional[str] = None
+    core_memory: Optional[str] = None
 
 class ChatRequest(BaseModel):
     message: str
@@ -834,6 +845,9 @@ async def chat_with_character(request: ChatRequest, clerk_id: str = Depends(chec
                          f"Adopt the persona, tone, and catchphrases of this specific anime character perfectly. " \
                          f"Keep responses concise, engaging, and in character. {base_persona}"
                          
+    if user and getattr(user, 'core_memory', None):
+        system_instruction += f"\nThe user has provided these permanent notes about themselves: {user.core_memory}. Always keep these facts in mind."
+                         
     # Create dynamic core memory based on DB
     dynamic_core_memory = f"USER PROFILE:\n- Name: {master_name}\n"
     if user:
@@ -887,14 +901,17 @@ async def chat_with_character(request: ChatRequest, clerk_id: str = Depends(chec
     finally:
         session.close()
 
-@app.delete("/api/chat/reset")
-def reset_chat_history(clerk_id: str = Depends(check_permission("partner_can_chat"))):
+@app.delete("/api/history/{character_id}")
+def clear_chat_history(character_id: str, clerk_id: str = Depends(check_permission("partner_can_chat"))):
     """
-    Clear active chat history.
+    Clear active chat history for a specific character.
     """
     session = SessionLocal()
     try:
-        session.query(ChatMessage).delete()
+        session.query(ChatMessage).filter(
+            ChatMessage.character_id == character_id.lower(),
+            ChatMessage.clerk_id == clerk_id
+        ).delete()
         session.commit()
         return {"status": "success", "info": "Memory cleared"}
     finally:
@@ -1793,6 +1810,7 @@ def get_current_user(clerk_id: str = Depends(get_current_user_clerk_id)):
             "date_of_birth": user.date_of_birth,
             "gender": user.gender,
             "college_or_profession": user.college_or_profession,
+            "core_memory": user.core_memory,
             "couple": couple_info
         }
     finally:
@@ -1817,6 +1835,9 @@ def update_profile(request: ProfileUpdateRequest, clerk_id: str = Depends(get_cu
             user.gender = request.gender
         if request.college_or_profession is not None:
             user.college_or_profession = request.college_or_profession
+        if request.core_memory is not None:
+            user.core_memory = request.core_memory
+            
             
         session.commit()
         

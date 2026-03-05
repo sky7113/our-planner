@@ -14,6 +14,7 @@ interface UserProfile {
     date_of_birth: string | null;
     gender: string | null;
     college_or_profession: string | null;
+    core_memory: string | null;
     couple: any;
 }
 

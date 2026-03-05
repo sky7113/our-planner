@@ -204,6 +204,45 @@ export default function ComfortCompanion() {
         }
     };
 
+    const handleClearChat = async () => {
+        if (!confirm("Are you sure you want to delete all memory with this character?")) return;
+
+        try {
+            const token = await getToken();
+            const res = await fetch(`${API_BASE_URL}/api/history/${theme.id}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'x-clerk-user-id': userId || ''
+                }
+            });
+
+            if (res.ok) {
+                setMessages([]);
+
+                // Reset Greeting dynamically based on mood
+                let greeting = "I see sadness in your eyes. Tell me everything, I am listening.";
+                const currentMood = (mood || '').toLowerCase();
+
+                if (currentMood.includes('happy') || currentMood.includes('smile') || currentMood.includes('good')) {
+                    greeting = "I see a bright smile! Tell me all about your amazing day!";
+                } else if (currentMood.includes('tired') || currentMood.includes('exhausted') || currentMood.includes('sleepy')) {
+                    greeting = "You look exhausted. Come rest here and tell me about it.";
+                } else if (currentMood.includes('angry') || currentMood.includes('stressed') || currentMood.includes('mad')) {
+                    greeting = "Who upset you? Tell me everything, I am on your side.";
+                } else if (currentMood.includes('sad') || currentMood.includes('cry')) {
+                    greeting = "I see sadness in your eyes. Tell me everything, I am listening.";
+                }
+
+                setMessages([{ id: Date.now(), text: greeting, sender: 'companion' }]);
+            } else {
+                console.error("Failed to clear chat");
+            }
+        } catch (error) {
+            console.error("Clear Chat Error:", error);
+        }
+    };
+
     return (
         <motion.div
             initial={{ opacity: 0 }}
@@ -250,6 +289,13 @@ export default function ComfortCompanion() {
                         </div>
 
                         <div className="flex items-center gap-2">
+                            <button
+                                onClick={handleClearChat}
+                                title="Clear History"
+                                className="p-2.5 rounded-full bg-red-500/10 hover:bg-red-500/20 text-red-400 hover:text-red-300 transition-colors border border-red-500/10"
+                            >
+                                <Trash2 size={18} />
+                            </button>
                             <button
                                 onClick={handleOpenSave}
                                 title="Save this Memory"

@@ -28,6 +28,7 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
     const [editDisplayName, setEditDisplayName] = useState('');
     const [editGender, setEditGender] = useState('');
     const [editPartnerNickname, setEditPartnerNickname] = useState('');
+    const [editCoreMemory, setEditCoreMemory] = useState('');
     const [savingProfile, setSavingProfile] = useState(false);
     const [disconnecting, setDisconnecting] = useState(false);
 
@@ -37,6 +38,7 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
             setEditDisplayName(profile.display_name || '');
             setEditGender(profile.gender || '');
             setEditPartnerNickname(profile.partner_nickname || '');
+            setEditCoreMemory(profile.core_memory || '');
         }
     }, [profile, isOpen]);
 
@@ -72,6 +74,7 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                     display_name: editDisplayName.trim(),
                     gender: editGender,
                     partner_nickname: editPartnerNickname.trim() || null,
+                    core_memory: editCoreMemory.trim() || null,
                     date_of_birth: profile?.date_of_birth, // preserve existing
                     college_or_profession: profile?.college_or_profession // preserve existing
                 })
@@ -217,6 +220,15 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                                                     value={editPartnerNickname}
                                                     onChange={(e) => setEditPartnerNickname(e.target.value)}
                                                     className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-pink-500/50"
+                                                />
+                                            </div>
+
+                                            <div className="space-y-1">
+                                                <label className="text-xs text-white/60 uppercase tracking-widest pl-1">Notes for the AI (e.g., I love Rasmalai, my favorite color is purple)</label>
+                                                <textarea
+                                                    value={editCoreMemory}
+                                                    onChange={(e) => setEditCoreMemory(e.target.value)}
+                                                    className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500/50 min-h-[80px]"
                                                 />
                                             </div>
 
