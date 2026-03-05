@@ -35,22 +35,28 @@ export default function ComfortCompanion() {
     // Initial History Load or Greeting
     useEffect(() => {
         const initSession = async () => {
-            // 1. Reset Backend Memory on Entry
+            // 1. Fetch Chat History 
             try {
                 const token = await getToken();
-                await fetch(`${API_BASE_URL}/api/chat/reset`, {
-                    method: 'DELETE',
+                const historyRes = await fetch(`${API_BASE_URL}/api/history/${theme.id}`, {
                     headers: {
-                        'Content-Type': 'application/json',
                         'Authorization': `Bearer ${token}`,
                         'x-clerk-user-id': userId || ''
                     }
                 });
+
+                if (historyRes.ok) {
+                    const historyData = await historyRes.json();
+                    if (historyData && historyData.length > 0) {
+                        setMessages(historyData);
+                        return; // Skip greeting if history exists
+                    }
+                }
             } catch (e) {
-                console.error("Failed to reset memory:", e);
+                console.error("Failed to load memory:", e);
             }
 
-            // 2. Set Greeting dynamically based on mood
+            // 2. Set Greeting dynamically based on mood (Only if no history)
             let greeting = "I see sadness in your eyes. Tell me everything, I am listening.";
             const currentMood = (mood || '').toLowerCase();
 

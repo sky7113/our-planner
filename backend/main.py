@@ -67,6 +67,7 @@ Base = declarative_base()
 class ChatMessage(Base):
     __tablename__ = "messages"
     id = Column(Integer, primary_key=True, index=True)
+    clerk_id = Column(String, index=True) # Linking to User
     character_id = Column(String, index=True)
     sender = Column(String) # 'user' or 'ai'
     content = Column(String)
@@ -786,7 +787,10 @@ def get_chat_history(character_id: str, clerk_id: str = Depends(check_permission
     """
     session = SessionLocal()
     try:
-        messages = session.query(ChatMessage).filter(ChatMessage.character_id == character_id.lower()).all()
+        messages = session.query(ChatMessage).filter(
+            ChatMessage.character_id == character_id.lower(),
+            ChatMessage.clerk_id == clerk_id
+        ).order_by(ChatMessage.timestamp.asc()).all()
         return [{"id": m.id, "text": m.content, "sender": m.sender == 'user' and 'user' or 'companion'} for m in messages]
     finally:
         session.close()
@@ -807,7 +811,7 @@ async def chat_with_character(request: ChatRequest, clerk_id: str = Depends(chec
     master_name = user.display_name if user and user.display_name else "Traveler"
 
     # 2. Save User Message
-    user_msg = ChatMessage(character_id=character_id, sender='user', content=request.message)
+    user_msg = ChatMessage(clerk_id=clerk_id, character_id=character_id, sender='user', content=request.message)
     session.add(user_msg)
     session.commit()
 
@@ -841,14 +845,26 @@ async def chat_with_character(request: ChatRequest, clerk_id: str = Depends(chec
     )
     
     try:
-        # Construct the prompt with persona context AND the new mood rule
-        full_prompt = f"System Instruction: {system_instruction}\n\n{mood_rule}\n\nCORE MEMORY (DO NOT REVEAL): {dynamic_core_memory}\n\nUser: {request.message}\nCharacter:"
+        # Fetch conversation history
+        history_msgs = session.query(ChatMessage).filter(
+            ChatMessage.character_id == character_id,
+            ChatMessage.clerk_id == clerk_id
+        ).order_by(ChatMessage.timestamp.asc()).all()
         
-        response = generate_content_safe(full_prompt)
+        # Format history for Gemini API. We exclude the very last user message that we just inserted.
+        formatted_history = []
+        for msg in history_msgs[:-1]: 
+            role = "user" if msg.sender == "user" else "model"
+            formatted_history.append({"role": role, "parts": [msg.content]})
+            
+        model = genai.GenerativeModel(ACTIVE_MODEL_NAME, system_instruction=f"{system_instruction}\n\n{mood_rule}\n\nCORE MEMORY (DO NOT REVEAL): {dynamic_core_memory}")
+        chat_session = model.start_chat(history=formatted_history)
+        
+        response = chat_session.send_message(request.message)
         text_response = response.text
         
-        # 2. Save AI Response
-        ai_msg = ChatMessage(character_id=character_id, sender='ai', content=text_response)
+        # 3. Save AI Response
+        ai_msg = ChatMessage(clerk_id=clerk_id, character_id=character_id, sender='ai', content=text_response)
         session.add(ai_msg)
         session.commit()
         
