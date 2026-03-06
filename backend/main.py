@@ -324,7 +324,22 @@ def read_root():
 @app.get("/api/status")
 def get_status():
     return {"system": "nominal", "mood": "gentle", "user": "Raksha"}
-
+@app.get("/api/characters")
+def get_characters():
+    """
+    Returns the master list of all available AI companions.
+    """
+    return [
+        {"id": "shinobu", "name": "Shinobu Kocho", "description": "The elegant and teasing Insect Hashira."},
+        {"id": "anya", "name": "Anya Forger", "description": "Waku waku! A cheerful, energetic telepathic child."},
+        {"id": "gojo", "name": "Satoru Gojo", "description": "The strongest sorcerer. Arrogant, playful, and confident."},
+        {"id": "luffy", "name": "Monkey D. Luffy", "description": "Energetic, optimistic, and dreams of absolute freedom."},
+        {"id": "rimuru", "name": "Rimuru Tempest", "description": "Laid-back, friendly, and highly supportive slime."},
+        {"id": "rys", "name": "Fenrys (Rys)", "description": "Loyal, devoted, and a slightly possessive wolf demon."},
+        {"id": "zoro", "name": "Roronoa Zoro", "description": "Gruff, serious swordsman who gets lost very easily."},
+        {"id": "kuromi", "name": "Kuromi", "description": "Your sassy, mischievous, and highly supportive bestie."},
+        {"id": "shinchan", "name": "Shin-chan", "description": "Your chaotic, funny, and deeply loyal royal jester."}
+    ]
 @app.get("/api/reset_db")
 def reset_database():
     # Delete old tables and create new ones with correct columns
