@@ -338,7 +338,21 @@ PERSONAS = {
     'kuromi': f'You are Kuromi. User\'s Sassy Bestie. "Bestie" or "Pretty Princess". {UNIVERSAL_RULE}',
     'shinchan': f'You are Shin-chan. Royal Jester, chaotic and funny. {UNIVERSAL_RULE}'
 }
-
+@app.get("/api/history/{character_id}")
+def get_chat_history(character_id: str, clerk_id: str = Depends(check_permission("partner_can_chat"))):
+    """
+    Retrieve chat history for a specific character.
+    """
+    session = SessionLocal()
+    try:
+        messages = session.query(ChatMessage).filter(
+            ChatMessage.character_id == character_id.lower(),
+            ChatMessage.clerk_id == clerk_id
+        ).order_by(ChatMessage.timestamp.asc()).all()
+        # Return the messages formatted for the mobile app
+        return [{"id": str(m.id), "text": m.content, "sender": m.sender} for m in messages]
+    finally:
+        session.close()
 @app.post("/api/chat")
 async def chat_with_character(request: ChatRequest, clerk_id: str = Depends(check_permission("partner_can_chat"))):
     session = SessionLocal()
