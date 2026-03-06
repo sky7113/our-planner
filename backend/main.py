@@ -327,18 +327,20 @@ def get_status():
 @app.get("/api/characters")
 def get_characters():
     """
-    Returns the master list of all available AI companions with Avatar URLs.
+    Returns the master list of all available AI companions with real Avatar and Full Body URLs from Vercel.
     """
+    base_url = "https://our-planner.vercel.app/assets"
+    
     return [
-        {"id": "shinobu", "name": "Shinobu Kocho", "description": "The elegant and teasing Insect Hashira.", "image_url": "https://ui-avatars.com/api/?name=Shinobu&background=CBA6F7&color=fff&size=256"},
-        {"id": "anya", "name": "Anya Forger", "description": "Waku waku! A cheerful, energetic telepathic child.", "image_url": "https://ui-avatars.com/api/?name=Anya&background=F5A9B8&color=fff&size=256"},
-        {"id": "gojo", "name": "Satoru Gojo", "description": "The strongest sorcerer. Arrogant, playful, and confident.", "image_url": "https://ui-avatars.com/api/?name=Gojo&background=89B4FA&color=fff&size=256"},
-        {"id": "luffy", "name": "Monkey D. Luffy", "description": "Energetic, optimistic, and dreams of absolute freedom.", "image_url": "https://ui-avatars.com/api/?name=Luffy&background=F38BA8&color=fff&size=256"},
-        {"id": "rimuru", "name": "Rimuru Tempest", "description": "Laid-back, friendly, and highly supportive slime.", "image_url": "https://ui-avatars.com/api/?name=Rimuru&background=89DCEB&color=fff&size=256"},
-        {"id": "rys", "name": "Fenrys (Rys)", "description": "Loyal, devoted, and a slightly possessive wolf demon.", "image_url": "https://ui-avatars.com/api/?name=Rys&background=F9E2AF&color=11111B&size=256"},
-        {"id": "zoro", "name": "Roronoa Zoro", "description": "Gruff, serious swordsman who gets lost very easily.", "image_url": "https://ui-avatars.com/api/?name=Zoro&background=A6E3A1&color=11111B&size=256"},
-        {"id": "kuromi", "name": "Kuromi", "description": "Your sassy, mischievous, and highly supportive bestie.", "image_url": "https://ui-avatars.com/api/?name=Kuromi&background=11111B&color=CBA6F7&size=256"},
-        {"id": "shinchan", "name": "Shin-chan", "description": "Your chaotic, funny, and deeply loyal royal jester.", "image_url": "https://ui-avatars.com/api/?name=Shinchan&background=FAB387&color=11111B&size=256"}
+        {"id": "shinobu", "name": "Shinobu Kocho", "description": "The elegant and teasing Insect Hashira.", "image_url": f"{base_url}/characters/shinobu.png", "full_image_url": f"{base_url}/shinobu-full.png"},
+        {"id": "anya", "name": "Anya Forger", "description": "Waku waku! A cheerful, energetic telepathic child.", "image_url": f"{base_url}/characters/anya.png", "full_image_url": f"{base_url}/anya-full.png"},
+        {"id": "gojo", "name": "Satoru Gojo", "description": "The strongest sorcerer. Arrogant, playful, and confident.", "image_url": f"{base_url}/characters/gojo.png", "full_image_url": f"{base_url}/gojo-full.png"},
+        {"id": "luffy", "name": "Monkey D. Luffy", "description": "Energetic, optimistic, and dreams of absolute freedom.", "image_url": f"{base_url}/characters/luffy.png", "full_image_url": f"{base_url}/luffy-full.png"},
+        {"id": "rimuru", "name": "Rimuru Tempest", "description": "Laid-back, friendly, and highly supportive slime.", "image_url": f"{base_url}/characters/rimuru.png", "full_image_url": f"{base_url}/rimuru-full.png"},
+        {"id": "rys", "name": "Fenrys (Rys)", "description": "Loyal, devoted, and a slightly possessive wolf demon.", "image_url": f"{base_url}/characters/rys.png", "full_image_url": f"{base_url}/rys-full.png"},
+        {"id": "zoro", "name": "Roronoa Zoro", "description": "Gruff, serious swordsman who gets lost very easily.", "image_url": f"{base_url}/characters/zoro.png", "full_image_url": f"{base_url}/zoro-full.png"},
+        {"id": "kuromi", "name": "Kuromi", "description": "Your sassy, mischievous, and highly supportive bestie.", "image_url": f"{base_url}/characters/kuromi.png", "full_image_url": f"{base_url}/kuromi-full.png"},
+        {"id": "shinchan", "name": "Shin-chan", "description": "Your chaotic, funny, and deeply loyal royal jester.", "image_url": f"{base_url}/characters/shinchan.png", "full_image_url": f"{base_url}/shinchan-full.png"}
     ]
 @app.get("/api/reset_db")
 def reset_database():
