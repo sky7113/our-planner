@@ -817,7 +817,7 @@ class ProfileUpdateRequest(BaseModel):
 
 class ChatRequest(BaseModel):
     message: str
-    characterId: str
+    character_id: str
 
 class SkinLogRequest(BaseModel):
     date: str
@@ -887,7 +887,7 @@ async def chat_with_character(request: ChatRequest, clerk_id: str = Depends(chec
     if not GEMINI_API_KEY:
         return {"response": "System: internal_error (API Key missing). Please check .env file."}
 
-    character_id = request.characterId.lower()
+    character_id = request.character_id.lower()
     session = SessionLocal()
     
     # 1. Fetch User Data for Prompt Context
