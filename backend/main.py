@@ -1,4 +1,4 @@
-from fastapi import FastAPI, File, UploadFile, HTTPException, Depends, Header, Request
+from fastapi import FastAPI, File, UploadFile, HTTPException, Depends, Header, Request, Form
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
@@ -315,7 +315,97 @@ PERSONAS = {
 class ChatPayload(BaseModel):
     message: str
     character_id: str
+# --- GALLERY & MEMORIES SYSTEM ---
 
+@app.get("/api/memories")
+def get_memories(clerk_id: str = Depends(check_permission("partner_can_gallery"))):
+    """
+    Fetch all memories, sorted by date (newest first).
+    """
+    session = SessionLocal()
+    try:
+        memories = session.query(Memory).order_by(Memory.date.desc()).all()
+        return [
+            {
+                "id": m.id,
+                "title": m.title,
+                "subtitle": m.subtitle,
+                "src": m.image_url,
+                "aspectRatio": m.aspect_ratio,
+                "date": m.date.isoformat(),
+                "album": m.album
+            }
+            for m in memories
+        ]
+    finally:
+        session.close()
+
+@app.post("/api/memories")
+async def create_memory(
+    title: str = Form("New Memory"),
+    subtitle: Optional[str] = Form(None),
+    album: str = Form("Uncategorized"),
+    file: UploadFile = File(...),
+    clerk_id: str = Depends(check_permission("partner_can_gallery"))
+):
+    """
+    Upload a new memory photo to Cloudinary and save to DB.
+    """
+    session = SessionLocal()
+    try:
+        if not subtitle:
+             subtitle = date.today().strftime("%d %b %Y")
+
+        clean_album = album.strip() if album else "Uncategorized"
+        safe_album = clean_album.replace("..", "").replace("/", "").replace("\\", "")
+        if safe_album == "All Memories":
+             safe_album = "memories"
+             
+        upload_result = cloudinary.uploader.upload(file.file, folder=safe_album)
+        image_url = upload_result.get('secure_url')
+
+        aspect = "aspect-[3/4]" # Default fallback
+        try:
+             import requests
+             from io import BytesIO
+             response = requests.get(image_url)
+             with PIL.Image.open(BytesIO(response.content)) as img:
+                  width, height = img.size
+                  ratio = width / height
+                  if ratio > 1.2:
+                       aspect = "aspect-[4/3]"
+                  elif ratio < 0.8:
+                       aspect = "aspect-[3/4]"
+                  else:
+                       aspect = "aspect-square"
+        except:
+             pass
+
+        new_memory = Memory(
+            title=title,
+            subtitle=subtitle,
+            image_url=image_url,
+            aspect_ratio=aspect,
+            album=safe_album
+        )
+        session.add(new_memory)
+        session.commit()
+        session.refresh(new_memory)
+        
+        return {
+            "id": new_memory.id,
+            "title": new_memory.title,
+            "subtitle": new_memory.subtitle,
+            "src": new_memory.image_url,
+            "aspectRatio": new_memory.aspect_ratio,
+            "date": new_memory.date.isoformat(),
+            "album": new_memory.album
+        }
+    except Exception as e:
+        print(f"Memory Upload Error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        session.close()
 @app.get("/api/history/{character_id}")
 def get_chat_history(character_id: str, clerk_id: str = Depends(check_permission("partner_can_chat"))):
     session = SessionLocal()
