@@ -327,20 +327,74 @@ def get_status():
 @app.get("/api/characters")
 def get_characters():
     """
-    Returns the master list of all available AI companions with real Avatar and Full Body URLs from Vercel.
+    Returns the master list with corrected Vercel paths.
     """
     base_url = "https://our-planner.vercel.app/assets"
     
     return [
-        {"id": "shinobu", "name": "Shinobu Kocho", "description": "The elegant and teasing Insect Hashira.", "image_url": f"{base_url}/characters/shinobu.png", "full_image_url": f"{base_url}/shinobu-full.png"},
-        {"id": "anya", "name": "Anya Forger", "description": "Waku waku! A cheerful, energetic telepathic child.", "image_url": f"{base_url}/characters/anya.png", "full_image_url": f"{base_url}/anya-full.png"},
-        {"id": "gojo", "name": "Satoru Gojo", "description": "The strongest sorcerer. Arrogant, playful, and confident.", "image_url": f"{base_url}/characters/gojo.png", "full_image_url": f"{base_url}/gojo-full.png"},
-        {"id": "luffy", "name": "Monkey D. Luffy", "description": "Energetic, optimistic, and dreams of absolute freedom.", "image_url": f"{base_url}/characters/luffy.png", "full_image_url": f"{base_url}/luffy-full.png"},
-        {"id": "rimuru", "name": "Rimuru Tempest", "description": "Laid-back, friendly, and highly supportive slime.", "image_url": f"{base_url}/characters/rimuru.png", "full_image_url": f"{base_url}/rimuru-full.png"},
-        {"id": "rys", "name": "Fenrys (Rys)", "description": "Loyal, devoted, and a slightly possessive wolf demon.", "image_url": f"{base_url}/characters/rys.png", "full_image_url": f"{base_url}/rys-full.png"},
-        {"id": "zoro", "name": "Roronoa Zoro", "description": "Gruff, serious swordsman who gets lost very easily.", "image_url": f"{base_url}/characters/zoro.png", "full_image_url": f"{base_url}/zoro-full.png"},
-        {"id": "kuromi", "name": "Kuromi", "description": "Your sassy, mischievous, and highly supportive bestie.", "image_url": f"{base_url}/characters/kuromi.png", "full_image_url": f"{base_url}/kuromi-full.png"},
-        {"id": "shinchan", "name": "Shin-chan", "description": "Your chaotic, funny, and deeply loyal royal jester.", "image_url": f"{base_url}/characters/shinchan.png", "full_image_url": f"{base_url}/shinchan-full.png"}
+        {
+            "id": "shinobu", 
+            "name": "Shinobu Kocho", 
+            "description": "The elegant and teasing Insect Hashira.", 
+            "image_url": f"{base_url}/characters/shinobu.png", 
+            "full_image_url": f"{base_url}/shinobu-full.png" # Corrected: No /characters/ here
+        },
+        {
+            "id": "anya", 
+            "name": "Anya Forger", 
+            "description": "Waku waku! A cheerful, energetic telepathic child.", 
+            "image_url": f"{base_url}/characters/anya.png", 
+            "full_image_url": f"{base_url}/anya-full.png" # Corrected
+        },
+        {
+            "id": "gojo", 
+            "name": "Satoru Gojo", 
+            "description": "The strongest sorcerer.", 
+            "image_url": f"{base_url}/characters/gojo.png", 
+            "full_image_url": f"{base_url}/gojo-full.png" # Corrected
+        },
+        {
+            "id": "luffy", 
+            "name": "Monkey D. Luffy", 
+            "description": "Energetic and optimistic.", 
+            "image_url": f"{base_url}/characters/luffy.png", 
+            "full_image_url": f"{base_url}/luffy-full.png" # Corrected
+        },
+        {
+            "id": "rimuru", 
+            "name": "Rimuru Tempest", 
+            "description": "Laid-back slime friend.", 
+            "image_url": f"{base_url}/characters/rimuru.png", 
+            "full_image_url": f"{base_url}/rimuru-full.png" # Corrected
+        },
+        {
+            "id": "rys", 
+            "name": "Fenrys (Rys)", 
+            "description": "Loyal wolf demon.", 
+            "image_url": f"{base_url}/characters/rys.png", 
+            "full_image_url": f"{base_url}/rys-full.png" # Corrected
+        },
+        {
+            "id": "zoro", 
+            "name": "Roronoa Zoro", 
+            "description": "Serious swordsman.", 
+            "image_url": f"{base_url}/characters/zoro.png", 
+            "full_image_url": f"{base_url}/zoro-full.png" # Corrected
+        },
+        {
+            "id": "kuromi", 
+            "name": "Kuromi", 
+            "description": "Sassy bestie.", 
+            "image_url": f"{base_url}/characters/kuromi.png", 
+            "full_image_url": f"{base_url}/kuromi-full.png" # Corrected
+        },
+        {
+            "id": "shinchan", 
+            "name": "Shin-chan", 
+            "description": "Chaotic royal jester.", 
+            "image_url": f"{base_url}/characters/shinchan.png", 
+            "full_image_url": f"{base_url}/shinchan-full.png" # Corrected
+        }
     ]
 @app.get("/api/reset_db")
 def reset_database():
