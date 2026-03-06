@@ -1,4 +1,4 @@
-from fastapi import FastAPI, File, UploadFile, HTTPException, Depends, Header
+from fastapi import FastAPI, File, UploadFile, HTTPException, Depends, Header, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
@@ -19,11 +19,72 @@ import PIL.Image
 import cloudinary
 import cloudinary.uploader
 
-# Forward declaration for dependency
-def get_current_user_clerk_id(x_clerk_user_id: Optional[str] = Header(None)):
-    if not x_clerk_user_id:
-        raise HTTPException(status_code=401, detail="Missing X-Clerk-User-Id header")
-    return x_clerk_user_id
+import jwt
+from jwt import PyJWKClient
+
+# Cache JWKS client to avoid fetching on every request
+jwks_clients = {}
+
+def get_current_user_clerk_id(request: Request):
+    auth_header = request.headers.get("Authorization")
+    if not auth_header:
+        print("❌ Auth Error: Missing Authorization header")
+        raise HTTPException(status_code=401, detail="Missing Authorization header")
+    
+    parts = auth_header.split()
+    if len(parts) != 2 or parts[0].lower() != "bearer":
+        print("❌ Auth Error: Invalid Authorization header format")
+        raise HTTPException(status_code=401, detail="Invalid Authorization header format")
+        
+    token = parts[1]
+    
+    try:
+        # 1. Decode unverified to get the 'iss' (issuer)
+        unverified_payload = jwt.decode(token, options={"verify_signature": False})
+        iss = unverified_payload.get("iss")
+        
+        if not iss:
+            print("❌ Auth Error: Token missing 'iss' claim")
+            raise HTTPException(status_code=401, detail="Token missing 'iss' claim")
+            
+        jwks_url = f"{iss.rstrip('/')}/.well-known/jwks.json"
+        
+        # 2. Get the JWK client for this issuer
+        if jwks_url not in jwks_clients:
+            jwks_clients[jwks_url] = jwt.PyJWKClient(jwks_url)
+            
+        jwk_client = jwks_clients[jwks_url]
+        signing_key = jwk_client.get_signing_key_from_jwt(token)
+        
+        # 3. Verify the token completely
+        payload = jwt.decode(
+            token,
+            signing_key.key,
+            algorithms=["RS256"],
+            issuer=iss,
+            options={"verify_aud": False} # The audience might not be set by default clerk tokens unless configured
+        )
+        
+        clerk_id = payload.get("sub")
+        if not clerk_id:
+            print("❌ Auth Error: Missing 'sub' (clerk ID) in token")
+            raise HTTPException(status_code=401, detail="Invalid token payload")
+            
+        print(f"✅ Auth Success: Authenticated clerk_id = {clerk_id}")
+        return clerk_id
+        
+    except jwt.ExpiredSignatureError:
+        print("❌ Auth Error: Token expired")
+        raise HTTPException(status_code=401, detail="Token expired")
+    except jwt.InvalidSignatureError:
+        print("❌ Auth Error: Invalid signature")
+        raise HTTPException(status_code=401, detail="Invalid signature")
+    except jwt.DecodeError:
+        print("❌ Auth Error: Unparsable or malformed token")
+        raise HTTPException(status_code=401, detail="Malformed token")
+    except Exception as e:
+        print(f"❌ Auth Error: General verification failure - {str(e)}")
+        raise HTTPException(status_code=401, detail="Authentication failed")
 
 def check_permission(permission_flag: str):
     def _check(clerk_id: str = Depends(get_current_user_clerk_id)):
