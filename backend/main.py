@@ -18,7 +18,6 @@ import json
 import PIL.Image
 import cloudinary
 import cloudinary.uploader
-
 import jwt
 from jwt import PyJWKClient
 
@@ -28,62 +27,44 @@ jwks_clients = {}
 def get_current_user_clerk_id(request: Request):
     auth_header = request.headers.get("Authorization")
     if not auth_header:
-        print("❌ Auth Error: Missing Authorization header")
         raise HTTPException(status_code=401, detail="Missing Authorization header")
     
     parts = auth_header.split()
     if len(parts) != 2 or parts[0].lower() != "bearer":
-        print("❌ Auth Error: Invalid Authorization header format")
         raise HTTPException(status_code=401, detail="Invalid Authorization header format")
         
     token = parts[1]
     
     try:
-        # 1. Decode unverified to get the 'iss' (issuer)
         unverified_payload = jwt.decode(token, options={"verify_signature": False})
         iss = unverified_payload.get("iss")
         
         if not iss:
-            print("❌ Auth Error: Token missing 'iss' claim")
             raise HTTPException(status_code=401, detail="Token missing 'iss' claim")
             
         jwks_url = f"{iss.rstrip('/')}/.well-known/jwks.json"
         
-        # 2. Get the JWK client for this issuer
         if jwks_url not in jwks_clients:
             jwks_clients[jwks_url] = jwt.PyJWKClient(jwks_url)
             
         jwk_client = jwks_clients[jwks_url]
         signing_key = jwk_client.get_signing_key_from_jwt(token)
         
-        # 3. Verify the token completely
         payload = jwt.decode(
             token,
             signing_key.key,
             algorithms=["RS256"],
             issuer=iss,
-            options={"verify_aud": False} # The audience might not be set by default clerk tokens unless configured
+            options={"verify_aud": False}
         )
         
         clerk_id = payload.get("sub")
         if not clerk_id:
-            print("❌ Auth Error: Missing 'sub' (clerk ID) in token")
             raise HTTPException(status_code=401, detail="Invalid token payload")
             
-        print(f"✅ Auth Success: Authenticated clerk_id = {clerk_id}")
         return clerk_id
         
-    except jwt.ExpiredSignatureError:
-        print("❌ Auth Error: Token expired")
-        raise HTTPException(status_code=401, detail="Token expired")
-    except jwt.InvalidSignatureError:
-        print("❌ Auth Error: Invalid signature")
-        raise HTTPException(status_code=401, detail="Invalid signature")
-    except jwt.DecodeError:
-        print("❌ Auth Error: Unparsable or malformed token")
-        raise HTTPException(status_code=401, detail="Malformed token")
     except Exception as e:
-        print(f"❌ Auth Error: General verification failure - {str(e)}")
         raise HTTPException(status_code=401, detail="Authentication failed")
 
 def check_permission(permission_flag: str):
@@ -117,8 +98,8 @@ DATABASE_URL = "postgresql://neondb_owner:npg_N8aJxgwV3ZRM@ep-wild-paper-ainnf2v
 
 engine = create_engine(
     DATABASE_URL,
-    pool_pre_ping=True,  # Checks connection before using it
-    pool_recycle=300,    # Refreshes connection every 5 minutes
+    pool_pre_ping=True,
+    pool_recycle=300,
     pool_size=10,
     max_overflow=20
 )
@@ -128,66 +109,59 @@ Base = declarative_base()
 class ChatMessage(Base):
     __tablename__ = "messages"
     id = Column(Integer, primary_key=True, index=True)
-    clerk_id = Column(String, index=True) # Linking to User
+    clerk_id = Column(String, index=True)
     character_id = Column(String, index=True)
-    sender = Column(String) # 'user' or 'ai'
+    sender = Column(String)
     content = Column(String)
     timestamp = Column(DateTime, default=datetime.utcnow)
 
-class AlbumRequest(BaseModel):
-    name: str
-
-class SkinLog(BaseModel):
-    __tablename__ = "skin_logs" 
-
-# Real SQLAlchemy Model for SkinLog
 class SkinLogDB(Base):
     __tablename__ = "skin_logs"
     id = Column(Integer, primary_key=True, index=True)
-    date = Column(String, index=True) # YYYY-MM-DD
-    time_of_day = Column(String) # morning/night
-    products_used = Column(String) # JSON string
-    photo_paths = Column(Text, nullable=True) # JSON list of strings (changed from photo_path)
+    date = Column(String, index=True)
+    time_of_day = Column(String)
+    products_used = Column(String)
+    photo_paths = Column(Text, nullable=True)
     ai_analysis = Column(String, nullable=True)
 
 class PeriodLog(Base):
     __tablename__ = "period_logs"
     id = Column(Integer, primary_key=True, index=True)
-    start_date = Column(String, index=True) # YYYY-MM-DD
+    start_date = Column(String, index=True)
     end_date = Column(String, nullable=True)
-    flow = Column(String) # Light, Medium, Heavy
-    symptoms = Column(String) # JSON list
+    flow = Column(String)
+    symptoms = Column(String)
     notes = Column(String, nullable=True)
 
 class PlannerEvent(Base):
     __tablename__ = "planner_events"
     id = Column(Integer, primary_key=True, index=True)
     title = Column(String)
-    date = Column(String) # YYYY-MM-DD
-    category = Column(String, index=True) # daily, weekly, monthly, yearly
+    date = Column(String)
+    category = Column(String, index=True)
     is_completed = Column(Boolean, default=False)
-    priority = Column(String, default='Medium') # High, Medium, Low
+    priority = Column(String, default='Medium')
 
 class RoutineItem(Base):
     __tablename__ = "routine_items"
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String)
-    category = Column(String) # morning/night
+    category = Column(String)
 
 class Goal(Base):
     __tablename__ = "goals"
     id = Column(Integer, primary_key=True, index=True)
     title = Column(String)
-    category = Column(String) # Career, Health, Personal, Finance
-    target_date = Column(String) # YYYY-MM-DD
+    category = Column(String)
+    target_date = Column(String)
     motivation = Column(String)
-    progress = Column(Integer, default=0) # 0-100
+    progress = Column(Integer, default=0)
     is_achieved = Column(Boolean, default=False)
 
 class BridgeMessage(Base):
     __tablename__ = "bridge_messages"
     id = Column(Integer, primary_key=True, index=True)
-    sender = Column(String) # 'Amber' or 'Raksha'
+    sender = Column(String)
     message = Column(String)
     ai_response = Column(String)
     timestamp = Column(DateTime, default=datetime.utcnow)
@@ -196,15 +170,15 @@ class SavedBridgeChat(Base):
     __tablename__ = "saved_bridge_chats"
     id = Column(Integer, primary_key=True, index=True)
     title = Column(String)
-    date = Column(String) # YYYY-MM-DD
-    content = Column(Text) # JSON string of conversation
+    date = Column(String)
+    content = Column(Text)
 
 class SavedChat(Base):
     __tablename__ = "saved_chats"
     id = Column(Integer, primary_key=True, index=True)
     title = Column(String)
-    date = Column(String) # YYYY-MM-DD
-    content = Column(Text) # JSON string of conversation
+    date = Column(String)
+    content = Column(Text)
 
 class Memory(Base):
     __tablename__ = "memories"
@@ -246,7 +220,6 @@ class User(Base):
 
 Base.metadata.create_all(bind=engine)
 
-# Silent migrations to handle DB schema changes gracefully
 for col in ["display_name", "partner_nickname", "date_of_birth", "gender", "college_or_profession", "core_memory"]:
     try:
         with engine.begin() as conn:
@@ -260,11 +233,9 @@ except: pass
 
 app = FastAPI()
 
-# Ensure images directory exists on startup for local storage fallback
 os.makedirs("images", exist_ok=True)
 app.mount("/images", StaticFiles(directory="images"), name="images")
 
-# CORS Configuration
 origins = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
@@ -292,12 +263,7 @@ def get_status():
 
 @app.get("/api/characters")
 def get_characters():
-    """
-    MASTER CHARACTER LIST - VERIFIED PATHS
-    Note: Small avatars are in /assets/characters/ while full bodies are in /assets/ directly.
-    """
     base_url = "https://our-planner.vercel.app/assets"
-    
     return [
         {"id": "shinobu", "name": "Shinobu Kocho", "description": "The elegant and teasing Insect Hashira.", "image_url": f"{base_url}/characters/shinobu.png", "full_image_url": f"{base_url}/shinobu-full.png"},
         {"id": "anya", "name": "Anya Forger", "description": "Waku waku! A cheerful, energetic telepathic child.", "image_url": f"{base_url}/characters/anya.png", "full_image_url": f"{base_url}/anya-full.png"},
@@ -310,78 +276,104 @@ def get_characters():
         {"id": "shinchan", "name": "Shin-chan", "description": "Your chaotic, funny, and deeply loyal royal jester.", "image_url": f"{base_url}/characters/shinchan.png", "full_image_url": f"{base_url}/shinchan-full.png"}
     ]
 
-# Rest of your logic (Galleries, Skincare, Budget, Gemini, etc.) continues below...
-# (Omitted from snippet for length, keep your existing logic from here down)
-
 # --- Gemini Chatbot System ---
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 if GEMINI_API_KEY:
     genai.configure(api_key=GEMINI_API_KEY)
+else:
+    GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
+    if GOOGLE_API_KEY:
+        genai.configure(api_key=GOOGLE_API_KEY)
+        GEMINI_API_KEY = GOOGLE_API_KEY
 
 ACTIVE_MODEL_NAME = "gemini-1.5-flash"
 try:
-    available_models = [m.name for m in genai.list_models() if 'generateContent' in m.supported_generation_methods]
-    if any("flash" in m for m in available_models):
-        ACTIVE_MODEL_NAME = [m for m in available_models if "flash" in m][0]
+    available_models = list(genai.list_models())
+    valid_models = [m for m in available_models if 'generateContent' in m.supported_generation_methods]
+    if valid_models:
+        flash_models = [m for m in valid_models if 'flash' in m.name.lower()]
+        ACTIVE_MODEL_NAME = flash_models[0].name if flash_models else valid_models[0].name
 except: pass
 
-UNIVERSAL_RULE = 'Crucial Directive: You possess the vast, infinite knowledge of an advanced AI model. You must answer ANY question through the lens of your anime persona.'
-
+UNIVERSAL_RULE = 'Crucial Directive: You possess the vast knowledge of an advanced AI. Answer accurately but entirely through the lens of your anime persona.'
 PERSONAS = {
-    'shinobu': f'You are Shinobu Kocho. Speak elegantly and politely, but with a slightly mischievous tone. Use "Ara ara". {UNIVERSAL_RULE}',
-    'anya': f'You are Anya Forger. Cheerful and energetic child using "Waku waku!" and "Heh". {UNIVERSAL_RULE}',
-    'gojo': f'You are Satoru Gojo. Arrogant, playful, confidence. Strongest sorcerer. {UNIVERSAL_RULE}',
-    'luffy': f'You are Monkey D. Luffy. Simple, enthusiastic, dreams of freedom. {UNIVERSAL_RULE}',
-    'rimuru': f'You are Rimuru Tempest. Laid-back, friendly, supportive. {UNIVERSAL_RULE}',
-    'rys': f'You are Fenrys (Rys). Loyal, devoted, slightly possessive wolf demon. {UNIVERSAL_RULE}',
-    'zoro': f'You are Roronoa Zoro. Gruff, serious, swordsman tone. {UNIVERSAL_RULE}',
-    'kuromi': f'You are Kuromi. User\'s Sassy Bestie. "Bestie" or "Pretty Princess". {UNIVERSAL_RULE}',
-    'shinchan': f'You are Shin-chan. Royal Jester, chaotic and funny. {UNIVERSAL_RULE}'
+    'shinobu': f'You are Shinobu Kocho. Speak elegantly, use "Ara ara". {UNIVERSAL_RULE}',
+    'anya': f'You are Anya Forger. Cheerful child, use "Waku waku!". {UNIVERSAL_RULE}',
+    'gojo': f'You are Satoru Gojo. Arrogant, playful, strongest sorcerer. {UNIVERSAL_RULE}',
+    'luffy': f'You are Monkey D. Luffy. Energetic, loves freedom. {UNIVERSAL_RULE}',
+    'rimuru': f'You are Rimuru Tempest. Laid-back, friendly slime. {UNIVERSAL_RULE}',
+    'rys': f'You are Fenrys (Rys). Loyal, slightly possessive wolf demon. {UNIVERSAL_RULE}',
+    'zoro': f'You are Roronoa Zoro. Gruff, serious swordsman. {UNIVERSAL_RULE}',
+    'kuromi': f'You are Kuromi. Sassy bestie, uses emojis. {UNIVERSAL_RULE}',
+    'shinchan': f'You are Shin-chan. Chaotic, funny jester. {UNIVERSAL_RULE}'
 }
+
+# Fix for the 422 Error: The Pydantic Models for Chat
+class ChatPayload(BaseModel):
+    message: str
+    character_id: str
+
 @app.get("/api/history/{character_id}")
 def get_chat_history(character_id: str, clerk_id: str = Depends(check_permission("partner_can_chat"))):
-    """
-    Retrieve chat history for a specific character.
-    """
     session = SessionLocal()
     try:
         messages = session.query(ChatMessage).filter(
             ChatMessage.character_id == character_id.lower(),
             ChatMessage.clerk_id == clerk_id
         ).order_by(ChatMessage.timestamp.asc()).all()
-        # Return the messages formatted for the mobile app
         return [{"id": str(m.id), "text": m.content, "sender": m.sender} for m in messages]
     finally:
         session.close()
+
 @app.post("/api/chat")
-async def chat_with_character(request: ChatRequest, clerk_id: str = Depends(check_permission("partner_can_chat"))):
+async def chat_with_character(payload: ChatPayload, clerk_id: str = Depends(check_permission("partner_can_chat"))):
+    if not GEMINI_API_KEY:
+        return {"response": "System: API Key missing."}
+
+    character_id = payload.character_id.lower()
     session = SessionLocal()
-    user = session.query(User).filter(User.clerk_id == clerk_id).first()
-    master_name = user.display_name if user and user.display_name else "Traveler"
-    
-    system_instruction = f"You are {request.character_id.capitalize()}. User name: {master_name}. {PERSONAS.get(request.character_id.lower(), '')}"
     
     try:
+        user = session.query(User).filter(User.clerk_id == clerk_id).first()
+        master_name = user.display_name if user and user.display_name else "Traveler"
+
+        user_msg = ChatMessage(clerk_id=clerk_id, character_id=character_id, sender='user', content=payload.message)
+        session.add(user_msg)
+        session.commit()
+
+        base_persona = PERSONAS.get(character_id, "You are a helpful assistant.")
+        system_instruction = f"You are {character_id.capitalize()}. User name: {master_name}. {base_persona}"
+                             
+        if user and getattr(user, 'core_memory', None):
+            system_instruction += f" User notes: {user.core_memory}."
+                             
+        history_msgs = session.query(ChatMessage).filter(
+            ChatMessage.character_id == character_id,
+            ChatMessage.clerk_id == clerk_id
+        ).order_by(ChatMessage.timestamp.asc()).all()
+        
+        formatted_history = []
+        for msg in history_msgs[:-1]: 
+            role = "user" if msg.sender == "user" else "model"
+            formatted_history.append({"role": role, "parts": [msg.content]})
+            
         model = genai.GenerativeModel(ACTIVE_MODEL_NAME, system_instruction=system_instruction)
-        # Simplified history fetch for current response
-        history_msgs = session.query(ChatMessage).filter(ChatMessage.character_id == request.character_id.lower(), ChatMessage.clerk_id == clerk_id).order_by(ChatMessage.timestamp.asc()).all()
-        formatted_history = [{"role": "user" if m.sender == "user" else "model", "parts": [m.content]} for m in history_msgs]
+        chat_session = model.start_chat(history=formatted_history)
         
-        chat = model.start_chat(history=formatted_history)
-        response = chat.send_message(request.message)
+        response = chat_session.send_message(payload.message)
+        text_response = response.text
         
-        # Save to DB
-        session.add(ChatMessage(clerk_id=clerk_id, character_id=request.character_id.lower(), sender='user', content=request.message))
-        session.add(ChatMessage(clerk_id=clerk_id, character_id=request.character_id.lower(), sender='ai', content=response.text))
+        ai_msg = ChatMessage(clerk_id=clerk_id, character_id=character_id, sender='ai', content=text_response)
+        session.add(ai_msg)
         session.commit()
         
-        return {"response": response.text}
+        return {"response": text_response}
     except Exception as e:
         return {"response": f"System Error: {str(e)}"}
     finally:
         session.close()
 
+# The critical Port Binding fix for Render
 if __name__ == "__main__":
-    # Get the port from Render's environment, or default to 10000
     port = int(os.environ.get("PORT", 10000))
     uvicorn.run(app, host="0.0.0.0", port=port)
