@@ -12,7 +12,7 @@ import { useAuth } from '@clerk/nextjs';
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
 export default function MemoriesPage() {
-    const { userId } = useAuth();
+    const { userId, getToken } = useAuth();
     const [userProfile, setUserProfile] = useState<any>(null);
     const [isCheckingAccess, setIsCheckingAccess] = useState(true);
 
@@ -36,8 +36,12 @@ export default function MemoriesPage() {
 
         const checkAccessAndFetch = async () => {
             try {
+                const token = await getToken();
                 const res = await axios.get(`${API_BASE_URL}/api/users/me`, {
-                    headers: { 'x-clerk-user-id': userId }
+                    headers: { 
+                        'Authorization': `Bearer ${token}`,
+                        'x-clerk-user-id': userId 
+                    }
                 });
                 setUserProfile(res.data);
 
@@ -60,8 +64,14 @@ export default function MemoriesPage() {
 
     const fetchAlbums = async () => {
         try {
+            const token = await getToken();
             // Fetch persistent albums from nuclear API
-            const res = await axios.get(`${API_BASE_URL}/api/albums`);
+            const res = await axios.get(`${API_BASE_URL}/api/albums`, {
+                headers: { 
+                    'Authorization': `Bearer ${token}`,
+                    'x-clerk-user-id': userId 
+                }
+            });
             const persistentAlbums = res.data.map((a: any) => a.name);
 
             // Add 'All Memories' and deduplicate
@@ -74,8 +84,12 @@ export default function MemoriesPage() {
 
     const fetchMemories = async () => {
         try {
+            const token = await getToken();
             const res = await axios.get(`${API_BASE_URL}/api/memories`, {
-                headers: { 'x-clerk-user-id': userId }
+                headers: { 
+                    'Authorization': `Bearer ${token}`,
+                    'x-clerk-user-id': userId 
+                }
             });
             setLocalMemories(res.data);
         } catch (error) {
@@ -106,9 +120,14 @@ export default function MemoriesPage() {
         try {
             console.log("Creating album with name:", name); // LOG THE REQUEST
             const payload = { name };
-            console.log("Payload:", payload);
+            const token = await getToken();
 
-            await axios.post(`${API_BASE_URL}/api/albums`, payload);
+            await axios.post(`${API_BASE_URL}/api/albums`, payload, {
+                headers: { 
+                    'Authorization': `Bearer ${token}`,
+                    'x-clerk-user-id': userId 
+                }
+            });
             setAlbums(prev => [...prev, name]);
             setSelectedAlbumForUpload(name); // Auto-select
             setActiveCategory(name); // Switch view
@@ -127,7 +146,13 @@ export default function MemoriesPage() {
         }
 
         try {
-            await axios.delete(`${API_BASE_URL}/api/albums/${albumName}`);
+            const token = await getToken();
+            await axios.delete(`${API_BASE_URL}/api/albums/${albumName}`, {
+                headers: { 
+                    'Authorization': `Bearer ${token}`,
+                    'x-clerk-user-id': userId 
+                }
+            });
 
             setAlbums(prev => prev.filter(a => a !== albumName));
             if (activeCategory === albumName) {
@@ -153,8 +178,14 @@ export default function MemoriesPage() {
             // However, based on the backend implementation, it tries to find by ID if album mismatch.
             // So we can pass 'All Memories' or the current active category if memory.album is null.
             const albumName = memory.album || activeCategory;
+            const token = await getToken();
 
-            await axios.delete(`${API_BASE_URL}/api/albums/${albumName}/photos/${memory.id}`);
+            await axios.delete(`${API_BASE_URL}/api/albums/${albumName}/photos/${memory.id}`, {
+                headers: { 
+                    'Authorization': `Bearer ${token}`,
+                    'x-clerk-user-id': userId 
+                }
+            });
 
             // Remove from local state immediately
             setLocalMemories(prev => prev.filter(m => m.id !== memory.id));
@@ -183,9 +214,11 @@ export default function MemoriesPage() {
                     formData.append('album', selectedAlbumForUpload || 'Uncategorized');
 
                     try {
+                        const token = await getToken();
                         await axios.post(`${API_BASE_URL}/api/memories`, formData, {
                             headers: {
                                 'Content-Type': 'multipart/form-data',
+                                'Authorization': `Bearer ${token}`,
                                 'x-clerk-user-id': userId
                             }
                         });
@@ -322,9 +355,17 @@ export default function MemoriesPage() {
                                 .filter(m => activeCategory === 'All Memories' || m.album?.toLowerCase().trim() === activeCategory.toLowerCase().trim())
                                 .map((memory) => {
                                     const imagePath = memory.image_url || memory.src || '';
-                                    const fullImageUrl = imagePath.startsWith('http')
-                                        ? imagePath
-                                        : `${API_BASE_URL}/${imagePath.replace(/^\//, '')}`;
+                                    let fullImageUrl = '';
+                                    
+                                    if (imagePath.startsWith('http')) {
+                                        fullImageUrl = imagePath;
+                                    } else if (imagePath) {
+                                        // Construct Cloudinary URL based on the provided pattern
+                                        fullImageUrl = `https://res.cloudinary.com/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload/${imagePath}`;
+                                    } else {
+                                        // Fallback if image path is missing
+                                        fullImageUrl = `/placeholder.jpg`;
+                                    }
 
                                     return (
                                         <div
