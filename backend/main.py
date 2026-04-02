@@ -559,6 +559,54 @@ def get_user_me(clerk_id: str = Depends(get_current_user_clerk_id)):
     finally:
         session.close()
 
+class UserProfileUpdate(BaseModel):
+    display_name: Optional[str] = None
+    partner_nickname: Optional[str] = None
+    date_of_birth: Optional[str] = None
+    gender: Optional[str] = None
+    college_or_profession: Optional[str] = None
+    core_memory: Optional[str] = None
+
+@app.get("/api/users/profile")
+def get_user_profile(clerk_id: str = Depends(get_current_user_clerk_id)):
+    session = SessionLocal()
+    try:
+        user = session.query(User).filter(User.clerk_id == clerk_id).first()
+        if not user:
+            # Create user if not exists (lazy sync)
+            user = User(clerk_id=clerk_id, display_name="New User")
+            session.add(user)
+            session.commit()
+            session.refresh(user)
+            
+        return {
+            "display_name": user.display_name,
+            "partner_nickname": user.partner_nickname,
+            "date_of_birth": user.date_of_birth,
+            "gender": user.gender,
+            "college_or_profession": user.college_or_profession,
+            "core_memory": user.core_memory
+        }
+    finally:
+        session.close()
+
+@app.put("/api/users/profile")
+def update_user_profile(payload: UserProfileUpdate, clerk_id: str = Depends(get_current_user_clerk_id)):
+    session = SessionLocal()
+    try:
+        user = session.query(User).filter(User.clerk_id == clerk_id).first()
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+            
+        update_data = payload.dict(exclude_unset=True)
+        for key, value in update_data.items():
+            setattr(user, key, value)
+            
+        session.commit()
+        return {"status": "success", "message": "Profile updated successfully"}
+    finally:
+        session.close()
+
 @app.get("/api/budget")
 def get_budget(period: str = "daily", date: Optional[str] = None):
     # Mock budget data - can be expanded with a Budget table later
