@@ -290,7 +290,7 @@ export default function PlannerPage() {
                 ) : userProfile && !userProfile.is_admin && userProfile.couple && userProfile.couple.partner_can_journal === false ? (
                     <div className="flex flex-col items-center justify-center py-32 text-center px-4">
                         <div className="bg-slate-900/50 backdrop-blur-xl border border-white/10 p-8 rounded-3xl shadow-2xl max-w-sm w-full mx-auto relative overflow-hidden group">
-                            <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 to-indigo-500/10 opacity-50 group-hover:opacity-100 transition-opacity duration-500"></div>
+                            <div className="absolute inset-0 bg-linear-to-br from-purple-500/10 to-indigo-500/10 opacity-50 group-hover:opacity-100 transition-opacity duration-500"></div>
                             <motion.div
                                 initial={{ scale: 0.8, opacity: 0 }}
                                 animate={{ scale: 1, opacity: 1 }}
@@ -300,7 +300,7 @@ export default function PlannerPage() {
                                 <div className="p-4 bg-slate-800/80 rounded-full text-purple-400 mb-6 shadow-[0_0_30px_rgba(168,85,247,0.2)]">
                                     <Lock size={48} strokeWidth={1.5} />
                                 </div>
-                                <h2 className="text-2xl font-bold text-white mb-2 font-[family-name:var(--font-primary)]">Planner Locked</h2>
+                                <h2 className="text-2xl font-bold text-white mb-2 font-(family-name:--font-primary)">Planner Locked</h2>
                                 <p className="text-white/60 text-sm leading-relaxed">
                                     This room has been locked by your partner. You need permission to use the planner and vision board.
                                 </p>
@@ -452,7 +452,7 @@ export default function PlannerPage() {
                             {view === 'yearly' && (
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                     {quarters.map((q) => (
-                                        <div key={q.id} className="bg-gradient-to-br from-indigo-900/40 to-purple-900/40 backdrop-blur-md border border-white/10 rounded-3xl p-6 relative overflow-hidden group">
+                                        <div key={q.id} className="bg-linear-to-br from-indigo-900/40 to-purple-900/40 backdrop-blur-md border border-white/10 rounded-3xl p-6 relative overflow-hidden group">
                                             <div className="absolute -right-10 -top-10 text-[10rem] font-bold text-white/5 select-none">{q.id}</div>
                                             <h3 className="text-2xl font-light mb-4 relative z-10">{q.id} Goals</h3>
                                             <p className="text-white/40 text-sm mb-6 relative z-10">{q.months.join(' • ')}</p>
@@ -475,7 +475,7 @@ export default function PlannerPage() {
                             {view === 'vision' && (
                                 <div>
                                     <div className="text-center mb-10">
-                                        <h2 className="text-4xl font-thin mb-4 bg-clip-text text-transparent bg-gradient-to-r from-purple-200 to-pink-200">Manifest Your Future</h2>
+                                        <h2 className="text-4xl font-thin mb-4 bg-clip-text text-transparent bg-linear-to-r from-purple-200 to-pink-200">Manifest Your Future</h2>
                                         <button
                                             onClick={() => setIsGoalModalOpen(true)}
                                             className="px-8 py-3 bg-white text-slate-900 rounded-full font-medium shadow-[0_0_20px_rgba(255,255,255,0.3)] hover:shadow-[0_0_30px_rgba(255,255,255,0.5)] transition-all transform hover:scale-105"
@@ -565,7 +565,7 @@ export default function PlannerPage() {
                             className="bg-slate-900 border border-white/20 rounded-3xl p-8 max-w-lg w-full shadow-2xl relative overflow-hidden"
                             onClick={e => e.stopPropagation()}
                         >
-                            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-purple-500 via-pink-500 to-amber-500" />
+                            <div className="absolute top-0 left-0 w-full h-1 bg-linear-to-r from-purple-500 via-pink-500 to-amber-500" />
                             <button onClick={() => setIsGoalModalOpen(false)} className="absolute top-4 right-4 p-2 text-white/50 hover:text-white"><X size={20} /></button>
 
                             <h2 className="text-3xl font-light mb-6">Set a New Goal</h2>
@@ -618,7 +618,7 @@ export default function PlannerPage() {
 
                                 <button
                                     onClick={handleCreateGoal}
-                                    className="w-full py-4 mt-4 bg-gradient-to-r from-purple-600 to-pink-600 rounded-xl font-medium shadow-lg hover:scale-[1.02] transition-transform"
+                                    className="w-full py-4 mt-4 bg-linear-to-r from-purple-600 to-pink-600 rounded-xl font-medium shadow-lg hover:scale-[1.02] transition-transform"
                                 >
                                     Manifest It ✨
                                 </button>

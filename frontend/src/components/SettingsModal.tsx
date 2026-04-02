@@ -113,7 +113,7 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
     return (
         <AnimatePresence>
             {isOpen && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+                <div className="fixed inset-0 z-100 flex items-center justify-center p-4">
                     {/* Backdrop */}
                     <motion.div
                         initial={{ opacity: 0 }}
@@ -133,7 +133,7 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                     >
                         {/* Decorative background glow */}
                         <div
-                            className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-white/50 to-transparent"
+                            className="absolute top-0 left-0 w-full h-1 bg-linear-to-r from-transparent via-white/50 to-transparent"
                             style={{ backgroundColor: theme.colors.primary }}
                         />
 

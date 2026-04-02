@@ -43,7 +43,7 @@ export default function Sidekick({ className = '', image, themeId }: SidekickPro
     // 1. PEEKERS (Anya) - Up/Down
     if (currentThemeId.includes('anya')) {
         return (
-            <div className="pointer-events-none z-[10] md:z-[9999] relative flex justify-center w-full mt-4 mb-4 md:mt-0 md:mb-0 md:fixed md:inset-0 md:overflow-hidden">
+            <div className="pointer-events-none z-10 md:z-9999 relative flex justify-center w-full mt-4 mb-4 md:mt-0 md:mb-0 md:fixed md:inset-0 md:overflow-hidden">
                 <motion.div
                     className={`md:absolute md:top-24 w-auto ${theme.position === 'left' ? 'md:left-4' : 'md:right-4'} ${className}`}
                     initial={{ y: '100%' }}
@@ -79,7 +79,7 @@ export default function Sidekick({ className = '', image, themeId }: SidekickPro
     // 2. FLOATERS (Rimuru, Gojo, Shinobu) - Hover
     if (['rimuru', 'gojo', 'shinobu'].includes(currentThemeId)) {
         return (
-            <div className="pointer-events-none z-[10] md:z-[9999] relative flex justify-center w-full mt-4 mb-4 md:mt-0 md:mb-0 md:fixed md:inset-0 md:overflow-hidden">
+            <div className="pointer-events-none z-10 md:z-9999 relative flex justify-center w-full mt-4 mb-4 md:mt-0 md:mb-0 md:fixed md:inset-0 md:overflow-hidden">
                 <motion.div
                     className={`md:absolute md:top-24 w-auto ${theme.position === 'left' ? 'md:left-4' : 'md:right-4'} ${className}`}
                     animate={{
@@ -108,7 +108,7 @@ export default function Sidekick({ className = '', image, themeId }: SidekickPro
                             alt="Butterfly"
                             animate={{ y: [0, -15, 0], rotate: [0, 5, -5, 0] }}
                             transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-                            className="absolute top-12 -left-12 w-12 h-12 z-[10000] pointer-events-none opacity-80"
+                            className="absolute top-12 -left-12 w-12 h-12 z-10000 pointer-events-none opacity-80"
                             style={{ filter: `drop-shadow(0 0 10px ${theme.colors.accent})` }}
                         />
                     )}
@@ -120,7 +120,7 @@ export default function Sidekick({ className = '', image, themeId }: SidekickPro
     // 3. BOUNCERS (Luffy) - Jump
     if (currentThemeId === 'luffy') {
         return (
-            <div className="pointer-events-none z-[10] md:z-[9999] relative flex justify-center w-full mt-4 mb-4 md:mt-0 md:mb-0 md:fixed md:inset-0 md:overflow-hidden">
+            <div className="pointer-events-none z-10 md:z-9999 relative flex justify-center w-full mt-4 mb-4 md:mt-0 md:mb-0 md:fixed md:inset-0 md:overflow-hidden">
                 <motion.div
                     className={`md:absolute md:top-24 w-auto ${theme.position === 'left' ? 'md:left-4' : 'md:right-4'} ${className}`}
                     animate={{
@@ -152,7 +152,7 @@ export default function Sidekick({ className = '', image, themeId }: SidekickPro
     // 4. SLIDERS (Rys) - Slide In/Out
     if (currentThemeId === 'rys') {
         return (
-            <div className="pointer-events-none z-[10] md:z-[9999] relative flex justify-center w-full mt-4 mb-4 md:mt-0 md:mb-0 md:fixed md:inset-0 md:overflow-hidden">
+            <div className="pointer-events-none z-10 md:z-9999 relative flex justify-center w-full mt-4 mb-4 md:mt-0 md:mb-0 md:fixed md:inset-0 md:overflow-hidden">
                 <motion.div
                     className={`md:absolute md:top-24 w-auto ${theme.position === 'left' ? 'md:left-4' : 'md:right-4'} ${className}`}
                     initial={{ x: '-100%', opacity: 0 }}
@@ -187,7 +187,7 @@ export default function Sidekick({ className = '', image, themeId }: SidekickPro
 
     // DEFAULT (Standard Stand)
     return (
-        <div className="pointer-events-none z-[10] md:z-[9999] relative flex justify-center w-full mt-4 mb-4 md:mt-0 md:mb-0 md:fixed md:inset-0 md:overflow-hidden">
+        <div className="pointer-events-none z-10 md:z-9999 relative flex justify-center w-full mt-4 mb-4 md:mt-0 md:mb-0 md:fixed md:inset-0 md:overflow-hidden">
             <motion.div
                 className={`md:absolute md:top-24 w-auto ${theme.position === 'left' ? 'md:left-4' : 'md:right-4'} ${className}`}
                 initial={{ y: 20, opacity: 0 }}

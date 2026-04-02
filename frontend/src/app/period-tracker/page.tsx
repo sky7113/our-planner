@@ -135,7 +135,7 @@ export default function PeriodTrackerPage() {
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="mb-8 text-center p-8 rounded-3xl bg-gradient-to-br from-pink-900/40 to-slate-900/40 border border-pink-500/20 shadow-xl backdrop-blur-md relative overflow-hidden"
+                    className="mb-8 text-center p-8 rounded-3xl bg-linear-to-br from-pink-900/40 to-slate-900/40 border border-pink-500/20 shadow-xl backdrop-blur-md relative overflow-hidden"
                 >
                     <div className="absolute -top-10 -right-10 w-32 h-32 bg-pink-500/10 rounded-full blur-3xl" />
 
@@ -232,7 +232,7 @@ export default function PeriodTrackerPage() {
                         <button
                             onClick={handleLogCycle}
                             disabled={isSaving}
-                            className="w-full h-16 bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-500 hover:to-rose-500 text-white text-lg font-medium rounded-2xl shadow-lg shadow-pink-900/20 transition-all hover:scale-[1.02]"
+                            className="w-full h-16 bg-linear-to-r from-pink-600 to-rose-600 hover:from-pink-500 hover:to-rose-500 text-white text-lg font-medium rounded-2xl shadow-lg shadow-pink-900/20 transition-all hover:scale-[1.02]"
                         >
                             {isSaving ? 'Logging...' : 'Log Cycle'}
                         </button>
@@ -250,7 +250,7 @@ export default function PeriodTrackerPage() {
                         href={`/comfort-room?prompt=${encodeURIComponent(`I am on my period and feeling ${Array.from(selectedSymptoms).join(', ') || 'unwell'}. Please comfort me.`)}`}
                         className="group block"
                     >
-                        <div className="bg-gradient-to-r from-indigo-900/60 to-purple-900/60 backdrop-blur-md rounded-2xl p-1 border border-white/20 hover:border-pink-400/50 transition-colors">
+                        <div className="bg-linear-to-r from-indigo-900/60 to-purple-900/60 backdrop-blur-md rounded-2xl p-1 border border-white/20 hover:border-pink-400/50 transition-colors">
                             <div className="bg-black/20 rounded-xl p-6 flex items-center justify-between">
                                 <div>
                                     <h3 className="text-xl font-light text-white mb-1 flex items-center gap-2">

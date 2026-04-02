@@ -172,7 +172,7 @@ export default function BridgePage() {
 
             {/* Ambient Background */}
             <div className="absolute inset-0 pointer-events-none">
-                <div className="absolute top-0 left-0 w-full h-[500px] bg-gradient-to-b from-indigo-900/40 to-transparent opacity-50" />
+                <div className="absolute top-0 left-0 w-full h-[500px] bg-linear-to-b from-indigo-900/40 to-transparent opacity-50" />
                 {[...particles].map((p, i) => (
                     <motion.div
                         key={i}
@@ -303,7 +303,7 @@ export default function BridgePage() {
 
                             {/* Connector Line (Visual only) */}
                             {index < messages.length - 1 && (
-                                <div className="w-px h-8 bg-gradient-to-b from-white/10 to-transparent mx-auto" />
+                                <div className="w-px h-8 bg-linear-to-b from-white/10 to-transparent mx-auto" />
                             )}
                         </div>
                     ))}
@@ -422,7 +422,7 @@ export default function BridgePage() {
                         initial={{ opacity: 0, y: 50 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0 }}
-                        className="fixed inset-0 z-[60] bg-slate-950 flex flex-col"
+                        className="fixed inset-0 z-60 bg-slate-950 flex flex-col"
                     >
                         {/* Header */}
                         <div className="p-4 border-b border-white/10 flex justify-between items-center bg-black/20">

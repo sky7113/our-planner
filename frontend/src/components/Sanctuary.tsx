@@ -120,7 +120,7 @@ export default function Sanctuary() {
                         ) : userProfile && !userProfile.is_admin && userProfile.couple && userProfile.couple.partner_can_chat === false ? (
                             <div className="flex flex-col items-center justify-center text-center px-4 w-full">
                                 <div className="bg-slate-900/50 backdrop-blur-xl border border-white/10 p-8 rounded-3xl shadow-2xl max-w-sm w-full mx-auto relative overflow-hidden group">
-                                    <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 to-teal-500/10 opacity-50 group-hover:opacity-100 transition-opacity duration-500"></div>
+                                    <div className="absolute inset-0 bg-linear-to-br from-purple-500/10 to-teal-500/10 opacity-50 group-hover:opacity-100 transition-opacity duration-500"></div>
                                     <motion.div
                                         initial={{ scale: 0.8, opacity: 0 }}
                                         animate={{ scale: 1, opacity: 1 }}
@@ -130,7 +130,7 @@ export default function Sanctuary() {
                                         <div className="p-4 bg-slate-800/80 rounded-full text-purple-400 mb-6 shadow-[0_0_30px_rgba(168,85,247,0.2)]">
                                             <Lock size={48} strokeWidth={1.5} />
                                         </div>
-                                        <h2 className="text-2xl font-bold text-white mb-2 font-[family-name:var(--font-primary)]">Sanctuary Locked</h2>
+                                        <h2 className="text-2xl font-bold text-white mb-2 font-(family-name:--font-primary)">Sanctuary Locked</h2>
                                         <p className="text-purple-200/70 text-sm leading-relaxed mb-6">
                                             This room has been locked by your partner. You need permission to use the sanctuary.
                                         </p>
@@ -163,7 +163,7 @@ export default function Sanctuary() {
                                     }}
                                     className="w-64 h-64 md:w-80 md:h-80 rounded-full flex items-center justify-center bg-purple-500/10 border border-purple-400/20 backdrop-blur-sm mb-12 relative overflow-hidden"
                                 >
-                                    <div className="absolute inset-0 bg-gradient-to-tr from-purple-500/10 to-teal-500/10 rounded-full" />
+                                    <div className="absolute inset-0 bg-linear-to-tr from-purple-500/10 to-teal-500/10 rounded-full" />
 
                                     {/* Message */}
                                     <AnimatePresence mode="wait">

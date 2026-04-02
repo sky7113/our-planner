@@ -216,7 +216,7 @@ export default function CouplePairing() {
     return (
         <div className="w-full max-w-md mx-auto p-4 md:p-8 bg-black/40 backdrop-blur-2xl border border-purple-500/20 rounded-2xl md:rounded-[2rem] shadow-[0_0_40px_rgba(168,85,247,0.1)] text-white">
             <div className="mb-6 md:mb-8 text-center">
-                <div className="w-12 h-12 md:w-16 md:h-16 bg-gradient-to-br from-purple-500/20 to-pink-500/20 border border-purple-500/30 rounded-2xl mx-auto flex items-center justify-center mb-3 md:mb-4 shadow-inner">
+                <div className="w-12 h-12 md:w-16 md:h-16 bg-linear-to-br from-purple-500/20 to-pink-500/20 border border-purple-500/30 rounded-2xl mx-auto flex items-center justify-center mb-3 md:mb-4 shadow-inner">
                     <Shield className="w-6 h-6 md:w-8 md:h-8 text-purple-300" />
                 </div>
                 <h2 className="text-xl md:text-2xl tracking-wide font-light">
@@ -242,8 +242,8 @@ export default function CouplePairing() {
 
             {/* Success State for Joiner (Male) */}
             {!isAdmin && isConnected ? (
-                <div className="text-center p-6 bg-gradient-to-br from-purple-900/30 to-indigo-900/30 rounded-3xl border border-purple-500/30">
-                    <div className="w-16 h-16 bg-gradient-to-br from-green-400 to-emerald-600 rounded-full mx-auto flex items-center justify-center mb-4 shadow-[0_0_30px_rgba(52,211,153,0.3)]">
+                <div className="text-center p-6 bg-linear-to-br from-purple-900/30 to-indigo-900/30 rounded-3xl border border-purple-500/30">
+                    <div className="w-16 h-16 bg-linear-to-br from-green-400 to-emerald-600 rounded-full mx-auto flex items-center justify-center mb-4 shadow-[0_0_30px_rgba(52,211,153,0.3)]">
                         <Check className="w-8 h-8 text-white" />
                     </div>
                     <h3 className="text-xl font-medium text-purple-100 mb-2">Sanctuary Joined</h3>
@@ -377,7 +377,7 @@ export default function CouplePairing() {
                             <button
                                 onClick={handleGenerate}
                                 disabled={generateLoading}
-                                className="w-full relative group overflow-hidden rounded-2xl bg-gradient-to-r from-purple-600 to-indigo-600 p-4 transition-all disabled:opacity-50 text-white font-semibold flex items-center justify-center gap-3"
+                                className="w-full relative group overflow-hidden rounded-2xl bg-linear-to-r from-purple-600 to-indigo-600 p-4 transition-all disabled:opacity-50 text-white font-semibold flex items-center justify-center gap-3"
                             >
                                 {generateLoading ? (
                                     <div className="w-6 h-6 border-2 border-white/80 border-t-transparent rounded-full animate-spin" />

@@ -93,7 +93,7 @@ export default function GalleryPage() {
         <div className="min-h-screen pb-24 relative overflow-hidden bg-slate-950 text-slate-100 font-sans selection:bg-pink-500/30">
 
             {/* Background */}
-            <div className="fixed inset-0 pointer-events-none opacity-20 bg-[radial-gradient(circle_at_top_right,_var(--theme-color),_transparent_70%)]" />
+            <div className="fixed inset-0 pointer-events-none opacity-20 bg-[radial-gradient(circle_at_top_right,var(--theme-color),transparent_70%)]" />
 
             {/* Header */}
             <header className="sticky top-0 z-50 pt-12 pb-4 px-6 border-b border-white/5 bg-slate-950/80 backdrop-blur-xl">
@@ -102,7 +102,7 @@ export default function GalleryPage() {
                         <div className="p-2 rounded-xl bg-pink-500/20 text-pink-400">
                             <ImageIcon size={24} />
                         </div>
-                        <h1 className="text-2xl font-bold tracking-tight text-white font-[family-name:var(--font-primary)]">
+                        <h1 className="text-2xl font-bold tracking-tight text-white font-(family-name:--font-primary)">
                             Album Collection
                         </h1>
                     </div>
@@ -118,7 +118,7 @@ export default function GalleryPage() {
                 ) : userProfile && !userProfile.is_admin && userProfile.couple && userProfile.couple.partner_can_gallery === false ? (
                     <div className="flex flex-col items-center justify-center py-32 text-center px-4">
                         <div className="bg-slate-900/50 backdrop-blur-xl border border-white/10 p-8 rounded-3xl shadow-2xl max-w-sm w-full mx-auto relative overflow-hidden group">
-                            <div className="absolute inset-0 bg-gradient-to-br from-pink-500/10 to-purple-500/10 opacity-50 group-hover:opacity-100 transition-opacity duration-500"></div>
+                            <div className="absolute inset-0 bg-linear-to-br from-pink-500/10 to-purple-500/10 opacity-50 group-hover:opacity-100 transition-opacity duration-500"></div>
                             <motion.div
                                 initial={{ scale: 0.8, opacity: 0 }}
                                 animate={{ scale: 1, opacity: 1 }}
@@ -128,7 +128,7 @@ export default function GalleryPage() {
                                 <div className="p-4 bg-slate-800/80 rounded-full text-pink-500 mb-6 shadow-[0_0_30px_rgba(236,72,153,0.2)]">
                                     <Lock size={48} strokeWidth={1.5} />
                                 </div>
-                                <h2 className="text-2xl font-bold text-white mb-2 font-[family-name:var(--font-primary)]">Gallery Locked</h2>
+                                <h2 className="text-2xl font-bold text-white mb-2 font-(family-name:--font-primary)">Gallery Locked</h2>
                                 <p className="text-slate-400 text-sm leading-relaxed">
                                     This room has been locked by your partner. You need permission to view albums.
                                 </p>
@@ -157,7 +157,7 @@ export default function GalleryPage() {
                                 </button>
 
                                 {/* Cover Image */}
-                                <div className="relative aspect-[4/3] w-full bg-slate-900/50">
+                                <div className="relative aspect-4/3 w-full bg-slate-900/50">
                                     {album.cover ? (
                                         <img
                                             src={album.cover.startsWith('http') ? album.cover : `${API_BASE_URL}/${album.cover.replace(/^\//, '')}`}
@@ -171,7 +171,7 @@ export default function GalleryPage() {
                                     )}
 
                                     {/* Overlay Gradient */}
-                                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-60 group-hover:opacity-80 transition-opacity duration-300 pointer-events-none" />
+                                    <div className="absolute inset-0 bg-linear-to-t from-black/80 via-transparent to-transparent opacity-60 group-hover:opacity-80 transition-opacity duration-300 pointer-events-none" />
                                 </div>
 
                                 {/* Text Content */}

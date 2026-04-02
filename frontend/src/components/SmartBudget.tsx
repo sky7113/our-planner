@@ -336,14 +336,14 @@ export default function SmartBudget() {
                 <button
                     type="submit"
                     disabled={isAdding}
-                    className="h-14 w-14 flex-shrink-0 bg-pink-500 hover:bg-pink-600 text-white rounded-2xl transition-all disabled:opacity-50 flex items-center justify-center shadow-lg shadow-pink-500/20 hover:scale-105 active:scale-95"
+                    className="h-14 w-14 shrink-0 bg-pink-500 hover:bg-pink-600 text-white rounded-2xl transition-all disabled:opacity-50 flex items-center justify-center shadow-lg shadow-pink-500/20 hover:scale-105 active:scale-95"
                 >
                     {isAdding ? <Loader2 size={24} className="animate-spin" /> : <Plus size={28} />}
                 </button>
             </form>
 
             {/* AI Insight */}
-            <div className="mb-8 p-4 rounded-xl bg-gradient-to-br from-indigo-500/10 to-purple-500/10 border border-indigo-500/20 flex gap-3">
+            <div className="mb-8 p-4 rounded-xl bg-linear-to-br from-indigo-500/10 to-purple-500/10 border border-indigo-500/20 flex gap-3">
                 <div className="text-indigo-400 mt-1">
                     <TrendingUp size={20} />
                 </div>

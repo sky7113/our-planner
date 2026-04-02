@@ -51,7 +51,7 @@ export default function Home() {
 
   return (
     <main
-      className={`min-h-[100dvh] flex flex-col items-center justify-center aurora-bg ${theme.colors.textClass} px-4 pb-44 md:p-6 md:pb-48 transition-colors duration-700`}
+      className={`min-h-dvh flex flex-col items-center justify-center aurora-bg ${theme.colors.textClass} px-4 pb-44 md:p-6 md:pb-48 transition-colors duration-700`}
       style={{
         '--theme-color': theme.colors.accent,
       } as React.CSSProperties}
@@ -128,7 +128,7 @@ export default function Home() {
 
       {hasEntered && (
         <Sidekick
-          className="!z-0"
+          className="z-0!"
           image={theme.sidekickImage || theme.characterImage}
           themeId={theme.id}
         />
@@ -179,7 +179,7 @@ export default function Home() {
                 backdrop-blur-lg dark:backdrop-blur-xl
                 border border-white/40 dark:border-white/10
                 shadow-xl shadow-indigo-100/50 dark:shadow-2xl dark:shadow-black/50
-                hover:border-[var(--glow-color)] hover:shadow-[0_0_20px_var(--glow-alpha)]
+                hover:border-(--glow-color) hover:shadow-[0_0_20px_var(--glow-alpha)]
               `}
               style={{
                 '--glow-color': theme.colors.accent,

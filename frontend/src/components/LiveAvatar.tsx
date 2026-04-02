@@ -73,7 +73,7 @@ export default function LiveAvatar({ size = 'w-12 h-12', className = '', isPoint
             title="Click to say hi!"
         >
             {/* Glow Effect */}
-            <div className={`absolute inset-0 bg-gradient-to-tr ${theme.colors.primary} opacity-20`} />
+            <div className={`absolute inset-0 bg-linear-to-tr ${theme.colors.primary} opacity-20`} />
 
             <img
                 src={theme.characterImage || '/avatars/default.png'}

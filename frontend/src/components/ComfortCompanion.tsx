@@ -112,7 +112,7 @@ export default function ComfortCompanion() {
                 },
                 body: JSON.stringify({
                     message: inputValue,
-                    characterId: theme.id
+                    character_id: theme.id
                 })
             });
 
@@ -315,7 +315,7 @@ export default function ComfortCompanion() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className={`fixed inset-0 z-[50] flex items-center justify-center overflow-hidden ${theme.font || 'font-sans'}`}
+            className={`fixed inset-0 z-50 flex items-center justify-center overflow-hidden ${theme.font || 'font-sans'}`}
         >
             {/* Background Image Layer */}
             {/* Background Image Layer (Spirit Mode) */}
@@ -400,7 +400,7 @@ export default function ComfortCompanion() {
                                 className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}
                             >
                                 {msg.sender === 'companion' && (
-                                    <div className="hidden md:flex w-8 h-8 rounded-full border border-white/10 mr-3 mt-1 overflow-hidden flex-shrink-0 bg-white/5 items-center justify-center">
+                                    <div className="hidden md:flex w-8 h-8 rounded-full border border-white/10 mr-3 mt-1 overflow-hidden shrink-0 bg-white/5 items-center justify-center">
                                         <img src={theme.characterImage || `/characters/${theme.id}.png`} className="w-full h-full object-cover" alt="Avi" />
                                     </div>
                                 )}

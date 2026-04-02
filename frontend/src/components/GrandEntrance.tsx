@@ -110,37 +110,37 @@ export default function GrandEntrance({ onEnterComplete }: GrandEntranceProps) {
         {
             id: 'rys',
             label: 'Rys & Fenrys',
-            color: 'bg-gradient-to-br from-slate-100 to-blue-200 border-blue-400 text-slate-800',
+            color: 'bg-linear-to-br from-slate-100 to-blue-200 border-blue-400 text-slate-800',
             description: 'A Peaceful Life'
         },
         {
             id: 'rimuru',
             label: 'Rimuru Tempest',
-            color: 'bg-gradient-to-br from-cyan-600 to-blue-600 border-cyan-400',
+            color: 'bg-linear-to-br from-cyan-600 to-blue-600 border-cyan-400',
             description: 'Everything will be okay!'
         },
         {
             id: 'gojo',
             label: 'Satoru Gojo',
-            color: 'bg-gradient-to-br from-slate-900 to-cyan-900 border-cyan-400',
+            color: 'bg-linear-to-br from-slate-900 to-cyan-900 border-cyan-400',
             description: 'The Strongest'
         },
         {
             id: 'zoro',
             label: 'Roronoa Zoro',
-            color: 'bg-gradient-to-br from-emerald-900 to-green-900 border-emerald-500',
+            color: 'bg-linear-to-br from-emerald-900 to-green-900 border-emerald-500',
             description: 'Master Swordsman'
         },
         {
             id: 'kuromi',
             label: 'Kuromi',
-            color: 'bg-gradient-to-br from-purple-900 to-pink-900 border-pink-400',
+            color: 'bg-linear-to-br from-purple-900 to-pink-900 border-pink-400',
             description: 'Cheeky but Sweet'
         },
         {
             id: 'shinchan',
             label: 'Shin-chan',
-            color: 'bg-gradient-to-br from-red-600 to-yellow-500 border-yellow-400',
+            color: 'bg-linear-to-br from-red-600 to-yellow-500 border-yellow-400',
             description: 'Hurricane of Fun'
         },
     ];
@@ -148,7 +148,7 @@ export default function GrandEntrance({ onEnterComplete }: GrandEntranceProps) {
     if (stage === 'finished') return null;
 
     return (
-        <div className="fixed inset-0 z-[200] overflow-hidden pointer-events-auto bg-black">
+        <div className="fixed inset-0 z-200 overflow-hidden pointer-events-auto bg-black">
 
             {/* CONTENT LAYER */}
             <AnimatePresence mode='wait'>
@@ -156,7 +156,7 @@ export default function GrandEntrance({ onEnterComplete }: GrandEntranceProps) {
                 {stage === 'welcome' && (
                     <motion.div
                         key="welcome"
-                        className="fixed inset-0 w-full h-full bg-black z-[200] flex flex-col items-center justify-start overflow-hidden"
+                        className="fixed inset-0 w-full h-full bg-black z-200 flex flex-col items-center justify-start overflow-hidden"
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
@@ -191,7 +191,7 @@ export default function GrandEntrance({ onEnterComplete }: GrandEntranceProps) {
                         >
                             <button
                                 onClick={() => setStage('mood')}
-                                className="bg-gradient-to-r from-yellow-600 to-yellow-400 text-black font-bold py-4 px-12 rounded-full shadow-[0_0_20px_rgba(255,215,0,0.5)] hover:shadow-[0_0_40px_rgba(255,215,0,0.8)] transition-all uppercase tracking-widest text-lg border-2 border-yellow-200 hover:scale-105 active:scale-95"
+                                className="bg-linear-to-r from-yellow-600 to-yellow-400 text-black font-bold py-4 px-12 rounded-full shadow-[0_0_20px_rgba(255,215,0,0.5)] hover:shadow-[0_0_40px_rgba(255,215,0,0.8)] transition-all uppercase tracking-widest text-lg border-2 border-yellow-200 hover:scale-105 active:scale-95"
                             >
                                 Enter Palace
                             </button>
@@ -203,7 +203,7 @@ export default function GrandEntrance({ onEnterComplete }: GrandEntranceProps) {
                 {stage === 'mood' && (
                     <motion.div
                         key="mood"
-                        className="absolute inset-0 z-[70] flex flex-col items-center justify-center bg-black/90 backdrop-blur-md"
+                        className="absolute inset-0 z-70 flex flex-col items-center justify-center bg-black/90 backdrop-blur-md"
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0, x: -100 }}
@@ -244,7 +244,7 @@ export default function GrandEntrance({ onEnterComplete }: GrandEntranceProps) {
                 {stage === 'character' && (
                     <motion.div
                         key="character"
-                        className="absolute inset-0 z-[80] flex flex-col items-center justify-start pt-24 pb-32 overflow-y-auto bg-black/90 backdrop-blur-md px-4"
+                        className="absolute inset-0 z-80 flex flex-col items-center justify-start pt-24 pb-32 overflow-y-auto bg-black/90 backdrop-blur-md px-4"
                         initial={{ opacity: 0, x: 100 }}
                         animate={{ opacity: 1, x: 0 }}
                         exit={{ opacity: 0, scale: 0.9 }}
@@ -272,7 +272,7 @@ export default function GrandEntrance({ onEnterComplete }: GrandEntranceProps) {
                                     className={`relative overflow-hidden p-6 rounded-2xl border shadow-lg flex flex-col items-start justify-center gap-2 group transition-all duration-300
                                         ${selectedCharId === char.id
                                             ? 'border-yellow-400 bg-white/10 scale-105 shadow-[0_0_20px_rgba(255,215,0,0.3)]'
-                                            : `border-white/10 bg-transparent ${char.color.split(' ')[0] === 'bg-gradient-to-br' ? 'hover:bg-white/5' : ''}`
+                                            : `border-white/10 bg-transparent ${char.color.split(' ')[0] === 'bg-linear-to-br' ? 'hover:bg-white/5' : ''}`
                                         }
                                         ${char.color}
                                     `}
@@ -302,7 +302,7 @@ export default function GrandEntrance({ onEnterComplete }: GrandEntranceProps) {
                                     animate={{ opacity: 1, y: 0 }}
                                     exit={{ opacity: 0, y: 20 }}
                                     onClick={handleEnterPalace}
-                                    className="fixed bottom-24 left-1/2 transform -translate-x-1/2 z-40 bg-gradient-to-r from-yellow-600 to-yellow-400 text-black font-bold py-4 px-12 md:px-16 w-[90%] md:w-auto rounded-full shadow-xl hover:shadow-[0_0_40px_rgba(255,215,0,0.8)] transition-all uppercase tracking-widest text-lg border-2 border-yellow-200 flex items-center justify-center gap-2"
+                                    className="fixed bottom-24 left-1/2 transform -translate-x-1/2 z-40 bg-linear-to-r from-yellow-600 to-yellow-400 text-black font-bold py-4 px-12 md:px-16 w-[90%] md:w-auto rounded-full shadow-xl hover:shadow-[0_0_40px_rgba(255,215,0,0.8)] transition-all uppercase tracking-widest text-lg border-2 border-yellow-200 flex items-center justify-center gap-2"
                                 >
                                     <span>Enter Palace</span>
                                     <ArrowRight size={20} />
@@ -333,7 +333,7 @@ export default function GrandEntrance({ onEnterComplete }: GrandEntranceProps) {
 
                     {/* Right Door */}
                     <div
-                        className={`fixed top-0 right-0 w-1/2 h-full bg-gradient-to-bl from-[#5e0a0a] to-[#2b0303] border-l-4 border-yellow-500 z-[200] transition-transform duration-[3000ms] ease-in-out ${openGates ? 'translate-x-full' : 'translate-x-0'
+                        className={`fixed top-0 right-0 w-1/2 h-full bg-linear-to-bl from-[#5e0a0a] to-[#2b0303] border-l-4 border-yellow-500 z-200 transition-transform duration-[3000ms] ease-in-out ${openGates ? 'translate-x-full' : 'translate-x-0'
                             }`}
                         style={{
                             display: stage === 'gate' ? 'block' : 'none'

@@ -241,7 +241,7 @@ export default function MemoryGallery() {
 
                                 {/* Stack Effect styling */}
                                 <div className="absolute inset-0 border border-slate-200 pointer-events-none" />
-                                <div className="absolute -bottom-1 -right-1 w-full h-full bg-slate-200 -z-10 rounded-sm" />
+                                <div className="absolute -bottom-1 -right-1 w-full h-full bg-slate-200 z-[-10] rounded-sm" />
                             </motion.div>
                         ))}
 
