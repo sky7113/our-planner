@@ -150,7 +150,7 @@ export default function GalleryPage() {
                                 {/* Delete Button */}
                                 <button
                                     onClick={(e) => handleDeleteAlbum(album.name, e)}
-                                    className="absolute top-3 right-3 z-20 bg-red-500/90 hover:bg-red-600 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 shadow-lg transform scale-90 hover:scale-100"
+                                    className="absolute top-3 right-3 z-30 bg-red-500/90 hover:bg-red-600 text-white p-2 rounded-full opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all duration-300 shadow-lg transform scale-90 md:hover:scale-100"
                                     title="Delete Album"
                                 >
                                     <Trash2 size={16} />

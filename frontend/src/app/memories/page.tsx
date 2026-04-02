@@ -395,7 +395,7 @@ export default function MemoriesPage() {
                                             {/* Delete Button (Top Right) */}
                                             <button
                                                 onClick={(e) => handleDeletePhoto(memory, e)}
-                                                className="absolute top-2 right-2 bg-red-500/80 hover:bg-red-600 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 z-10 shadow-lg translate-y-[-10px] group-hover:translate-y-0"
+                                                className="absolute top-2 right-2 bg-red-500/80 hover:bg-red-600 text-white p-2 rounded-full opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all duration-300 z-20 shadow-lg translate-y-0 md:translate-y-[-10px] md:group-hover:translate-y-0"
                                                 title="Delete Photo"
                                             >
                                                 <Trash2 size={16} />

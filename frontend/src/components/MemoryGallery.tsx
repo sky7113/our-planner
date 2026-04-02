@@ -217,7 +217,7 @@ export default function MemoryGallery() {
                                 {/* Delete Album Button */}
                                 <button
                                     onClick={(e) => handleDeleteAlbum(album.name, e)}
-                                    className="absolute top-2 right-2 bg-red-500 text-white p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity z-20 hover:bg-red-600 shadow-md"
+                                    className="absolute top-2 right-2 bg-red-500 text-white p-1.5 rounded-full opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity z-30 hover:bg-red-600 shadow-md"
                                     title="Delete Album"
                                 >
                                     <Trash2 size={16} />
@@ -285,7 +285,7 @@ export default function MemoryGallery() {
                                         e.stopPropagation();
                                         handleDeletePhoto(url);
                                     }}
-                                    className="absolute top-2 right-2 bg-red-500/90 text-white p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200 hover:bg-red-600 shadow-md z-10"
+                                    className="absolute top-2 right-2 bg-red-500/90 text-white p-1.5 rounded-full opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-200 hover:bg-red-600 shadow-md z-30"
                                     title="Delete Photo"
                                 >
                                     <Trash2 size={16} />
