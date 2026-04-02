@@ -161,6 +161,7 @@ class Goal(Base):
 class BridgeMessage(Base):
     __tablename__ = "bridge_messages"
     id = Column(Integer, primary_key=True, index=True)
+    clerk_id = Column(String, index=True)
     sender = Column(String)
     message = Column(String)
     ai_response = Column(String)
@@ -169,6 +170,7 @@ class BridgeMessage(Base):
 class SavedBridgeChat(Base):
     __tablename__ = "saved_bridge_chats"
     id = Column(Integer, primary_key=True, index=True)
+    clerk_id = Column(String, index=True)
     title = Column(String)
     date = Column(String)
     content = Column(Text)
@@ -689,6 +691,131 @@ def delete_album(name: str):
         session.delete(album)
         session.commit()
         return {"status": "success"}
+    finally:
+        session.close()
+
+# --- THE BRIDGE SYSTEM ---
+
+class BridgeChatPayload(BaseModel):
+    sender: str
+    message: str
+
+class BridgeSaveRequest(BaseModel):
+    title: str
+    messages: List[dict]
+
+@app.delete("/api/bridge/reset")
+def reset_bridge(clerk_id: str = Depends(get_current_user_clerk_id)):
+    session = SessionLocal()
+    try:
+        session.query(BridgeMessage).filter(BridgeMessage.clerk_id == clerk_id).delete()
+        session.commit()
+        return {"status": "success"}
+    finally:
+        session.close()
+
+@app.get("/api/bridge/history")
+def get_bridge_history(clerk_id: str = Depends(get_current_user_clerk_id)):
+    session = SessionLocal()
+    try:
+        messages = session.query(BridgeMessage).filter(BridgeMessage.clerk_id == clerk_id).order_by(BridgeMessage.timestamp.asc()).all()
+        return [
+            {
+                "id": m.id,
+                "sender": m.sender,
+                "message": m.message,
+                "ai_response": m.ai_response,
+                "timestamp": m.timestamp.isoformat()
+            }
+            for m in messages
+        ]
+    finally:
+        session.close()
+
+@app.post("/api/bridge/chat")
+async def bridge_chat(payload: BridgeChatPayload, clerk_id: str = Depends(check_permission("partner_can_journal"))):
+    if not GEMINI_API_KEY:
+         raise HTTPException(status_code=500, detail="Gemini API Key missing")
+    
+    session = SessionLocal()
+    try:
+        # Create user entry
+        user_msg = BridgeMessage(
+            clerk_id=clerk_id,
+            sender=payload.sender,
+            message=payload.message,
+            ai_response="", # Placeholder
+            timestamp=datetime.utcnow()
+        )
+        
+        # 1. Fetch History for Context
+        history = session.query(BridgeMessage).filter(
+            BridgeMessage.clerk_id == clerk_id
+        ).order_by(BridgeMessage.timestamp.asc()).limit(5).all()
+
+        formatted_history = []
+        for msg in history:
+            formatted_history.append({"role": "user", "parts": [f"{msg.sender}: {msg.message}"]})
+            if msg.ai_response:
+                formatted_history.append({"role": "model", "parts": [msg.ai_response]})
+
+        # 2. Gemini MEDIATOR Instruction
+        system_instruction = (
+            "You are 'The Bridge', a celestial mediator for a couple. "
+            "You are listening to their conversation. "
+            "Your role is to offer gentle, poetic, and neutral insights to help them understand each other. "
+            "Be brief, wise, and empathetic. Do not take sides."
+        )
+
+        model = genai.GenerativeModel(ACTIVE_MODEL_NAME, system_instruction=system_instruction)
+        chat_session = model.start_chat(history=formatted_history)
+        
+        response = chat_session.send_message(f"{payload.sender} says: {payload.message}")
+        ai_response_text = response.text
+        
+        user_msg.ai_response = ai_response_text
+        session.add(user_msg)
+        session.commit()
+        
+        return {"status": "success", "ai_response": ai_response_text}
+    except Exception as e:
+        print(f"Bridge Error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        session.close()
+
+@app.post("/api/bridge/save")
+def save_bridge_session(payload: BridgeSaveRequest, clerk_id: str = Depends(get_current_user_clerk_id)):
+    session = SessionLocal()
+    try:
+        content_json = json.dumps(payload.messages)
+        new_archive = SavedBridgeChat(
+            title=payload.title,
+            date=datetime.now().strftime("%Y-%m-%d"),
+            content=content_json,
+            clerk_id=clerk_id
+        )
+        session.add(new_archive)
+        session.commit()
+        return {"status": "success"}
+    finally:
+        session.close()
+
+@app.get("/api/bridge/archive")
+def get_bridge_archives(clerk_id: str = Depends(get_current_user_clerk_id)):
+    session = SessionLocal()
+    try:
+        archives = session.query(SavedBridgeChat).filter(SavedBridgeChat.clerk_id == clerk_id).all()
+        # Decode content JSON
+        return [
+            {
+                "id": a.id,
+                "title": a.title,
+                "date": a.date,
+                "content": json.loads(a.content) if a.content else []
+            }
+            for a in archives
+        ]
     finally:
         session.close()
 

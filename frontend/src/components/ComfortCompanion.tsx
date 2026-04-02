@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Send, Sparkles, XCircle, ArrowRight, Save, Book, Trash2, Volume2 } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import ReactMarkdown from 'react-markdown';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '@clerk/nextjs';
 
@@ -410,7 +411,17 @@ export default function ComfortCompanion() {
                                         : `bg-white/10 backdrop-blur-md text-white border border-white/10 rounded-tl-none mr-4 md:mr-12`
                                         }`}
                                 >
-                                    {msg.text}
+                                    <ReactMarkdown
+                                        components={{
+                                            p: ({ ...props }) => <p className="mb-2 last:mb-0" {...props} />,
+                                            ul: ({ ...props }) => <ul className="list-disc ml-4 mb-2" {...props} />,
+                                            ol: ({ ...props }) => <ol className="list-decimal ml-4 mb-2" {...props} />,
+                                            li: ({ ...props }) => <li className="mb-1" {...props} />,
+                                            strong: ({ ...props }) => <strong className="font-bold text-white" {...props} />,
+                                        }}
+                                    >
+                                        {msg.text}
+                                    </ReactMarkdown>
 
                                     {msg.sender === 'companion' && (
                                         <button
