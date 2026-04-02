@@ -467,6 +467,231 @@ async def chat_with_character(payload: ChatPayload, clerk_id: str = Depends(chec
     finally:
         session.close()
 
+# --- MISSING DASHBOARD ENDPOINTS ---
+
+class BudgetAddRequest(BaseModel):
+    item: str
+    amount: float
+
+class PlannerEventCreate(BaseModel):
+    title: str
+    date: str
+    category: str
+    priority: str = "Medium"
+
+class GoalCreate(BaseModel):
+    title: str
+    category: str
+    target_date: str
+    motivation: str
+    progress: int = 0
+
+class GoalProgressUpdate(BaseModel):
+    progress: int
+
+class AlbumCreate(BaseModel):
+    name: str
+
+@app.get("/api/users/me")
+def get_user_me(clerk_id: str = Depends(get_current_user_clerk_id)):
+    session = SessionLocal()
+    try:
+        user = session.query(User).filter(User.clerk_id == clerk_id).first()
+        if not user:
+            # Create user if not exists (lazy sync)
+            user = User(clerk_id=clerk_id, display_name="New User")
+            session.add(user)
+            session.commit()
+            session.refresh(user)
+        
+        couple = None
+        if user.couple_id:
+            db_couple = session.query(Couple).filter(Couple.id == user.couple_id).first()
+            if db_couple:
+                couple = {
+                    "partner_can_chat": db_couple.partner_can_chat,
+                    "partner_can_gallery": db_couple.partner_can_gallery,
+                    "partner_can_journal": db_couple.partner_can_journal
+                }
+        
+        return {
+            "id": user.id,
+            "clerk_id": user.clerk_id,
+            "is_admin": user.is_admin,
+            "display_name": user.display_name,
+            "couple": couple
+        }
+    finally:
+        session.close()
+
+@app.get("/api/budget")
+def get_budget(period: str = "daily", date: Optional[str] = None):
+    # Mock budget data - can be expanded with a Budget table later
+    return {
+        "spent": 0,
+        "limit": 1000,
+        "period": period,
+        "message": "Keep it up!",
+        "transactions": []
+    }
+
+@app.post("/api/budget/add")
+def add_budget_item(payload: BudgetAddRequest):
+    # Mock success
+    return {"status": "success"}
+
+@app.get("/api/planner")
+def get_planner_events(category: str = "daily", clerk_id: str = Depends(check_permission("partner_can_journal"))):
+    session = SessionLocal()
+    try:
+        events = session.query(PlannerEvent).filter(PlannerEvent.category == category).all()
+        return events
+    finally:
+        session.close()
+
+@app.post("/api/planner")
+def create_planner_event(event: PlannerEventCreate, clerk_id: str = Depends(check_permission("partner_can_journal"))):
+    session = SessionLocal()
+    try:
+        new_event = PlannerEvent(**event.dict())
+        session.add(new_event)
+        session.commit()
+        session.refresh(new_event)
+        return new_event
+    finally:
+        session.close()
+
+@app.put("/api/planner/{id}/toggle")
+def toggle_planner_event(id: int, clerk_id: str = Depends(check_permission("partner_can_journal"))):
+    session = SessionLocal()
+    try:
+        event = session.query(PlannerEvent).filter(PlannerEvent.id == id).first()
+        if not event:
+            raise HTTPException(status_code=404, detail="Event not found")
+        event.is_completed = not event.is_completed
+        session.commit()
+        return {"status": "success"}
+    finally:
+        session.close()
+
+@app.delete("/api/planner/{id}")
+def delete_planner_event(id: int, clerk_id: str = Depends(check_permission("partner_can_journal"))):
+    session = SessionLocal()
+    try:
+        event = session.query(PlannerEvent).filter(PlannerEvent.id == id).first()
+        if not event:
+            raise HTTPException(status_code=404, detail="Event not found")
+        session.delete(event)
+        session.commit()
+        return {"status": "success"}
+    finally:
+        session.close()
+
+@app.get("/api/goals")
+def get_goals(clerk_id: str = Depends(check_permission("partner_can_journal"))):
+    session = SessionLocal()
+    try:
+        goals = session.query(Goal).all()
+        return goals
+    finally:
+        session.close()
+
+@app.post("/api/goals")
+def create_goal(goal: GoalCreate, clerk_id: str = Depends(check_permission("partner_can_journal"))):
+    session = SessionLocal()
+    try:
+        new_goal = Goal(**goal.dict())
+        session.add(new_goal)
+        session.commit()
+        session.refresh(new_goal)
+        return new_goal
+    finally:
+        session.close()
+
+@app.put("/api/goals/{id}/progress")
+def update_goal_progress(id: int, payload: GoalProgressUpdate, clerk_id: str = Depends(check_permission("partner_can_journal"))):
+    session = SessionLocal()
+    try:
+        goal = session.query(Goal).filter(Goal.id == id).first()
+        if not goal:
+            raise HTTPException(status_code=404, detail="Goal not found")
+        goal.progress = payload.progress
+        goal.is_achieved = payload.progress >= 100
+        session.commit()
+        return {"status": "success"}
+    finally:
+        session.close()
+
+@app.delete("/api/goals/{id}")
+def delete_goal(id: int, clerk_id: str = Depends(check_permission("partner_can_journal"))):
+    session = SessionLocal()
+    try:
+        goal = session.query(Goal).filter(Goal.id == id).first()
+        if not goal:
+            raise HTTPException(status_code=404, detail="Goal not found")
+        session.delete(goal)
+        session.commit()
+        return {"status": "success"}
+    finally:
+        session.close()
+
+@app.get("/api/routine")
+def get_routines():
+    session = SessionLocal()
+    try:
+        routines = session.query(RoutineItem).all()
+        return routines
+    finally:
+        session.close()
+
+@app.get("/api/skin/history")
+def get_skin_history():
+    return []
+
+@app.get("/api/skin/status")
+def get_skin_status():
+    return {"missed_days": 0, "photo_gap": 0}
+
+@app.get("/api/skin/log")
+def get_skin_log(date: str):
+    return {"status": "success", "products": [], "date": date, "time": "morning"}
+
+@app.get("/api/albums")
+def get_albums():
+    session = SessionLocal()
+    try:
+        albums = session.query(Album).all()
+        return albums
+    finally:
+        session.close()
+
+@app.post("/api/albums")
+def create_album(payload: AlbumCreate):
+    session = SessionLocal()
+    try:
+        new_album = Album(name=payload.name)
+        session.add(new_album)
+        session.commit()
+        session.refresh(new_album)
+        return new_album
+    except:
+        raise HTTPException(status_code=400, detail="Album already exists")
+    finally:
+        session.close()
+
+@app.delete("/api/albums/{name}")
+def delete_album(name: str):
+    session = SessionLocal()
+    try:
+        album = session.query(Album).filter(Album.name == name).first()
+        if not album:
+            raise HTTPException(status_code=404, detail="Album not found")
+        session.delete(album)
+        session.commit()
+        return {"status": "success"}
+    finally:
+        session.close()
+
 # The critical Port Binding fix for Render
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
