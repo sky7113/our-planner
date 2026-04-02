@@ -691,6 +691,44 @@ def get_skin_status():
 def get_skin_log(date: str):
     return {"status": "success", "products": [], "date": date, "time": "morning"}
 
+@app.post("/api/skin/analyze")
+async def analyze_skin(files: List[UploadFile] = File(...), clerk_id: str = Depends(check_permission("partner_can_journal"))):
+    """
+    Receives skin photos, uploads to Cloudinary (optional), and uses Gemini Vision to provide a gentle analysis.
+    """
+    try:
+        import PIL.Image
+        import io
+        
+        pil_images = []
+        image_urls = []
+        
+        for file in files:
+            content = await file.read()
+            img = PIL.Image.open(io.BytesIO(content))
+            pil_images.append(img)
+            
+            # Save to Cloudinary to keep a log
+            upload_result = cloudinary.uploader.upload(content, folder="skincare")
+            image_urls.append(upload_result.get("secure_url"))
+            
+        if not GEMINI_API_KEY:
+             return {"status": "error", "analysis": "System: API Key missing."}
+
+        model = genai.GenerativeModel("gemini-1.5-flash")
+        prompt = "Analyze the skin condition in the provided image(s). Provide a brief, encouraging assessment pointing out areas of good hydration or potential dryness. Be concise, gentle, and format your response in plain text without markdown."
+        
+        response = model.generate_content([prompt] + pil_images)
+        
+        return {
+            "status": "success",
+            "analysis": response.text,
+            "image_urls": image_urls
+        }
+    except Exception as e:
+        print(f"Skin analysis error: {str(e)}")
+        return {"status": "error", "analysis": "Could not process image properly. Lighting might be poor."}
+
 @app.delete("/api/albums/{album_name}/photos/{photo_id}")
 def delete_photo(album_name: str, photo_id: int, clerk_id: str = Depends(check_permission("partner_can_gallery"))):
     session = SessionLocal()
