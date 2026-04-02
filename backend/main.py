@@ -267,7 +267,6 @@ origins = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
     "https://our-planner.vercel.app",
-    "https://our-planner.vercel.app/",
 ]
 
 app.add_middleware(
@@ -379,7 +378,6 @@ async def create_memory(
     """
     Upload a new memory photo to Cloudinary and save to DB.
     """
-    session = SessionLocal()
     try:
         if not subtitle:
              subtitle = date.today().strftime("%d %b %Y")
@@ -389,8 +387,13 @@ async def create_memory(
         if safe_album == "All Memories":
              safe_album = "memories"
              
+        # Upload to Cloudinary
         upload_result = cloudinary.uploader.upload(file.file, folder=safe_album)
         image_url = upload_result.get('secure_url')
+        public_id = upload_result.get('public_id')
+
+        if not image_url:
+            raise Exception("Cloudinary upload failed: No secure_url returned")
 
         aspect = "aspect-[3/4]" # Default fallback
         try:
@@ -406,14 +409,15 @@ async def create_memory(
                        aspect = "aspect-[3/4]"
                   else:
                        aspect = "aspect-square"
-        except:
+        except Exception as img_err:
+             print(f"Image Aspect Ratio Detection Error: {img_err}")
              pass
 
         new_memory = Memory(
             title=title,
             subtitle=subtitle,
             image_url=image_url,
-            public_id=upload_result.get('public_id'), # Save public ID
+            public_id=public_id,
             aspect_ratio=aspect,
             album=safe_album
         )
@@ -426,13 +430,13 @@ async def create_memory(
             "title": new_memory.title,
             "subtitle": new_memory.subtitle,
             "src": new_memory.image_url,
-            "public_id": new_memory.public_id, # Return public ID
+            "public_id": new_memory.public_id,
             "aspectRatio": new_memory.aspect_ratio,
             "date": new_memory.date.isoformat(),
             "album": new_memory.album
         }
     except Exception as e:
-        print(f"Memory Upload Error: {e}")
+        print(f"UPLOAD ERROR: {e}")
         raise HTTPException(status_code=500, detail=str(e))
     finally:
         session.close()
