@@ -378,6 +378,7 @@ async def create_memory(
     """
     Upload a new memory photo to Cloudinary and save to DB.
     """
+    session = SessionLocal()
     try:
         if not subtitle:
              subtitle = date.today().strftime("%d %b %Y")
