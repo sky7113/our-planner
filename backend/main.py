@@ -491,7 +491,7 @@ class GoalCreate(BaseModel):
 class GoalProgressUpdate(BaseModel):
     progress: int
 
-class AlbumCreate(BaseModel):
+class AlbumRequest(BaseModel):
     name: str
 
 @app.get("/api/users/me")
@@ -668,7 +668,7 @@ def get_albums():
         session.close()
 
 @app.post("/api/albums")
-def create_album(payload: AlbumCreate):
+def create_album(payload: AlbumRequest, clerk_id: str = Depends(check_permission("partner_can_gallery"))):
     session = SessionLocal()
     try:
         new_album = Album(name=payload.name)
@@ -682,7 +682,7 @@ def create_album(payload: AlbumCreate):
         session.close()
 
 @app.delete("/api/albums/{name}")
-def delete_album(name: str):
+def delete_album(name: str, clerk_id: str = Depends(check_permission("partner_can_gallery"))):
     session = SessionLocal()
     try:
         album = session.query(Album).filter(Album.name == name).first()
