@@ -113,7 +113,7 @@ export default function Sanctuary() {
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        className="fixed inset-0 z-[60] flex flex-col items-center justify-center bg-purple-950/90 backdrop-blur-xl text-center px-6"
+                        className="fixed inset-0 z-60 flex flex-col items-center justify-center bg-purple-950/90 backdrop-blur-xl text-center px-6"
                     >
                         {isCheckingAccess ? (
                             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-400"></div>

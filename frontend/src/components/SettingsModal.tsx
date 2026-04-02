@@ -202,11 +202,11 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                                             <div className="space-y-1">
                                                 <label className="text-xs text-white/60 uppercase tracking-widest pl-1">Gender</label>
                                                 <div className="flex gap-2">
-                                                    <label className="flex-1 flex items-center justify-center bg-black/20 border border-white/10 rounded-xl px-4 py-3 cursor-pointer hover:bg-white/5 has-[:checked]:bg-purple-900/40 has-[:checked]:border-purple-400/50">
+                                                    <label className="flex-1 flex items-center justify-center bg-black/20 border border-white/10 rounded-xl px-4 py-3 cursor-pointer hover:bg-white/5 has-checked:bg-purple-900/40 has-checked:border-purple-400/50">
                                                         <input type="radio" name="editGender" value="Female" checked={editGender === 'Female'} onChange={(e) => setEditGender(e.target.value)} className="hidden" />
                                                         <span className="text-sm text-white">Female</span>
                                                     </label>
-                                                    <label className="flex-1 flex items-center justify-center bg-black/20 border border-white/10 rounded-xl px-4 py-3 cursor-pointer hover:bg-white/5 has-[:checked]:bg-purple-900/40 has-[:checked]:border-purple-400/50">
+                                                    <label className="flex-1 flex items-center justify-center bg-black/20 border border-white/10 rounded-xl px-4 py-3 cursor-pointer hover:bg-white/5 has-checked:bg-purple-900/40 has-checked:border-purple-400/50">
                                                         <input type="radio" name="editGender" value="Male" checked={editGender === 'Male'} onChange={(e) => setEditGender(e.target.value)} className="hidden" />
                                                         <span className="text-sm text-white">Male</span>
                                                     </label>

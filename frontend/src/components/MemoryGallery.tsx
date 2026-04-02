@@ -154,7 +154,7 @@ export default function MemoryGallery() {
         if (!confirm("Delete this photo?")) return;
 
         try {
-            const response = await fetch(`https://our-backend-api.onrender.com/api/albums/${currentAlbum}/photos/${filename}`, {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/albums/${currentAlbum}/photos/${filename}`, {
                 method: 'DELETE',
             });
 
@@ -223,7 +223,7 @@ export default function MemoryGallery() {
                                     <Trash2 size={16} />
                                 </button>
                                 {/* Cover Image */}
-                                <div className="aspect-[4/3] w-full bg-slate-100 relative overflow-hidden flex items-center justify-center">
+                                <div className="aspect-4/3 w-full bg-slate-100 relative overflow-hidden flex items-center justify-center">
                                     {album.cover ? (
                                         <img src={`${API_BASE_URL}${album.cover}`} alt={album.name} className="w-full h-full object-cover" />
                                     ) : (
@@ -241,7 +241,7 @@ export default function MemoryGallery() {
 
                                 {/* Stack Effect styling */}
                                 <div className="absolute inset-0 border border-slate-200 pointer-events-none" />
-                                <div className="absolute -bottom-1 -right-1 w-full h-full bg-slate-200 z-[-10] rounded-sm" />
+                                <div className="absolute -bottom-1 -right-1 w-full h-full bg-slate-200 -z-10 rounded-sm" />
                             </motion.div>
                         ))}
 
@@ -250,7 +250,7 @@ export default function MemoryGallery() {
                             variants={item}
                             whileHover={{ scale: 1.02 }}
                             onClick={handleCreateAlbum}
-                            className="group relative bg-white/5 border-2 border-dashed border-white/10 hover:border-pink-500/50 hover:bg-pink-500/5 p-3 flex flex-col items-center justify-center aspect-[4/3] sm:aspect-auto sm:h-full min-h-[250px] rounded-lg cursor-pointer transition-all duration-300"
+                            className="group relative bg-white/5 border-2 border-dashed border-white/10 hover:border-pink-500/50 hover:bg-pink-500/5 p-3 flex flex-col items-center justify-center aspect-4/3 sm:aspect-auto sm:h-full min-h-[250px] rounded-lg cursor-pointer transition-all duration-300"
                         >
                             <div className="p-4 rounded-full bg-white/5 group-hover:bg-pink-500/20 transition-colors mb-3">
                                 <Plus size={32} className="text-slate-500 group-hover:text-pink-400" />

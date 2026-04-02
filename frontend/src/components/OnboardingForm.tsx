@@ -58,12 +58,12 @@ export default function OnboardingForm() {
     return (
         <AnimatePresence>
             {isOpen && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-xl">
+                <div className="fixed inset-0 z-100 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xl">
                     <motion.div
                         initial={{ opacity: 0, scale: 0.9, y: 20 }}
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                        className="w-full max-w-md bg-white/10 dark:bg-black/40 backdrop-blur-3xl border border-white/20 rounded-[2rem] p-8 shadow-[0_0_50px_rgba(255,255,255,0.1)] relative overflow-hidden"
+                        className="w-full max-w-md bg-white/10 dark:bg-black/40 backdrop-blur-3xl border border-white/20 rounded-4xl p-8 shadow-[0_0_50px_rgba(255,255,255,0.1)] relative overflow-hidden"
                     >
                         {/* Decorative background glow */}
                         <div className="absolute -top-20 -right-20 w-60 h-60 bg-purple-500/20 blur-[80px] rounded-full pointer-events-none" />

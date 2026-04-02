@@ -50,7 +50,7 @@ export default function BridgePage() {
         const initBridge = async () => {
             try {
                 // Clear old session for a fresh start
-                await fetch('https://our-backend-api.onrender.com/api/bridge/reset', { method: 'DELETE' });
+                await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/bridge/reset`, { method: 'DELETE' });
                 setMessages([]);
             } catch (error) {
                 console.error("Failed to reset bridge:", error);
@@ -83,7 +83,7 @@ export default function BridgePage() {
 
     const fetchHistory = async () => {
         try {
-            const res = await fetch('https://our-backend-api.onrender.com/api/bridge/history');
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/bridge/history`);
             if (res.ok) {
                 const data = await res.json();
                 setMessages(data);
@@ -100,7 +100,7 @@ export default function BridgePage() {
         setIsLoading(true);
 
         try {
-            const res = await fetch('https://our-backend-api.onrender.com/api/bridge/chat', {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/bridge/chat`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -131,7 +131,7 @@ export default function BridgePage() {
 
     const handleConfirmSave = async () => {
         try {
-            const res = await fetch('https://our-backend-api.onrender.com/api/bridge/save', {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/bridge/save`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -151,7 +151,7 @@ export default function BridgePage() {
 
     const handleOpenArchive = async () => {
         try {
-            const res = await fetch('https://our-backend-api.onrender.com/api/bridge/archive');
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/bridge/archive`);
             if (res.ok) {
                 const data = await res.json();
                 setArchives(data);

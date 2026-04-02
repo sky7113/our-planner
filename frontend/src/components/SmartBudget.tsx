@@ -53,7 +53,7 @@ export default function SmartBudget() {
 
     const fetchData = async () => {
         try {
-            let url = `https://our-backend-api.onrender.com/api/budget?period=${activePeriod}`;
+            let url = `${process.env.NEXT_PUBLIC_API_URL}/api/budget?period=${activePeriod}`;
             if (activePeriod === 'daily') {
                 url += `&date=${selectedDate}`;
             }
@@ -78,7 +78,7 @@ export default function SmartBudget() {
 
         setIsAdding(true);
         try {
-            const res = await fetch('https://our-backend-api.onrender.com/api/budget/add', {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/budget/add`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ item: newItem, amount: parseFloat(newAmount) })
@@ -98,7 +98,7 @@ export default function SmartBudget() {
     const handleDelete = async (id: number, e: React.MouseEvent) => {
         e.stopPropagation();
         try {
-            const res = await fetch(`https://our-backend-api.onrender.com/api/budget/${id}`, {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/budget/${id}`, {
                 method: 'DELETE'
             });
             if (res.ok) {
@@ -112,7 +112,7 @@ export default function SmartBudget() {
     const handleQuickAction = async (serviceName: string, url: string) => {
         window.open(url, '_blank');
         try {
-            const res = await fetch('https://our-backend-api.onrender.com/api/budget/quick', {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/budget/quick`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ service_name: serviceName })
@@ -128,7 +128,7 @@ export default function SmartBudget() {
     const handleUpdateLimit = async () => {
         if (!newLimit) return;
         try {
-            const res = await fetch('https://our-backend-api.onrender.com/api/budget/limit', {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/budget/limit`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -156,7 +156,7 @@ export default function SmartBudget() {
     const saveEditTx = async () => {
         if (!editingTx || !editItem || !editAmount) return;
         try {
-            const res = await fetch(`https://our-backend-api.onrender.com/api/budget/${editingTx.id}`, {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/budget/${editingTx.id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ item: editItem, amount: parseFloat(editAmount) })

@@ -49,7 +49,7 @@ export default function PeriodTrackerPage() {
     useEffect(() => {
         const fetchPrediction = async () => {
             try {
-                const res = await fetch('https://our-backend-api.onrender.com/api/period/prediction');
+                const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/period/prediction`);
                 if (res.ok) {
                     const data = await res.json();
                     // If returns null (no data), data is null
@@ -76,7 +76,7 @@ export default function PeriodTrackerPage() {
     const handleLogCycle = async () => {
         setIsSaving(true);
         try {
-            const res = await fetch('https://our-backend-api.onrender.com/api/period/log', {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/period/log`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -91,7 +91,7 @@ export default function PeriodTrackerPage() {
                 alert("Cycle logged successfully! 🌙");
                 // Refresh prediction logic if user logged a new start date
                 // ideally we re-fetch prediction
-                const predRes = await fetch('https://our-backend-api.onrender.com/api/period/prediction');
+                const predRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/period/prediction`);
                 if (predRes.ok) {
                     const data = await predRes.json();
                     if (data) setPrediction(data);

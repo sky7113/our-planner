@@ -446,7 +446,7 @@ export default function ComfortCompanion() {
                     </div>
 
                     {/* Input Area */}
-                    <div className={`p-3 pb-28 md:p-6 flex-shrink-0 border-t border-white/10 bg-black/40`}>
+                    <div className={`p-3 pb-28 md:p-6 shrink-0 border-t border-white/10 bg-black/40`}>
                         <div className="relative">
                             <textarea
                                 value={inputValue}
@@ -480,7 +480,7 @@ export default function ComfortCompanion() {
                 {isSaveModalOpen && (
                     <motion.div
                         initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                        className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm"
+                        className="fixed inset-0 z-60 flex items-center justify-center bg-black/60 backdrop-blur-sm"
                     >
                         <div className="bg-white p-6 rounded-3xl w-full max-w-sm m-4 shadow-2xl">
                             <h3 className="text-xl font-bold text-slate-800 mb-4">Name this Memory</h3>
@@ -512,7 +512,7 @@ export default function ComfortCompanion() {
                 {isLibraryOpen && (
                     <motion.div
                         initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                        className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm"
+                        className="fixed inset-0 z-60 flex items-center justify-center bg-black/60 backdrop-blur-sm"
                     >
                         <div className="bg-white p-6 rounded-3xl w-full max-w-md m-4 shadow-2xl max-h-[80vh] flex flex-col">
                             <div className="flex justify-between items-center mb-6">

@@ -671,7 +671,7 @@ export default function SkincarePage() {
                                 {/* AI Analysis */}
                                 {selectedLog.analysis && (
                                     <div className="bg-purple-900/20 p-4 rounded-xl border border-purple-500/30">
-                                        <label className="text-xs uppercase tracking-wider text-purple-400 font-semibold mb-2 block flex items-center gap-2">
+                                        <label className="text-xs uppercase tracking-wider text-purple-400 font-semibold mb-2 flex items-center gap-2">
                                             <Sparkles size={12} />
                                             AI Analysis
                                         </label>

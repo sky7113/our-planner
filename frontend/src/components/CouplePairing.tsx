@@ -175,7 +175,7 @@ export default function CouplePairing() {
 
     if (!isLoaded || loading) {
         return (
-            <div className="w-full max-w-md mx-auto p-4 md:p-8 bg-black/40 backdrop-blur-2xl border border-purple-500/10 rounded-2xl md:rounded-[2rem] shadow-[0_0_40px_rgba(168,85,247,0.05)] text-white">
+            <div className="w-full max-w-md mx-auto p-4 md:p-8 bg-black/40 backdrop-blur-2xl border border-purple-500/10 rounded-2xl md:rounded-4xl shadow-[0_0_40px_rgba(168,85,247,0.05)] text-white">
                 <div className="mb-6 md:mb-8 text-center animate-pulse">
                     <div className="w-12 h-12 md:w-16 md:h-16 bg-white/10 rounded-2xl mx-auto mb-3 md:mb-4" />
                     <div className="h-6 md:h-8 w-3/4 bg-white/10 rounded-lg mx-auto mb-2" />
@@ -214,7 +214,7 @@ export default function CouplePairing() {
     const isConnected = profile.couple !== null;
 
     return (
-        <div className="w-full max-w-md mx-auto p-4 md:p-8 bg-black/40 backdrop-blur-2xl border border-purple-500/20 rounded-2xl md:rounded-[2rem] shadow-[0_0_40px_rgba(168,85,247,0.1)] text-white">
+        <div className="w-full max-w-md mx-auto p-4 md:p-8 bg-black/40 backdrop-blur-2xl border border-purple-500/20 rounded-2xl md:rounded-4xl shadow-[0_0_40px_rgba(168,85,247,0.1)] text-white">
             <div className="mb-6 md:mb-8 text-center">
                 <div className="w-12 h-12 md:w-16 md:h-16 bg-linear-to-br from-purple-500/20 to-pink-500/20 border border-purple-500/30 rounded-2xl mx-auto flex items-center justify-center mb-3 md:mb-4 shadow-inner">
                     <Shield className="w-6 h-6 md:w-8 md:h-8 text-purple-300" />

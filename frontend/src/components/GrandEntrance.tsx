@@ -319,7 +319,7 @@ export default function GrandEntrance({ onEnterComplete }: GrandEntranceProps) {
                 <>
                     {/* Left Door */}
                     <div
-                        className={`fixed top-0 left-0 w-1/2 h-full bg-gradient-to-br from-[#5e0a0a] to-[#2b0303] border-r-4 border-yellow-500 z-[200] transition-transform duration-[3000ms] ease-in-out ${openGates ? '-translate-x-full' : 'translate-x-0'
+                        className={`fixed top-0 left-0 w-1/2 h-full bg-linear-to-br from-[#5e0a0a] to-[#2b0303] border-r-4 border-yellow-500 z-200 transition-transform duration-3000 ease-in-out ${openGates ? '-translate-x-full' : 'translate-x-0'
                             }`}
                         style={{
                             display: stage === 'gate' ? 'block' : 'none'
@@ -333,7 +333,7 @@ export default function GrandEntrance({ onEnterComplete }: GrandEntranceProps) {
 
                     {/* Right Door */}
                     <div
-                        className={`fixed top-0 right-0 w-1/2 h-full bg-linear-to-bl from-[#5e0a0a] to-[#2b0303] border-l-4 border-yellow-500 z-200 transition-transform duration-[3000ms] ease-in-out ${openGates ? 'translate-x-full' : 'translate-x-0'
+                        className={`fixed top-0 right-0 w-1/2 h-full bg-linear-to-bl from-[#5e0a0a] to-[#2b0303] border-l-4 border-yellow-500 z-200 transition-transform duration-3000 ease-in-out ${openGates ? 'translate-x-full' : 'translate-x-0'
                             }`}
                         style={{
                             display: stage === 'gate' ? 'block' : 'none'
