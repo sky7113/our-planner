@@ -357,13 +357,15 @@ export default function MemoriesPage() {
                                     const imagePath = memory.image_url || memory.src || '';
                                     let fullImageUrl = '';
                                     
-                                    if (imagePath.startsWith('http')) {
+                                    if (memory.public_id) {
+                                        // Use Cloudinary public_id as primary source
+                                        fullImageUrl = `https://res.cloudinary.com/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload/${memory.public_id}`;
+                                    } else if (imagePath.startsWith('http')) {
                                         fullImageUrl = imagePath;
                                     } else if (imagePath) {
-                                        // Construct Cloudinary URL based on the provided pattern
+                                        // Fallback for legacy items without public_id but having a filename
                                         fullImageUrl = `https://res.cloudinary.com/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload/${imagePath}`;
                                     } else {
-                                        // Fallback if image path is missing
                                         fullImageUrl = `/placeholder.jpg`;
                                     }
 

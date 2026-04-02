@@ -212,6 +212,7 @@ class Memory(Base):
     title = Column(String)
     subtitle = Column(String)
     image_url = Column(String)
+    public_id = Column(String, nullable=True) # Added for Cloudinary fix
     date = Column(DateTime, default=datetime.utcnow)
     aspect_ratio = Column(String, default="aspect-[3/4]")
     album = Column(String, default="All Memories")
@@ -357,6 +358,7 @@ def get_memories(clerk_id: str = Depends(check_permission("partner_can_gallery")
                 "title": m.title,
                 "subtitle": m.subtitle,
                 "src": m.image_url,
+                "public_id": m.public_id, # Added for frontend fix
                 "aspectRatio": m.aspect_ratio,
                 "date": m.date.isoformat(),
                 "album": m.album
@@ -411,6 +413,7 @@ async def create_memory(
             title=title,
             subtitle=subtitle,
             image_url=image_url,
+            public_id=upload_result.get('public_id'), # Save public ID
             aspect_ratio=aspect,
             album=safe_album
         )
@@ -423,6 +426,7 @@ async def create_memory(
             "title": new_memory.title,
             "subtitle": new_memory.subtitle,
             "src": new_memory.image_url,
+            "public_id": new_memory.public_id, # Return public ID
             "aspectRatio": new_memory.aspect_ratio,
             "date": new_memory.date.isoformat(),
             "album": new_memory.album
@@ -681,6 +685,29 @@ def get_skin_status():
 @app.get("/api/skin/log")
 def get_skin_log(date: str):
     return {"status": "success", "products": [], "date": date, "time": "morning"}
+
+@app.delete("/api/albums/{album_name}/photos/{photo_id}")
+def delete_photo(album_name: str, photo_id: int, clerk_id: str = Depends(check_permission("partner_can_gallery"))):
+    session = SessionLocal()
+    try:
+        photo = session.query(Memory).filter(Memory.id == photo_id).first()
+        if not photo:
+            raise HTTPException(status_code=404, detail="Photo not found")
+        
+        # Optional: Delete from Cloudinary as well
+        try:
+             import cloudinary.uploader
+             # The public_id might be different than the file name if uploaded to a folder
+             if photo.public_id:
+                  cloudinary.uploader.destroy(photo.public_id)
+        except Exception as e:
+             print(f"Failed to delete from Cloudinary: {e}")
+
+        session.delete(photo)
+        session.commit()
+        return {"status": "success"}
+    finally:
+        session.close()
 
 @app.get("/api/albums")
 def get_albums():
