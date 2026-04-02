@@ -763,7 +763,7 @@ async def analyze_skin(files: List[UploadFile] = File(...), clerk_id: str = Depe
         if not GEMINI_API_KEY:
              return {"status": "error", "analysis": "System: API Key missing."}
 
-        model = genai.GenerativeModel("gemini-pro-vision")
+        model = genai.GenerativeModel("gemini-1.5-flash")
         prompt = "Analyze the skin condition in the provided image(s). Provide a brief, encouraging assessment pointing out areas of good hydration or potential dryness. Be concise, gentle, and format your response in plain text without markdown."
         
         response = model.generate_content([prompt] + pil_images)
