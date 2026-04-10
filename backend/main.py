@@ -10,6 +10,7 @@ import sqlite3
 from datetime import datetime, timedelta, date
 from typing import Optional, List
 import google.generativeai as genai
+from google.api_core.exceptions import ResourceExhausted
 from dotenv import load_dotenv
 from sqlalchemy import create_engine, Column, Integer, String, Text, DateTime, Boolean, ForeignKey, text
 from sqlalchemy.ext.declarative import declarative_base
@@ -489,8 +490,13 @@ async def chat_with_character(payload: ChatPayload, clerk_id: str = Depends(chec
         model = genai.GenerativeModel(ACTIVE_MODEL_NAME, system_instruction=system_instruction)
         chat_session = model.start_chat(history=formatted_history)
         
-        response = chat_session.send_message(payload.message)
-        text_response = response.text
+        try:
+            response = chat_session.send_message(payload.message)
+            text_response = response.text
+        except ResourceExhausted:
+            text_response = "I need to catch my breath for a moment! 🦋 Please wait about 60 seconds and try again."
+        except Exception as e:
+            text_response = f"System Error: {str(e)}"
         
         ai_msg = ChatMessage(clerk_id=clerk_id, character_id=character_id, sender='ai', content=text_response)
         session.add(ai_msg)
@@ -768,16 +774,22 @@ async def analyze_skin(files: List[UploadFile] = File(...), clerk_id: str = Depe
         model = genai.GenerativeModel(model_name)
         prompt = "Analyze the skin condition in the provided image(s). Provide a brief, encouraging assessment pointing out areas of good hydration or potential dryness. Be concise, gentle, and format your response in plain text without markdown."
         
-        response = model.generate_content([prompt] + pil_images)
+        try:
+            response = model.generate_content([prompt] + pil_images)
+            analysis_text = response.text
+        except ResourceExhausted:
+            analysis_text = "The Skincare AI is catching its breath! ✨ Please wait about 60 seconds and try again."
+        except Exception as e:
+            analysis_text = "Could not process image properly. Lighting might be poor or system error."
         
         return {
             "status": "success",
-            "analysis": response.text,
+            "analysis": analysis_text,
             "image_urls": image_urls
         }
     except Exception as e:
         print(f"Skin analysis error: {str(e)}")
-        return {"status": "error", "analysis": "Could not process image properly. Lighting might be poor."}
+        return {"status": "error", "analysis": f"Upload failed: {str(e)}"}
 
 @app.delete("/api/albums/{album_name}/photos/{photo_id}")
 def delete_photo(album_name: str, photo_id: int, clerk_id: str = Depends(check_permission("partner_can_gallery"))):
@@ -914,8 +926,13 @@ async def bridge_chat(payload: BridgeChatPayload, clerk_id: str = Depends(check_
         model = genai.GenerativeModel(ACTIVE_MODEL_NAME, system_instruction=system_instruction)
         chat_session = model.start_chat(history=formatted_history)
         
-        response = chat_session.send_message(f"{payload.sender} says: {payload.message}")
-        ai_response_text = response.text
+        try:
+            response = chat_session.send_message(f"{payload.sender} says: {payload.message}")
+            ai_response_text = response.text
+        except ResourceExhausted:
+            ai_response_text = "The Celestial Mediator is catching its breath! 🦋 Please wait about 60 seconds and try again."
+        except Exception as e:
+            ai_response_text = f"An unexpected error occurred: {str(e)}"
         
         user_msg.ai_response = ai_response_text
         session.add(user_msg)
