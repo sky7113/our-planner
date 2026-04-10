@@ -7,14 +7,13 @@ import { motion } from 'framer-motion';
 import { useAuth, useClerk } from '@clerk/nextjs';
 
 const navItems = [
-    { name: 'Home', path: '/', icon: Home },
-    { name: 'Future Planner', path: '/planner', icon: GraduationCap },
-    { name: 'Memories', path: '/memories', icon: Image },
-    { name: 'Budget', path: '/budget', icon: Wallet },
-    { name: 'Cycle', path: '/period-tracker', icon: Moon },
-
-    { name: 'Skincare', path: '/skincare', icon: SprayCan },
-    { name: 'The Bridge', path: '/bridge', icon: Heart },
+    { name: 'Home', path: '/', icon: Home, tourClass: '' },
+    { name: 'Future Planner', path: '/planner', icon: GraduationCap, tourClass: '' },
+    { name: 'Memories', path: '/memories', icon: Image, tourClass: 'tour-gallery' },
+    { name: 'Budget', path: '/budget', icon: Wallet, tourClass: '' },
+    { name: 'Cycle', path: '/period-tracker', icon: Moon, tourClass: '' },
+    { name: 'Skincare', path: '/skincare', icon: SprayCan, tourClass: 'tour-skincare' },
+    { name: 'The Bridge', path: '/bridge', icon: Heart, tourClass: 'tour-mediator' },
 ];
 
 export default function Navbar() {
@@ -39,7 +38,7 @@ export default function Navbar() {
                             key={item.path}
                             href={item.path}
                             onClick={(e) => handleProtectedLinkClick(e, item.path)}
-                            className="shrink-0"
+                            className={`shrink-0 ${item.tourClass || ''}`}
                         >
                             <div className="relative flex flex-col items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-full transition-all duration-300 group">
                                 {isActive && (

@@ -11,6 +11,7 @@ import {
   SignedIn,
   UserButton,
 } from "@clerk/nextjs";
+import OnboardingGuide from "@/components/OnboardingGuide";
 import "./globals.css";
 
 const outfit = Outfit({
@@ -67,6 +68,9 @@ export default function RootLayout({
               <Companion />
               <Navbar />
               <OnboardingForm />
+              <SignedIn>
+                <OnboardingGuide />
+              </SignedIn>
             </ThemeProvider>
           </UserProvider>
         </body>
