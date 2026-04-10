@@ -7,7 +7,7 @@ import { motion } from 'framer-motion';
 import { useAuth, useClerk } from '@clerk/nextjs';
 
 const navItems = [
-    { name: 'Home', path: '/', icon: Home, tourClass: '' },
+    { name: 'Home', path: '/', icon: Home, tourClass: 'tour-home' },
     { name: 'Future Planner', path: '/planner', icon: GraduationCap, tourClass: '' },
     { name: 'Memories', path: '/memories', icon: Image, tourClass: 'tour-gallery' },
     { name: 'Budget', path: '/budget', icon: Wallet, tourClass: '' },

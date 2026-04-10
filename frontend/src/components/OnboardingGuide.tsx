@@ -7,45 +7,50 @@ export default function OnboardingGuide() {
   const [showPrompt, setShowPrompt] = useState(false);
   const [runTour, setRunTour] = useState(false);
 
-  // Check if the user has seen the guide prompt before when the page loads
   useEffect(() => {
     const hasSeenGuide = localStorage.getItem('hasSeenMansionGuide');
     if (!hasSeenGuide) {
-      // Small delay so it pops up smoothly after the page loads
       setTimeout(() => setShowPrompt(true), 1000);
     }
   }, []);
 
-  // Define the steps of your tour
-  // You just need to add these classNames (e.g., 'tour-gallery') to your actual HTML buttons!
+  // Here is the expanded, full-system tour!
+  // It goes in the exact order you place them in this array.
   const steps = [
     {
-      target: '.tour-gallery', // Add this class to your Gallery icon
-      content: 'Here is your shared memory vault. You can upload, organize, and view all your photos in custom albums.',
+      target: '.tour-settings', // Points to the Gear icon in the top right
+      content: 'Start Here! ⚙️ Create your profile and generate your API key to unlock all the AI features in the Mansion.',
       disableBeacon: true,
     },
     {
-      target: '.tour-mediator', // Add this class to your AI chat icon
-      content: 'Meet the Celestial Mediator! This AI is designed to help resolve conflicts and offer relationship advice.',
+      target: '.tour-home', // Points to the House icon
+      content: 'Your main dashboard. Get a quick overview of everything happening in your Mansion.',
     },
     {
-      target: '.tour-skincare', // Add this class to your Skincare icon
-      content: 'Upload a selfie here, and our AI will analyze your skin to generate a personalized care routine.',
+      target: '.tour-gallery', // Points to the Picture icon
+      content: 'The Shared Gallery 🖼️. Upload, organize, and view all your photos in custom albums.',
+    },
+    {
+      target: '.tour-skincare', // Points to the Spray Bottle icon
+      content: 'The AI Dermatologist ✨. Upload a selfie here, and our AI will generate a personalized skincare routine.',
+    },
+    {
+      target: '.tour-mediator', // Points to the Heart/Chat icon
+      content: 'The Celestial Mediator 🦋. Chat with our specialized AI for relationship advice and unbiased conflict resolution.',
     }
   ];
 
   const handleStartTour = () => {
     setShowPrompt(false);
     setRunTour(true);
-    localStorage.setItem('hasSeenMansionGuide', 'true'); // Never show prompt again
+    localStorage.setItem('hasSeenMansionGuide', 'true');
   };
 
   const handleSkipTour = () => {
     setShowPrompt(false);
-    localStorage.setItem('hasSeenMansionGuide', 'true'); // Never show prompt again
+    localStorage.setItem('hasSeenMansionGuide', 'true');
   };
 
-  // Handle when the user finishes or clicks the "X" on the tour
   const handleJoyrideCallback = (data: EventData) => {
     const { status } = data;
     if ([STATUS.FINISHED, STATUS.SKIPPED].includes(status as any)) {
@@ -55,27 +60,26 @@ export default function OnboardingGuide() {
 
   return (
     <>
-      {/* The Tour Component */}
       <Joyride
         steps={steps}
         run={runTour}
         continuous={true}
         onEvent={handleJoyrideCallback}
         options={{
-          primaryColor: '#ec4899', // Pink color to match your theme
+          primaryColor: '#ec4899', // Pink theme
           zIndex: 1000,
           showProgress: true,
           buttons: ['skip', 'back', 'close', 'primary']
         }}
       />
 
-      {/* The Opt-In Pop-up Modal */}
       {showPrompt && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-slate-900 border border-pink-500 rounded-xl p-6 max-w-sm w-full text-center shadow-2xl">
             <h2 className="text-2xl font-bold text-white mb-2">Welcome! ✨</h2>
+            {/* Updated Text Below */}
             <p className="text-gray-300 mb-6">
-              Would you like a quick tour to learn how to use the Gallery, the AI Mediator, and the Skincare Analyzer?
+              Would you like a quick tour to help you set up your profile and explore everything The Butterfly Mansion has to offer?
             </p>
             <div className="flex justify-center space-x-4">
               <button 

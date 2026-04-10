@@ -73,7 +73,7 @@ export default function Home() {
       <div className="absolute top-6 right-6 flex items-center gap-3 z-50">
         <button
           onClick={handleSettingsClick}
-          className={`p-3 rounded-full bg-white/5 backdrop-blur-sm border border-white/10 hover:bg-white/10 transition-colors text-gray-800 dark:text-white`}
+          className={`tour-settings p-3 rounded-full bg-white/5 backdrop-blur-sm border border-white/10 hover:bg-white/10 transition-colors text-gray-800 dark:text-white`}
         >
           <Settings size={32} />
         </button>
