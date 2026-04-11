@@ -22,7 +22,7 @@ export default function OnboardingGuide() {
   const steps = [
     {
       target: '.tour-settings', // Points to the Gear icon in the top right
-      content: 'Start Here! ⚙️ Create your profile and generate your API key to unlock all the AI features in the Mansion.',
+      content: 'Start Here! ⚙️ Set up your profile and enter your shared connection key to link your Mansion with your partner.',
       disableBeacon: true,
     },
     {
@@ -72,7 +72,7 @@ export default function OnboardingGuide() {
         onEvent={handleJoyrideCallback}
         options={{
           primaryColor: '#ec4899', // Pink theme
-          zIndex: 1000,
+          zIndex: 99999,
           showProgress: true,
           buttons: ['skip', 'back', 'close', 'primary']
         }}
