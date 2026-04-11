@@ -2,17 +2,20 @@
 
 import { useState, useEffect } from 'react';
 import { Joyride, STATUS, EventData } from 'react-joyride';
+import { useUser } from '@clerk/nextjs';
 
 export default function OnboardingGuide() {
+  const { user, isLoaded } = useUser();
   const [showPrompt, setShowPrompt] = useState(false);
   const [runTour, setRunTour] = useState(false);
 
   useEffect(() => {
-    const hasSeenGuide = localStorage.getItem('hasSeenMansionGuide');
+    if (!isLoaded || !user) return;
+    const hasSeenGuide = localStorage.getItem(`hasSeenMansionGuide_${user.id}`);
     if (!hasSeenGuide) {
       setTimeout(() => setShowPrompt(true), 1000);
     }
-  }, []);
+  }, [isLoaded, user]);
 
   // Here is the expanded, full-system tour!
   // It goes in the exact order you place them in this array.
@@ -41,14 +44,16 @@ export default function OnboardingGuide() {
   ];
 
   const handleStartTour = () => {
+    if (!user) return;
     setShowPrompt(false);
     setRunTour(true);
-    localStorage.setItem('hasSeenMansionGuide', 'true');
+    localStorage.setItem(`hasSeenMansionGuide_${user.id}`, 'true');
   };
 
   const handleSkipTour = () => {
+    if (!user) return;
     setShowPrompt(false);
-    localStorage.setItem('hasSeenMansionGuide', 'true');
+    localStorage.setItem(`hasSeenMansionGuide_${user.id}`, 'true');
   };
 
   const handleJoyrideCallback = (data: EventData) => {
