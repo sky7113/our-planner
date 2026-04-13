@@ -156,7 +156,7 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                         </p>
 
                         {/* Scrollable Container for Modal Inner Content */}
-                        <div className="space-y-4 overflow-y-auto pb-8 -mx-2 px-2 scrollbar-none flex-1">
+                        <div className="space-y-4 overflow-y-auto pb-8 -mx-2 pl-2 pr-3 flex-1 [&::-webkit-scrollbar]:w-[6px] [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-pink-600 [&::-webkit-scrollbar-thumb]:rounded-full">
                             {/* Restart Journey Button */}
                             <button
                                 onClick={handleRestart}
