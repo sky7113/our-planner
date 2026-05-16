@@ -148,76 +148,82 @@ export default function Home() {
             </div>
           ))
         ) : (
-          [
-            {
-              name: theme?.labels?.companion || `${(theme?.id || 'royal').charAt(0).toUpperCase() + (theme?.id || 'royal').slice(1)} Companion`,
-              icon: MessageCircle,
-              href: '/comfort-room',
-              desc: theme?.labels?.companion ? 'Your Faithful Servant' : 'Share your thoughts, happy or sad.'
-            },
-            { name: theme?.labels?.treasury || 'Treasury', icon: Wallet, href: '/budget', desc: 'Royal Finances' },
-            { name: theme?.labels?.knowledge || 'Knowledge', icon: GraduationCap, href: '/planner', desc: 'Academic Strategy & Life Planning' },
-            { name: theme?.labels?.memories || 'Memories', icon: Image, href: '/memories', desc: 'Cherished Moments' },
-            { name: 'Skincare', icon: SprayCan, href: '/skincare', desc: 'Royal Glow' },
-            { name: 'Moon Cycle', icon: Moon, href: '/period-tracker', desc: 'Track your cycle & health' },
-            { name: 'The Bridge', icon: Heart, href: '/bridge', desc: 'When words fail us, meet me here.' },
-          ].filter(item => {
-            if (profile?.gender === 'Male' && (!profile?.partner_nickname || profile?.partner_nickname.trim() === '')) {
-              if (item.name === 'Moon Cycle' || item.name === 'The Bridge') {
-                return false;
+          <AnimatePresence mode="popLayout">
+            {[
+              {
+                name: theme?.labels?.companion || `${(theme?.id || 'royal').charAt(0).toUpperCase() + (theme?.id || 'royal').slice(1)} Companion`,
+                icon: MessageCircle,
+                href: '/comfort-room',
+                desc: theme?.labels?.companion ? 'Your Faithful Servant' : 'Share your thoughts, happy or sad.'
+              },
+              { name: theme?.labels?.treasury || 'Treasury', icon: Wallet, href: '/budget', desc: 'Royal Finances' },
+              { name: theme?.labels?.knowledge || 'Knowledge', icon: GraduationCap, href: '/planner', desc: 'Academic Strategy & Life Planning' },
+              { name: theme?.labels?.memories || 'Memories', icon: Image, href: '/memories', desc: 'Cherished Moments' },
+              { name: 'Skincare', icon: SprayCan, href: '/skincare', desc: 'Royal Glow' },
+              { name: 'Moon Cycle', icon: Moon, href: '/period-tracker', desc: 'Track your cycle & health' },
+              { name: 'The Bridge', icon: Heart, href: '/bridge', desc: 'When words fail us, meet me here.' },
+            ].map((item) => {
+              const isSingleMale = profile?.gender === 'Male' && (!profile?.partner_nickname || profile?.partner_nickname.trim() === '');
+              if (isSingleMale && (item.name === 'Moon Cycle' || item.name === 'The Bridge')) {
+                return null;
               }
-            }
-            return true;
-          }).map((item) => (
-            <MotionLink
-              key={item.name}
-              href={item.href}
-              onClick={(e: React.MouseEvent<HTMLAnchorElement>) => handleProtectedLinkClick(e, item.href)}
-              onMouseEnter={() => setFocusedCard(item.name)}
-              onMouseLeave={() => setFocusedCard(null)}
-              whileHover={{ scale: 1.02, y: -5 }}
-              whileTap={{ scale: 0.98 }}
-              className={`
-                group relative overflow-hidden
-                p-6 rounded-2xl
-                transition-all duration-300
-                min-h-[180px] w-full
-                bg-white/60 dark:bg-white/5
-                backdrop-blur-lg dark:backdrop-blur-xl
-                border border-white/40 dark:border-white/10
-                shadow-xl shadow-indigo-100/50 dark:shadow-2xl dark:shadow-black/50
-                hover:border-(--glow-color) hover:shadow-[0_0_20px_var(--glow-alpha)]
-              `}
-              style={{
-                '--glow-color': theme.colors.accent,
-                '--glow-alpha': `${theme.colors.accent}40`, // 25% opacity
-              } as React.CSSProperties}
-            >
-              <div
-                className={`absolute top-0 right-0 p-3 opacity-10 group-hover:opacity-20 transition-opacity text-gray-800 dark:text-white/80`}
-                style={{ color: theme.id === 'default' ? undefined : theme.colors.primary }}
-              >
-                <item.icon size={64} />
-              </div>
+              
+              return (
+                <MotionLink
+                  key={item.name}
+                  href={item.href}
+                  onClick={(e: React.MouseEvent<HTMLAnchorElement>) => handleProtectedLinkClick(e, item.href)}
+                  onMouseEnter={() => setFocusedCard(item.name)}
+                  onMouseLeave={() => setFocusedCard(null)}
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.8, filter: "blur(10px)" }}
+                  layout
+                  whileHover={{ scale: 1.02, y: -5 }}
+                  whileTap={{ scale: 0.98 }}
+                  className={`
+                    group relative overflow-hidden
+                    p-6 rounded-2xl
+                    transition-all duration-300
+                    min-h-[180px] w-full
+                    bg-white/60 dark:bg-white/5
+                    backdrop-blur-lg dark:backdrop-blur-xl
+                    border border-white/40 dark:border-white/10
+                    shadow-xl shadow-indigo-100/50 dark:shadow-2xl dark:shadow-black/50
+                    hover:border-(--glow-color) hover:shadow-[0_0_20px_var(--glow-alpha)]
+                  `}
+                  style={{
+                    '--glow-color': theme.colors.accent,
+                    '--glow-alpha': `${theme.colors.accent}40`, // 25% opacity
+                  } as React.CSSProperties}
+                >
+                  <div
+                    className={`absolute top-0 right-0 p-3 opacity-10 group-hover:opacity-20 transition-opacity text-gray-800 dark:text-white/80`}
+                    style={{ color: theme.id === 'default' ? undefined : theme.colors.primary }}
+                  >
+                    <item.icon size={64} />
+                  </div>
 
-              <div className="relative z-10">
-                <div
-                  className={`mb-3 p-3 rounded-xl bg-white/5 w-fit group-hover:bg-white/10 transition-colors text-gray-800 dark:text-white/80`}
-                  style={{ color: theme.id === 'default' ? undefined : theme.colors.primary }}
-                >
-                  <item.icon size={40} />
-                </div>
-                <h3
-                  className="text-xl md:text-2xl font-bold mb-1 text-gray-900 dark:text-gray-100"
-                >
-                  {item.name}
-                </h3>
-                <p className="text-sm md:text-base text-gray-600 dark:text-gray-400">
-                  {item.desc}
-                </p>
-              </div>
-            </MotionLink>
-          ))
+                  <div className="relative z-10">
+                    <div
+                      className={`mb-3 p-3 rounded-xl bg-white/5 w-fit group-hover:bg-white/10 transition-colors text-gray-800 dark:text-white/80`}
+                      style={{ color: theme.id === 'default' ? undefined : theme.colors.primary }}
+                    >
+                      <item.icon size={40} />
+                    </div>
+                    <h3
+                      className="text-xl md:text-2xl font-bold mb-1 text-gray-900 dark:text-gray-100"
+                    >
+                      {item.name}
+                    </h3>
+                    <p className="text-sm md:text-base text-gray-600 dark:text-gray-400">
+                      {item.desc}
+                    </p>
+                  </div>
+                </MotionLink>
+              );
+            })}
+          </AnimatePresence>
         )}
       </div>
 
