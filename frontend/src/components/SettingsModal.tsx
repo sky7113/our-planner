@@ -32,6 +32,10 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
     const [savingProfile, setSavingProfile] = useState(false);
     const [disconnecting, setDisconnecting] = useState(false);
 
+    // Toast State
+    const [showCompanionToast, setShowCompanionToast] = useState(false);
+    const [companionMessage, setCompanionMessage] = useState("");
+
     // Initialize edit state when profile loads or modal opens
     React.useEffect(() => {
         if (profile && isOpen) {
@@ -82,6 +86,12 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
             if (res.ok) {
                 await refreshProfile();
                 setIsEditingProfile(false);
+                
+                if (!editPartnerNickname.trim()) {
+                    setCompanionMessage("No partner? Don't worry, I will be your faithful companion on this journey! 🦋");
+                    setShowCompanionToast(true);
+                    setTimeout(() => setShowCompanionToast(false), 5000);
+                }
             }
         } catch (error) {
             console.error('Error saving profile:', error);
@@ -122,6 +132,34 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                         onClick={onClose}
                         className="absolute inset-0 bg-black/60 backdrop-blur-sm"
                     />
+
+                    {/* Custom Toast Notification */}
+                    <AnimatePresence>
+                        {showCompanionToast && (
+                            <motion.div
+                                initial={{ opacity: 0, y: -50, scale: 0.9 }}
+                                animate={{ opacity: 1, y: 0, scale: 1 }}
+                                exit={{ opacity: 0, y: -20, scale: 0.9 }}
+                                className="fixed top-6 left-1/2 -translate-x-1/2 z-150 bg-white/10 backdrop-blur-xl border border-pink-500/50 shadow-2xl rounded-2xl p-4 flex items-center gap-3 w-[90%] max-w-sm"
+                                style={{
+                                    boxShadow: '0 0 20px rgba(236, 72, 153, 0.3)'
+                                }}
+                            >
+                                <div className="w-10 h-10 rounded-full bg-purple-600/30 flex items-center justify-center border border-pink-400/50 shrink-0">
+                                    <span className="text-xl">🦋</span>
+                                </div>
+                                <p className="text-sm font-medium text-white tracking-wide">
+                                    {companionMessage}
+                                </p>
+                                <button 
+                                    onClick={() => setShowCompanionToast(false)}
+                                    className="absolute top-2 right-2 text-white/50 hover:text-white"
+                                >
+                                    <X size={14} />
+                                </button>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
 
                     {/* Modal Card */}
                     <motion.div

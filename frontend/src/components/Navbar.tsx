@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import { Home, GraduationCap, Image, Wallet, Sparkles, SprayCan, Moon, Heart } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useAuth, useClerk } from '@clerk/nextjs';
+import { useUserProfile } from '../context/UserContext';
 
 const navItems = [
     { name: 'Home', path: '/', icon: Home, tourClass: 'tour-home' },
@@ -20,6 +21,7 @@ export default function Navbar() {
     const pathname = usePathname();
     const { isSignedIn } = useAuth();
     const clerk = useClerk();
+    const { profile } = useUserProfile();
 
     const handleProtectedLinkClick = (e: React.MouseEvent<HTMLAnchorElement>, path: string) => {
         if (path !== '/' && !isSignedIn) {
@@ -28,10 +30,19 @@ export default function Navbar() {
         }
     };
 
+    const filteredNavItems = navItems.filter(item => {
+        if (profile?.gender === 'Male' && (!profile?.partner_nickname || profile?.partner_nickname.trim() === '')) {
+            if (item.name === 'Cycle' || item.name === 'The Bridge') {
+                return false;
+            }
+        }
+        return true;
+    });
+
     return (
         <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-110 w-[90%] max-w-md pb-2">
             <div className="flex items-center justify-around w-full gap-1 sm:gap-3 px-2 sm:px-6 py-3 sm:py-4 rounded-full bg-white/80 dark:bg-black/40 backdrop-blur-xl border border-gray-200 dark:border-white/10 shadow-xl">
-                {navItems.map((item) => {
+                {filteredNavItems.map((item) => {
                     const isActive = pathname === item.path;
                     return (
                         <Link
