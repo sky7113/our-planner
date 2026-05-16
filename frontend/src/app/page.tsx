@@ -161,7 +161,14 @@ export default function Home() {
             { name: 'Skincare', icon: SprayCan, href: '/skincare', desc: 'Royal Glow' },
             { name: 'Moon Cycle', icon: Moon, href: '/period-tracker', desc: 'Track your cycle & health' },
             { name: 'The Bridge', icon: Heart, href: '/bridge', desc: 'When words fail us, meet me here.' },
-          ].map((item) => (
+          ].filter(item => {
+            if (profile?.gender === 'Male' && (!profile?.partner_nickname || profile?.partner_nickname.trim() === '')) {
+              if (item.name === 'Moon Cycle' || item.name === 'The Bridge') {
+                return false;
+              }
+            }
+            return true;
+          }).map((item) => (
             <MotionLink
               key={item.name}
               href={item.href}

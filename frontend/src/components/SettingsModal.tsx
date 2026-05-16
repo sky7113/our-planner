@@ -85,6 +85,7 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
             });
             if (res.ok) {
                 await refreshProfile();
+                router.refresh();
                 setIsEditingProfile(false);
                 
                 if (!editPartnerNickname.trim()) {
