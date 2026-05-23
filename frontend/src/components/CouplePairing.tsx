@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@clerk/nextjs';
 import { Copy, Check, Link2, Shield, Image as ImageIcon, Book, MessageCircle, AlertCircle } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface CoupleData {
     id: number;
@@ -39,6 +40,11 @@ export default function CouplePairing() {
     // Admin state
     const [copied, setCopied] = useState(false);
     const [updatingPermissions, setUpdatingPermissions] = useState(false);
+
+    // Mock UI states
+    const [mockKey, setMockKey] = useState<string | null>(null);
+    const [linkInput, setLinkInput] = useState('');
+    const [showLocalToast, setShowLocalToast] = useState(false);
 
     const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
@@ -369,73 +375,109 @@ export default function CouplePairing() {
                 </div>
             ) : (
                 /* Unpaired View */
-                <div className="space-y-10">
-                    {isFemale && (
-                        <div className="text-center">
-                            <h3 className="text-lg font-medium text-white mb-2">Invite a Partner</h3>
-                            <p className="text-sm text-purple-200/60 mb-6">Generate an elite code to invite your partner to your sanctuary.</p>
-                            <button
-                                onClick={handleGenerate}
-                                disabled={generateLoading}
-                                className="w-full relative group overflow-hidden rounded-2xl bg-linear-to-r from-purple-600 to-indigo-600 p-4 transition-all disabled:opacity-50 text-white font-semibold flex items-center justify-center gap-3"
+                <div className="space-y-8 relative">
+                    <AnimatePresence>
+                        {showLocalToast && (
+                            <motion.div
+                                initial={{ opacity: 0, y: -20, scale: 0.9 }}
+                                animate={{ opacity: 1, y: 0, scale: 1 }}
+                                exit={{ opacity: 0, y: -20, scale: 0.9 }}
+                                className="absolute -top-16 left-1/2 -translate-x-1/2 bg-white/10 backdrop-blur-xl border border-pink-500/50 shadow-[0_0_20px_rgba(236,72,153,0.3)] rounded-2xl p-3 flex items-center gap-2 w-max z-50 text-sm font-medium text-white"
                             >
-                                {generateLoading ? (
-                                    <div className="w-6 h-6 border-2 border-white/80 border-t-transparent rounded-full animate-spin" />
-                                ) : (
-                                    <>
-                                        <Shield className="w-5 h-5 text-white" />
-                                        <span className="font-semibold tracking-wide">Generate My Code</span>
-                                    </>
-                                )}
-                            </button>
-                        </div>
+                                Mansions successfully linked! 🦋
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+
+                    {isFemale && (
+                        <motion.div 
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="bg-white/5 border border-white/10 rounded-3xl p-6 text-center space-y-6 shadow-inner"
+                        >
+                            <div>
+                                <h3 className="text-xl font-light text-white mb-2 tracking-wide">Generate Royal Key</h3>
+                                <p className="text-sm text-purple-200/60 leading-relaxed">Create a unique key to invite your partner into your personal sanctuary.</p>
+                            </div>
+                            
+                            {!mockKey ? (
+                                <motion.button
+                                    whileHover={{ scale: 1.02 }}
+                                    whileTap={{ scale: 0.98 }}
+                                    onClick={() => setMockKey("Mansion-" + Math.random().toString(36).substring(2, 6).toUpperCase())}
+                                    className="w-full relative group overflow-hidden rounded-2xl bg-linear-to-r from-pink-600/80 to-purple-600/80 hover:from-pink-500 hover:to-purple-500 p-4 transition-all text-white font-medium flex items-center justify-center gap-3 border border-pink-500/30 shadow-[0_0_20px_rgba(236,72,153,0.2)]"
+                                >
+                                    <Shield className="w-5 h-5" />
+                                    <span>Generate Royal Key</span>
+                                </motion.button>
+                            ) : (
+                                <motion.div 
+                                    initial={{ opacity: 0, scale: 0.95 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    className="bg-black/30 border border-pink-500/30 rounded-2xl p-4 flex items-center justify-between gap-4"
+                                >
+                                    <span className="text-2xl font-mono tracking-widest text-pink-300 font-bold">{mockKey}</span>
+                                    <button 
+                                        onClick={() => {
+                                            navigator.clipboard.writeText(mockKey);
+                                            setCopied(true);
+                                            setTimeout(() => setCopied(false), 2000);
+                                        }}
+                                        className="p-3 bg-pink-500/20 hover:bg-pink-500/40 text-pink-200 rounded-xl transition-all border border-pink-500/30 shrink-0"
+                                    >
+                                        {copied ? <Check className="w-5 h-5" /> : <Copy className="w-5 h-5" />}
+                                    </button>
+                                </motion.div>
+                            )}
+                        </motion.div>
                     )}
 
                     {isMale && (
-                        <form onSubmit={handleJoin} className="space-y-6">
-                            <div className="text-center mb-4">
-                                <h3 className="text-lg font-medium text-white mb-2">Join Her Sanctuary</h3>
-                                <p className="text-sm text-purple-200/60">Enter the pairing code she gave you.</p>
+                        <motion.div 
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="bg-white/5 border border-white/10 rounded-3xl p-6 text-center space-y-6 shadow-inner"
+                        >
+                            <div>
+                                <h3 className="text-xl font-light text-white mb-2 tracking-wide">Join Her Sanctuary</h3>
+                                <p className="text-sm text-purple-200/60 leading-relaxed">Enter the royal key to connect to her mansion.</p>
                             </div>
-                            <div className="space-y-2">
-                                <label htmlFor="joinCode" className="block text-sm font-medium uppercase tracking-widest text-purple-300/80 pl-2">
-                                    Pairing Code
-                                </label>
-                                <div className="relative">
-                                    <input
-                                        id="joinCode"
-                                        type="text"
-                                        value={joinCode}
-                                        onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
-                                        placeholder="ENTER 6-DIGIT CODE"
-                                        maxLength={6}
-                                        className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 text-xl tracking-[0.2em] font-mono text-center text-white placeholder-white/20 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 transition-all uppercase"
-                                        disabled={joinLoading}
-                                    />
-                                </div>
+                            
+                            <div className="space-y-4">
+                                <input
+                                    type="text"
+                                    value={linkInput}
+                                    onChange={(e) => setLinkInput(e.target.value.toUpperCase())}
+                                    placeholder="Enter Connection Key..."
+                                    className="w-full bg-white/5 border border-white/10 rounded-lg py-4 px-6 text-center text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-pink-500 transition-all font-mono tracking-wider"
+                                />
+                                <motion.button
+                                    whileHover={{ scale: 1.02 }}
+                                    whileTap={{ scale: 0.98 }}
+                                    onClick={() => {
+                                        if(linkInput.trim()) {
+                                            setShowLocalToast(true);
+                                            setTimeout(() => setShowLocalToast(false), 3000);
+                                            setLinkInput('');
+                                        }
+                                    }}
+                                    className="w-full bg-linear-to-r from-indigo-600/80 to-purple-600/80 hover:from-indigo-500 hover:to-purple-500 border border-indigo-500/30 px-6 py-4 rounded-2xl text-white font-medium transition-all shadow-[0_0_20px_rgba(99,102,241,0.2)] flex items-center justify-center gap-2"
+                                >
+                                    <Link2 className="w-5 h-5" />
+                                    <span>Link Mansion</span>
+                                </motion.button>
                             </div>
-
-                            <button
-                                type="submit"
-                                disabled={joinLoading || joinCode.length < 6}
-                                className="w-full bg-white/5 hover:bg-white/10 border border-white/20 px-6 py-4 rounded-2xl text-white font-semibold transition-all disabled:opacity-50 flex items-center justify-center gap-3"
-                            >
-                                {joinLoading ? (
-                                    <div className="w-6 h-6 border-2 border-white/80 border-t-transparent rounded-full animate-spin" />
-                                ) : (
-                                    <>
-                                        <Link2 className="w-5 h-5 text-white" />
-                                        <span>Enter Partner Code</span>
-                                    </>
-                                )}
-                            </button>
-                        </form>
+                        </motion.div>
                     )}
 
                     {!isFemale && !isMale && (
-                        <div className="text-center text-white/50 text-sm">
-                            Please set your gender in Edit Profile to unlock partner features.
-                        </div>
+                        <motion.div 
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            className="text-center text-white/50 text-sm bg-white/5 p-4 rounded-2xl border border-white/5"
+                        >
+                            Please set your gender in Edit Profile to unlock the Pairing Bridge.
+                        </motion.div>
                     )}
                 </div>
             )}
