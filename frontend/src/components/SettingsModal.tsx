@@ -25,10 +25,10 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
     const [isEditingProfile, setIsEditingProfile] = useState(false);
 
     // Edit Form State
-    const [editDisplayName, setEditDisplayName] = useState('');
-    const [editGender, setEditGender] = useState('');
-    const [editPartnerNickname, setEditPartnerNickname] = useState('');
-    const [editCoreMemory, setEditCoreMemory] = useState('');
+    const [displayName, setDisplayName] = useState('');
+    const [gender, setGender] = useState('');
+    const [partnerName, setPartnerName] = useState('');
+    const [notes, setNotes] = useState('');
     const [savingProfile, setSavingProfile] = useState(false);
     const [disconnecting, setDisconnecting] = useState(false);
 
@@ -36,17 +36,28 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
     const [showCompanionToast, setShowCompanionToast] = useState(false);
     const [companionMessage, setCompanionMessage] = useState("");
 
-    // Initialize edit state when profile loads or modal opens
+    // Initialize edit state from backend API when modal mounts
     React.useEffect(() => {
-        if (profile && isOpen) {
-            setEditDisplayName(profile.display_name || '');
-            setEditGender(profile.gender || '');
-            setEditPartnerNickname(profile.partner_nickname || '');
-            setEditCoreMemory(profile.core_memory || '');
-        }
-    }, [profile, isOpen]);
+        const fetchProfileData = async () => {
+            if (!userId) return;
+            try {
+                const res = await fetch(`${API_BASE_URL}/api/users/me`, {
+                    headers: { 'x-clerk-user-id': userId }
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    setDisplayName(data.display_name || '');
+                    setGender(data.gender || '');
+                    setPartnerName(data.partner_nickname || '');
+                    setNotes(data.core_memory || '');
+                }
+            } catch (err) {
+                console.error('Error fetching profile data:', err);
+            }
+        };
 
-    if (!isOpen) return null;
+        fetchProfileData();
+    }, [userId]);
 
     const handleRestart = () => {
         // Clear session and local storage for a fresh start
@@ -75,10 +86,10 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                     'x-clerk-user-id': userId
                 },
                 body: JSON.stringify({
-                    display_name: editDisplayName.trim(),
-                    gender: editGender,
-                    partner_nickname: editPartnerNickname.trim() || null,
-                    core_memory: editCoreMemory.trim() || null,
+                    display_name: displayName.trim(),
+                    gender: gender,
+                    partner_nickname: partnerName.trim() || null,
+                    core_memory: notes.trim() || null,
                     date_of_birth: profile?.date_of_birth, // preserve existing
                     college_or_profession: profile?.college_or_profession // preserve existing
                 })
@@ -88,7 +99,7 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                 router.refresh();
                 setIsEditingProfile(false);
                 
-                if (!editPartnerNickname.trim()) {
+                if (!partnerName.trim()) {
                     setCompanionMessage("No partner? Don't worry, I will be your faithful companion on this journey! 🦋");
                     setShowCompanionToast(true);
                     setTimeout(() => setShowCompanionToast(false), 5000);
@@ -232,8 +243,8 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                                                 <label className="text-xs text-white/60 uppercase tracking-widest pl-1">Your Name</label>
                                                 <input
                                                     type="text"
-                                                    value={editDisplayName}
-                                                    onChange={(e) => setEditDisplayName(e.target.value)}
+                                                    value={displayName}
+                                                    onChange={(e) => setDisplayName(e.target.value)}
                                                     className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-purple-500/50"
                                                 />
                                             </div>
@@ -241,14 +252,20 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                                             <div className="space-y-1">
                                                 <label className="text-xs text-white/60 uppercase tracking-widest pl-1">Gender</label>
                                                 <div className="flex gap-2">
-                                                    <label className="flex-1 flex items-center justify-center bg-black/20 border border-white/10 rounded-xl px-4 py-3 cursor-pointer hover:bg-white/5 has-checked:bg-purple-900/40 has-checked:border-purple-400/50">
-                                                        <input type="radio" name="editGender" value="Female" checked={editGender === 'Female'} onChange={(e) => setEditGender(e.target.value)} className="hidden" />
-                                                        <span className="text-sm text-white">Female</span>
-                                                    </label>
-                                                    <label className="flex-1 flex items-center justify-center bg-black/20 border border-white/10 rounded-xl px-4 py-3 cursor-pointer hover:bg-white/5 has-checked:bg-purple-900/40 has-checked:border-purple-400/50">
-                                                        <input type="radio" name="editGender" value="Male" checked={editGender === 'Male'} onChange={(e) => setEditGender(e.target.value)} className="hidden" />
-                                                        <span className="text-sm text-white">Male</span>
-                                                    </label>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setGender('Female')}
+                                                        className={`flex-1 flex items-center justify-center border rounded-xl px-4 py-3 cursor-pointer transition-all duration-300 ${gender === 'Female' ? 'bg-pink-500/30 border-pink-500 text-pink-300 shadow-[0_0_15px_rgba(236,72,153,0.3)] font-medium' : 'bg-black/20 border-white/10 hover:bg-white/5 text-white/70 hover:text-white'}`}
+                                                    >
+                                                        Female
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setGender('Male')}
+                                                        className={`flex-1 flex items-center justify-center border rounded-xl px-4 py-3 cursor-pointer transition-all duration-300 ${gender === 'Male' ? 'bg-pink-500/30 border-pink-500 text-pink-300 shadow-[0_0_15px_rgba(236,72,153,0.3)] font-medium' : 'bg-black/20 border-white/10 hover:bg-white/5 text-white/70 hover:text-white'}`}
+                                                    >
+                                                        Male
+                                                    </button>
                                                 </div>
                                             </div>
 
@@ -256,8 +273,8 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                                                 <label className="text-xs text-white/60 uppercase tracking-widest pl-1">Partner&apos;s Name</label>
                                                 <input
                                                     type="text"
-                                                    value={editPartnerNickname}
-                                                    onChange={(e) => setEditPartnerNickname(e.target.value)}
+                                                    value={partnerName}
+                                                    onChange={(e) => setPartnerName(e.target.value)}
                                                     className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-pink-500/50"
                                                 />
                                             </div>
@@ -265,15 +282,15 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                                             <div className="space-y-1">
                                                 <label className="text-xs text-white/60 uppercase tracking-widest pl-1">Notes for the AI (e.g., I love Rasmalai, my favorite color is purple)</label>
                                                 <textarea
-                                                    value={editCoreMemory}
-                                                    onChange={(e) => setEditCoreMemory(e.target.value)}
+                                                    value={notes}
+                                                    onChange={(e) => setNotes(e.target.value)}
                                                     className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500/50 min-h-[80px]"
                                                 />
                                             </div>
 
                                             <button
                                                 onClick={handleSaveProfile}
-                                                disabled={savingProfile || !editDisplayName}
+                                                disabled={savingProfile || !displayName}
                                                 className="w-full py-3 bg-white/10 hover:bg-white/20 border border-white/20 rounded-xl text-white text-sm font-medium transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                                             >
                                                 {savingProfile && <div className="w-4 h-4 border-2 border-white/80 border-t-transparent rounded-full animate-spin" />}
@@ -297,7 +314,7 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
 
                             {/* Couple Pairing Section */}
                             <div className="pt-4 border-t border-white/10 w-full mb-8">
-                                <CouplePairing />
+                                <CouplePairing localGender={gender} />
                             </div>
 
                             {/* Quick Switch Section */}

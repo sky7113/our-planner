@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@clerk/nextjs';
 import { Copy, Check, Link2, Shield, Image as ImageIcon, Book, MessageCircle, AlertCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useUserProfile } from '../context/UserContext';
 
 interface CoupleData {
     id: number;
@@ -23,10 +24,9 @@ interface UserProfile {
     couple: CoupleData | null;
 }
 
-export default function CouplePairing() {
+export default function CouplePairing({ localGender }: { localGender?: string }) {
     const { userId, isLoaded } = useAuth();
-    const [profile, setProfile] = useState<UserProfile | null>(null);
-    const [loading, setLoading] = useState(true);
+    const { profile, setProfile, refreshProfile, isLoading } = useUserProfile();
     const [error, setError] = useState<string | null>(null);
 
     // Joiner state
@@ -47,35 +47,6 @@ export default function CouplePairing() {
     const [showLocalToast, setShowLocalToast] = useState(false);
 
     const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-
-    useEffect(() => {
-        if (isLoaded && userId) {
-            fetchProfile();
-        } else if (isLoaded && !userId) {
-            setLoading(false);
-        }
-    }, [isLoaded, userId]);
-
-    const fetchProfile = async () => {
-        try {
-            setLoading(true);
-            const res = await fetch(`${API_BASE_URL}/api/users/me`, {
-                headers: {
-                    'x-clerk-user-id': userId as string
-                }
-            });
-
-            if (!res.ok) throw new Error('Failed to fetch profile');
-
-            const data = await res.json();
-            setProfile(data);
-        } catch (err: any) {
-            console.error('Error fetching profile:', err);
-            setError(err.message);
-        } finally {
-            setLoading(false);
-        }
-    };
 
     const handleCopyCode = async () => {
         if (profile?.couple?.pairing_code) {
@@ -108,7 +79,7 @@ export default function CouplePairing() {
             }
 
             setJoinSuccess(true);
-            await fetchProfile(); // Refresh to get updated couple data
+            await refreshProfile(); // Refresh to get updated couple data
         } catch (err: any) {
             setError(err.message);
         } finally {
@@ -136,7 +107,7 @@ export default function CouplePairing() {
                 throw new Error(data.detail || 'Failed to generate code');
             }
 
-            await fetchProfile(); // Refresh to get updated couple data (should be admin now)
+            await refreshProfile(); // Refresh to get updated couple data (should be admin now)
         } catch (err: any) {
             setError(err.message);
         } finally {
@@ -179,7 +150,7 @@ export default function CouplePairing() {
         }
     };
 
-    if (!isLoaded || loading) {
+    if (!isLoaded || isLoading) {
         return (
             <div className="w-full max-w-md mx-auto p-4 md:p-8 bg-black/40 backdrop-blur-2xl border border-purple-500/10 rounded-2xl md:rounded-4xl shadow-[0_0_40px_rgba(168,85,247,0.05)] text-white">
                 <div className="mb-6 md:mb-8 text-center animate-pulse">
@@ -215,8 +186,9 @@ export default function CouplePairing() {
 
     const isAdmin = profile.is_admin;
     const hasPartner = profile.partner_nickname;
-    const isFemale = profile.gender === 'Female';
-    const isMale = profile.gender === 'Male';
+    const currentGender = localGender || profile.gender;
+    const isFemale = currentGender === 'Female';
+    const isMale = currentGender === 'Male';
     const isConnected = profile.couple !== null;
 
     return (
