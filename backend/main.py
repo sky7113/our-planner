@@ -7,6 +7,8 @@ import os
 import time
 import shutil
 import sqlite3
+import base64
+import httpx
 from datetime import datetime, timedelta, date
 from typing import Optional, List
 import google.generativeai as genai
@@ -261,6 +263,9 @@ except: pass
 
 app = FastAPI()
 
+from src.api.routes.ai_router import router as ai_router
+app.include_router(ai_router)
+
 os.makedirs("images", exist_ok=True)
 app.mount("/images", StaticFiles(directory="images"), name="images")
 
@@ -307,6 +312,10 @@ def get_characters():
     ]
 
 # --- Gemini Chatbot System ---
+OLLAMA_URL = "http://localhost:11434/api/chat"
+TEXT_MODEL = "gemma:latest"
+VISION_MODEL = "paligemma:latest"
+
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 if GEMINI_API_KEY:
     genai.configure(api_key=GEMINI_API_KEY)
@@ -457,9 +466,6 @@ def get_chat_history(character_id: str, clerk_id: str = Depends(check_permission
 
 @app.post("/api/chat")
 async def chat_with_character(payload: ChatPayload, clerk_id: str = Depends(check_permission("partner_can_chat"))):
-    if not GEMINI_API_KEY:
-        return {"response": "System: API Key missing."}
-
     character_id = payload.character_id.lower()
     session = SessionLocal()
     
@@ -482,19 +488,17 @@ async def chat_with_character(payload: ChatPayload, clerk_id: str = Depends(chec
             ChatMessage.clerk_id == clerk_id
         ).order_by(ChatMessage.timestamp.asc()).all()
         
-        formatted_history = []
-        for msg in history_msgs[:-1]: 
-            role = "user" if msg.sender == "user" else "model"
-            formatted_history.append({"role": role, "parts": [msg.content]})
-            
-        model = genai.GenerativeModel(ACTIVE_MODEL_NAME, system_instruction=system_instruction)
-        chat_session = model.start_chat(history=formatted_history)
-        
         try:
-            response = chat_session.send_message(payload.message)
+            model = genai.GenerativeModel(ACTIVE_MODEL_NAME, system_instruction=system_instruction)
+            history = []
+            for msg in history_msgs[:-1]: 
+                role = "user" if msg.sender == "user" else "model"
+                history.append({"role": role, "parts": [msg.content]})
+            chat = model.start_chat(history=history)
+            response = chat.send_message(payload.message)
             text_response = response.text
         except ResourceExhausted:
-            text_response = "I need to catch my breath for a moment! 🦋 Please wait about 60 seconds and try again."
+            text_response = "The Celestial Mediator is catching its breath! 🦋 Please wait about 60 seconds and try again."
         except Exception as e:
             text_response = f"System Error: {str(e)}"
         
@@ -751,36 +755,36 @@ async def analyze_skin(files: List[UploadFile] = File(...), clerk_id: str = Depe
     Receives skin photos, uploads to Cloudinary (optional), and uses Gemini Vision to provide a gentle analysis.
     """
     try:
+        image_urls = []
+        gemini_images = []
         import PIL.Image
         import io
         
-        pil_images = []
-        image_urls = []
-        
         for file in files:
             content = await file.read()
+            
+            # Prepare image for Gemini
             img = PIL.Image.open(io.BytesIO(content))
-            pil_images.append(img)
+            gemini_images.append(img)
             
             # Save to Cloudinary to keep a log
-            upload_result = cloudinary.uploader.upload(content, folder="skincare")
-            image_urls.append(upload_result.get("secure_url"))
-            
-        if not GEMINI_API_KEY:
-             return {"status": "error", "analysis": "System: API Key missing."}
+            try:
+                upload_result = cloudinary.uploader.upload(content, folder="skincare")
+                image_urls.append(upload_result.get("secure_url"))
+            except Exception as e:
+                print(f"Cloudinary upload failed (possibly offline): {e}")
+                image_urls.append("")
 
-        model_name = ACTIVE_MODEL_NAME.replace("models/", "")
-        print(f"DEBUG: Using model for skin analysis: {model_name}")
-        model = genai.GenerativeModel(model_name)
         prompt = "Analyze the skin condition in the provided image(s). Provide a brief, encouraging assessment pointing out areas of good hydration or potential dryness. Be concise, gentle, and format your response in plain text without markdown."
         
         try:
-            response = model.generate_content([prompt] + pil_images)
+            model = genai.GenerativeModel(ACTIVE_MODEL_NAME)
+            response = model.generate_content([prompt, *gemini_images])
             analysis_text = response.text
         except ResourceExhausted:
-            analysis_text = "The Skincare AI is catching its breath! ✨ Please wait about 60 seconds and try again."
+            analysis_text = "The Skincare AI is currently resting. Please wait about 60 seconds and try again. 🦋"
         except Exception as e:
-            analysis_text = "Could not process image properly. Lighting might be poor or system error."
+            analysis_text = f"Could not process image properly. System error: {str(e)}"
         
         return {
             "status": "success",
@@ -890,9 +894,6 @@ def get_bridge_history(clerk_id: str = Depends(get_current_user_clerk_id)):
 
 @app.post("/api/bridge/chat")
 async def bridge_chat(payload: BridgeChatPayload, clerk_id: str = Depends(check_permission("partner_can_journal"))):
-    if not GEMINI_API_KEY:
-         raise HTTPException(status_code=500, detail="Gemini API Key missing")
-    
     session = SessionLocal()
     try:
         # Create user entry
@@ -909,12 +910,6 @@ async def bridge_chat(payload: BridgeChatPayload, clerk_id: str = Depends(check_
             BridgeMessage.clerk_id == clerk_id
         ).order_by(BridgeMessage.timestamp.asc()).limit(5).all()
 
-        formatted_history = []
-        for msg in history:
-            formatted_history.append({"role": "user", "parts": [f"{msg.sender}: {msg.message}"]})
-            if msg.ai_response:
-                formatted_history.append({"role": "model", "parts": [msg.ai_response]})
-
         # 2. Gemini MEDIATOR Instruction
         system_instruction = (
             "You are 'The Bridge', a celestial mediator for a couple. "
@@ -923,11 +918,15 @@ async def bridge_chat(payload: BridgeChatPayload, clerk_id: str = Depends(check_
             "Be brief, wise, and empathetic. Do not take sides."
         )
 
-        model = genai.GenerativeModel(ACTIVE_MODEL_NAME, system_instruction=system_instruction)
-        chat_session = model.start_chat(history=formatted_history)
-        
         try:
-            response = chat_session.send_message(f"{payload.sender} says: {payload.message}")
+            model = genai.GenerativeModel(ACTIVE_MODEL_NAME, system_instruction=system_instruction)
+            gemini_history = []
+            for msg in history:
+                gemini_history.append({"role": "user", "parts": [f"{msg.sender}: {msg.message}"]})
+                if msg.ai_response:
+                    gemini_history.append({"role": "model", "parts": [msg.ai_response]})
+            chat = model.start_chat(history=gemini_history)
+            response = chat.send_message(f"{payload.sender} says: {payload.message}")
             ai_response_text = response.text
         except ResourceExhausted:
             ai_response_text = "The Celestial Mediator is catching its breath! 🦋 Please wait about 60 seconds and try again."
