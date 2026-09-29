@@ -1,3 +1,4 @@
+from ai_service import generate_ai_chat_response
 from fastapi import FastAPI, File, UploadFile, HTTPException, Depends, Header, Request, Form
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -18,6 +19,8 @@ from sqlalchemy import create_engine, Column, Integer, String, Text, DateTime, B
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 import json
+import secrets
+import string
 import PIL.Image
 import cloudinary
 import cloudinary.uploader
@@ -121,7 +124,8 @@ cloudinary.config(
 )
 
 # --- Database Setup ---
-DATABASE_URL = "postgresql://neondb_owner:npg_N8aJxgwV3ZRM@ep-wild-paper-ainnf2vo-pooler.c-4.us-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require"
+load_dotenv()
+DATABASE_URL = os.getenv("DATABASE_URL")
 
 engine = create_engine(
     DATABASE_URL,
@@ -168,6 +172,7 @@ class PlannerEvent(Base):
     category = Column(String, index=True)
     is_completed = Column(Boolean, default=False)
     priority = Column(String, default='Medium')
+    couple_id = Column(Integer, ForeignKey("couples.id"), nullable=True)
 
 class RoutineItem(Base):
     __tablename__ = "routine_items"
@@ -248,6 +253,19 @@ class User(Base):
     college_or_profession = Column(String, nullable=True)
     core_memory = Column(String, nullable=True)
 
+
+class CycleLog(Base):
+    __tablename__ = "cycle_logs"
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    couple_id = Column(Integer, ForeignKey("couples.id"), nullable=True)
+    start_date = Column(String, index=True)
+    cycle_length = Column(Integer, default=28)
+    period_duration = Column(Integer, default=5)
+    symptoms = Column(String, default="[]")
+    notes = Column(String, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
 Base.metadata.create_all(bind=engine)
 
 for col in ["display_name", "partner_nickname", "date_of_birth", "gender", "college_or_profession", "core_memory"]:
@@ -259,6 +277,11 @@ for col in ["display_name", "partner_nickname", "date_of_birth", "gender", "coll
 try:
     with engine.begin() as conn:
         conn.execute(text("ALTER TABLE users DROP COLUMN hometown"))
+except: pass
+
+try:
+    with engine.begin() as conn:
+        conn.execute(text("ALTER TABLE planner_events ADD COLUMN couple_id INTEGER"))
 except: pass
 
 app = FastAPI()
@@ -351,6 +374,7 @@ PERSONAS = {
 class ChatPayload(BaseModel):
     message: str
     character_id: str
+    mood: Optional[str] = None
 # --- GALLERY & MEMORIES SYSTEM ---
 
 @app.get("/api/memories")
@@ -482,25 +506,30 @@ async def chat_with_character(payload: ChatPayload, clerk_id: str = Depends(chec
                              
         if user and getattr(user, 'core_memory', None):
             system_instruction += f" User notes: {user.core_memory}."
+        if getattr(payload, 'mood', None):
+            system_instruction += (
+                f" Current detected user emotion: {payload.mood}. "
+                f"Subtly attune your emotional tone to their mood (e.g. comforting, warm, and gentle if Sad, Fear, or Disgust; "
+                f"uplifting, enthusiastic, and joyful if Happy or Surprise; calm and patient if Angry; friendly and attentive if Neutral)."
+            )
                              
         history_msgs = session.query(ChatMessage).filter(
             ChatMessage.character_id == character_id,
             ChatMessage.clerk_id == clerk_id
         ).order_by(ChatMessage.timestamp.asc()).all()
-        
-        try:
-            model = genai.GenerativeModel(ACTIVE_MODEL_NAME, system_instruction=system_instruction)
-            history = []
-            for msg in history_msgs[:-1]: 
-                role = "user" if msg.sender == "user" else "model"
-                history.append({"role": role, "parts": [msg.content]})
-            chat = model.start_chat(history=history)
-            response = chat.send_message(payload.message)
-            text_response = response.text
-        except ResourceExhausted:
-            text_response = "The Celestial Mediator is catching its breath! 🦋 Please wait about 60 seconds and try again."
-        except Exception as e:
-            text_response = f"System Error: {str(e)}"
+        # Multi-provider AI Fallback (Local Ollama -> Gemini -> Groq)
+        history_list = []
+        for msg in history_msgs[:-1]: 
+            role = "user" if msg.sender == "user" else "assistant"
+            history_list.append({"role": role, "content": msg.content})
+
+        text_response = await generate_ai_chat_response(
+            system_prompt=system_instruction,
+            user_message=payload.message,
+            history=history_list,
+            character_name=character_id.capitalize()
+        )
+
         
         ai_msg = ChatMessage(clerk_id=clerk_id, character_id=character_id, sender='ai', content=text_response)
         session.add(ai_msg)
@@ -554,6 +583,8 @@ def get_user_me(clerk_id: str = Depends(get_current_user_clerk_id)):
             db_couple = session.query(Couple).filter(Couple.id == user.couple_id).first()
             if db_couple:
                 couple = {
+                    "id": db_couple.id,
+                    "pairing_code": db_couple.pairing_code,
                     "partner_can_chat": db_couple.partner_can_chat,
                     "partner_can_gallery": db_couple.partner_can_gallery,
                     "partner_can_journal": db_couple.partner_can_journal
@@ -577,6 +608,135 @@ class UserProfileUpdate(BaseModel):
     college_or_profession: Optional[str] = None
     core_memory: Optional[str] = None
 
+
+class PairRequest(BaseModel):
+    pairing_code: str
+
+class CycleLogCreate(BaseModel):
+    start_date: str
+    cycle_length: Optional[int] = 28
+    period_duration: Optional[int] = 5
+    symptoms: Optional[List[str]] = []
+    notes: Optional[str] = None
+
+
+@app.post("/api/couple/generate")
+def generate_couple_code(clerk_id: str = Depends(get_current_user_clerk_id)):
+    session = SessionLocal()
+    try:
+        user = session.query(User).filter(User.clerk_id == clerk_id).first()
+        if not user:
+            user = User(clerk_id=clerk_id, display_name="New User")
+            session.add(user)
+            session.commit()
+            session.refresh(user)
+
+        if user.couple_id:
+            couple = session.query(Couple).filter(Couple.id == user.couple_id).first()
+            if couple and couple.pairing_code:
+                return {"pairing_code": couple.pairing_code, "couple_id": couple.id}
+
+        # Generate unique 6-character code
+        alphabet = string.ascii_uppercase + string.digits
+        while True:
+            suffix = ''.join(secrets.choice(alphabet) for _ in range(6))
+            code = f"MNSN-{suffix}"
+            existing = session.query(Couple).filter(Couple.pairing_code == code).first()
+            if not existing:
+                break
+
+        new_couple = Couple(pairing_code=code)
+        session.add(new_couple)
+        session.commit()
+        session.refresh(new_couple)
+
+        user.couple_id = new_couple.id
+        user.is_admin = True
+        session.commit()
+
+        return {"pairing_code": new_couple.pairing_code, "couple_id": new_couple.id}
+    finally:
+        session.close()
+
+@app.post("/api/users/pair")
+def pair_partner(payload: PairRequest, clerk_id: str = Depends(get_current_user_clerk_id)):
+    session = SessionLocal()
+    try:
+        user = session.query(User).filter(User.clerk_id == clerk_id).first()
+        if not user:
+            user = User(clerk_id=clerk_id, display_name="New User")
+            session.add(user)
+            session.commit()
+            session.refresh(user)
+
+        code = payload.pairing_code.strip().upper()
+        if not code:
+            raise HTTPException(status_code=400, detail="Pairing code is required")
+
+        couple = session.query(Couple).filter(Couple.pairing_code == code).first()
+        if not couple:
+            raise HTTPException(status_code=404, detail="Invalid pairing code. No matching couple found.")
+
+        # Find existing partner in this couple
+        partner = session.query(User).filter(User.couple_id == couple.id, User.id != user.id).first()
+        if user.couple_id == couple.id and partner:
+            return {
+                "status": "success",
+                "couple_id": couple.id,
+                "message": "Already paired with this partner",
+                "partner": {
+                    "id": partner.id,
+                    "clerk_id": partner.clerk_id,
+                    "display_name": partner.display_name or "Partner",
+                    "partner_nickname": partner.partner_nickname
+                }
+            }
+
+        # Check if user is attempting to pair with their own alone-code
+        if user.couple_id == couple.id and not partner:
+            raise HTTPException(status_code=400, detail="You cannot pair with your own pairing code! Share this code with your partner.")
+
+        # Link user to the couple
+        user.couple_id = couple.id
+        user.is_admin = False
+        session.commit()
+
+        partner_info = None
+        if partner:
+            partner_info = {
+                "id": partner.id,
+                "clerk_id": partner.clerk_id,
+                "display_name": partner.display_name or "Partner",
+                "partner_nickname": partner.partner_nickname
+            }
+
+        return {
+            "status": "success",
+            "couple_id": couple.id,
+            "message": "Successfully paired with partner",
+            "partner": partner_info
+        }
+    finally:
+        session.close()
+
+@app.post("/api/couple/unpair")
+def unpair_couple(clerk_id: str = Depends(get_current_user_clerk_id)):
+    session = SessionLocal()
+    try:
+        user = session.query(User).filter(User.clerk_id == clerk_id).first()
+        if not user:
+            user = User(clerk_id=clerk_id, display_name="Butterfly Traveler")
+            session.add(user)
+            session.commit()
+            session.refresh(user)
+        user.couple_id = None
+        user.is_admin = False
+        user.partner_nickname = None
+        session.commit()
+        return {"status": "success", "message": "Unpaired successfully"}
+    finally:
+        session.close()
+
 @app.get("/api/users/profile")
 def get_user_profile(clerk_id: str = Depends(get_current_user_clerk_id)):
     session = SessionLocal()
@@ -588,6 +748,12 @@ def get_user_profile(clerk_id: str = Depends(get_current_user_clerk_id)):
             session.add(user)
             session.commit()
             session.refresh(user)
+
+        partner = None
+        db_couple = None
+        if user.couple_id:
+            db_couple = session.query(Couple).filter(Couple.id == user.couple_id).first()
+            partner = session.query(User).filter(User.couple_id == user.couple_id, User.id != user.id).first()
             
         return {
             "display_name": user.display_name,
@@ -595,7 +761,16 @@ def get_user_profile(clerk_id: str = Depends(get_current_user_clerk_id)):
             "date_of_birth": user.date_of_birth,
             "gender": user.gender,
             "college_or_profession": user.college_or_profession,
-            "core_memory": user.core_memory
+            "core_memory": user.core_memory,
+            "couple_id": user.couple_id,
+            "is_paired": bool(partner is not None),
+            "pairing_code": db_couple.pairing_code if db_couple else None,
+            "partner": {
+                "id": partner.id,
+                "clerk_id": partner.clerk_id,
+                "display_name": partner.display_name or user.partner_nickname or "Partner",
+                "partner_nickname": partner.partner_nickname
+            } if partner else None
         }
     finally:
         session.close()
@@ -637,7 +812,14 @@ def add_budget_item(payload: BudgetAddRequest):
 def get_planner_events(category: str = "daily", clerk_id: str = Depends(check_permission("partner_can_journal"))):
     session = SessionLocal()
     try:
-        events = session.query(PlannerEvent).filter(PlannerEvent.category == category).all()
+        user = session.query(User).filter(User.clerk_id == clerk_id).first()
+        if user and user.couple_id:
+            events = session.query(PlannerEvent).filter(
+                PlannerEvent.category == category,
+                (PlannerEvent.couple_id == user.couple_id) | (PlannerEvent.couple_id == None)
+            ).all()
+        else:
+            events = session.query(PlannerEvent).filter(PlannerEvent.category == category).all()
         return events
     finally:
         session.close()
@@ -646,7 +828,10 @@ def get_planner_events(category: str = "daily", clerk_id: str = Depends(check_pe
 def create_planner_event(event: PlannerEventCreate, clerk_id: str = Depends(check_permission("partner_can_journal"))):
     session = SessionLocal()
     try:
+        user = session.query(User).filter(User.clerk_id == clerk_id).first()
         new_event = PlannerEvent(**event.dict())
+        if user and user.couple_id:
+            new_event.couple_id = user.couple_id
         session.add(new_event)
         session.commit()
         session.refresh(new_event)
@@ -655,6 +840,7 @@ def create_planner_event(event: PlannerEventCreate, clerk_id: str = Depends(chec
         session.close()
 
 @app.put("/api/planner/{id}/toggle")
+@app.post("/api/planner/{id}/toggle")
 def toggle_planner_event(id: int, clerk_id: str = Depends(check_permission("partner_can_journal"))):
     session = SessionLocal()
     try:
@@ -795,6 +981,128 @@ async def analyze_skin(files: List[UploadFile] = File(...), clerk_id: str = Depe
         print(f"Skin analysis error: {str(e)}")
         return {"status": "error", "analysis": f"Upload failed: {str(e)}"}
 
+# --- FER-2013 EMOTION RECOGNITION (AI-DRIVEN MOOD RECOGNITION) ---
+EMOTION_LABELS = ['Angry', 'Disgust', 'Fear', 'Happy', 'Sad', 'Surprise', 'Neutral']
+EMOTION_MODEL_PATH = os.path.join(os.path.dirname(__file__), "models", "emotion_detection_model.h5")
+_cached_emotion_model = None
+
+def get_emotion_model():
+    """
+    Lazy loader for FER-2013 Keras model to keep startup fast and resilient.
+    """
+    global _cached_emotion_model
+    if _cached_emotion_model is None:
+        if not os.path.exists(EMOTION_MODEL_PATH):
+            raise FileNotFoundError(f"Emotion model not found at {EMOTION_MODEL_PATH}")
+        import tensorflow as tf
+        print(f"Loading emotion detection model from {EMOTION_MODEL_PATH}...")
+        _cached_emotion_model = tf.keras.models.load_model(EMOTION_MODEL_PATH)
+        print("Emotion detection model loaded successfully.")
+    return _cached_emotion_model
+
+
+@app.post("/api/mood/detect")
+async def detect_mood(
+    file: UploadFile = File(...)
+):
+    """
+    Accepts an uploaded image file, processes it into grayscale using PIL.Image and numpy,
+    safely attempts face detection via OpenCV Haar Cascade (if available), falls back
+    to center-crop square, resizes ROI to 48x48 via Image.Resampling.LANCZOS, normalizes to [0, 1],
+    and feeds (1, 48, 48, 1) tensor into FER-2013 emotion_detection_model.h5.
+    Returns detected_mood, confidence, face_detected, and score distribution.
+    """
+    try:
+        import io
+        import numpy as np
+        from PIL import Image
+
+        image_bytes = await file.read()
+        if not image_bytes:
+            raise HTTPException(status_code=400, detail="Empty image file received.")
+
+        # Decode uploaded image bytes into grayscale using PIL.Image and numpy
+        pil_img = Image.open(io.BytesIO(image_bytes)).convert("L")
+        gray_arr = np.array(pil_img, dtype=np.uint8)
+        w, h = pil_img.size
+
+        face_detected = False
+        roi_pil = None
+
+        # Safely attempt OpenCV Haar Cascade face detection if cv2.CascadeClassifier exists
+        try:
+            import cv2
+            if hasattr(cv2, "CascadeClassifier") and hasattr(cv2, "data") and hasattr(cv2.data, "haarcascades"):
+                cascade_path = os.path.join(cv2.data.haarcascades, "haarcascade_frontalface_default.xml")
+                if os.path.exists(cascade_path):
+                    face_cascade = cv2.CascadeClassifier(cascade_path)
+                    if not face_cascade.empty():
+                        faces = face_cascade.detectMultiScale(
+                            gray_arr,
+                            scaleFactor=1.3,
+                            minNeighbors=5,
+                            minSize=(30, 30)
+                        )
+                        if len(faces) > 0:
+                            # Pick largest detected face
+                            x, y, fw, fh = max(faces, key=lambda f: f[2] * f[3])
+                            roi_pil = pil_img.crop((x, y, x + fw, y + fh))
+                            face_detected = True
+        except Exception as cv_err:
+            print(f"OpenCV face detection skipped or failed: {cv_err}")
+
+        # Gracefully fall back to a center-crop square if OpenCV fails or throws an exception / no face found
+        if roi_pil is None:
+            min_dim = min(w, h)
+            start_x = (w - min_dim) // 2
+            start_y = (h - min_dim) // 2
+            roi_pil = pil_img.crop((start_x, start_y, start_x + min_dim, start_y + min_dim))
+
+        # Resize cropped ROI to 48x48 using Image.Resampling.LANCZOS
+        roi_resized = roi_pil.resize((48, 48), resample=Image.Resampling.LANCZOS)
+
+        # Normalize pixels to [0, 1]
+        roi_normalized = np.array(roi_resized, dtype="float32") / 255.0
+
+        # Feed the tensor (1, 48, 48, 1) to get_emotion_model()
+        model = get_emotion_model()
+        input_channels = model.input_shape[-1] if hasattr(model, 'input_shape') and model.input_shape else 1
+
+        if input_channels == 1:
+            input_tensor = roi_normalized.reshape((1, 48, 48, 1))
+        else:
+            input_tensor = np.repeat(roi_normalized.reshape((1, 48, 48, 1)), 3, axis=-1)
+
+        # Run inference
+        raw_preds = model.predict(input_tensor)
+        preds = raw_preds[0]
+
+        best_idx = int(np.argmax(preds))
+        confidence = float(preds[best_idx])
+        detected_mood = EMOTION_LABELS[best_idx] if best_idx < len(EMOTION_LABELS) else "Neutral"
+
+        scores = {
+            EMOTION_LABELS[i]: round(float(preds[i]), 4)
+            for i in range(min(len(EMOTION_LABELS), len(preds)))
+        }
+
+        return {
+            "status": "success",
+            "detected_mood": detected_mood,
+            "confidence": round(confidence, 4),
+            "face_detected": face_detected,
+            "scores": scores
+        }
+    except FileNotFoundError as fnf:
+        print(f"Emotion model file error: {fnf}")
+        raise HTTPException(status_code=500, detail=f"Model setup error: {str(fnf)}")
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Mood detection error: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to process mood: {str(e)}")
+
+
 @app.delete("/api/albums/{album_name}/photos/{photo_id}")
 def delete_photo(album_name: str, photo_id: int, clerk_id: str = Depends(check_permission("partner_can_gallery"))):
     session = SessionLocal()
@@ -917,21 +1225,20 @@ async def bridge_chat(payload: BridgeChatPayload, clerk_id: str = Depends(check_
             "Your role is to offer gentle, poetic, and neutral insights to help them understand each other. "
             "Be brief, wise, and empathetic. Do not take sides."
         )
+        # Multi-provider AI Fallback (Local Ollama -> Gemini -> Groq)
+        history_list = []
+        for msg in history:
+            history_list.append({"role": "user", "content": f"{msg.sender}: {msg.message}"})
+            if msg.ai_response:
+                history_list.append({"role": "assistant", "content": msg.ai_response})
 
-        try:
-            model = genai.GenerativeModel(ACTIVE_MODEL_NAME, system_instruction=system_instruction)
-            gemini_history = []
-            for msg in history:
-                gemini_history.append({"role": "user", "parts": [f"{msg.sender}: {msg.message}"]})
-                if msg.ai_response:
-                    gemini_history.append({"role": "model", "parts": [msg.ai_response]})
-            chat = model.start_chat(history=gemini_history)
-            response = chat.send_message(f"{payload.sender} says: {payload.message}")
-            ai_response_text = response.text
-        except ResourceExhausted:
-            ai_response_text = "The Celestial Mediator is catching its breath! 🦋 Please wait about 60 seconds and try again."
-        except Exception as e:
-            ai_response_text = f"An unexpected error occurred: {str(e)}"
+        ai_response_text = await generate_ai_chat_response(
+            system_prompt=system_instruction,
+            user_message=f"{payload.sender} says: {payload.message}",
+            history=history_list,
+            character_name="The Bridge"
+        )
+
         
         user_msg.ai_response = ai_response_text
         session.add(user_msg)
@@ -979,7 +1286,160 @@ def get_bridge_archives(clerk_id: str = Depends(get_current_user_clerk_id)):
     finally:
         session.close()
 
+
+# --- Moonlit Cycle Care Endpoints ---
+@app.get("/api/cycle/latest")
+def get_latest_cycle(clerk_id: str = Depends(get_current_user_clerk_id)):
+    session = SessionLocal()
+    try:
+        user = session.query(User).filter(User.clerk_id == clerk_id).first()
+        if not user:
+            user = User(clerk_id=clerk_id, display_name='Butterfly Traveler')
+            session.add(user)
+            session.commit()
+            session.refresh(user)
+
+        query = session.query(CycleLog)
+        if user.couple_id:
+            log = query.filter(
+                (CycleLog.couple_id == user.couple_id) | (CycleLog.user_id == user.id)
+            ).order_by(CycleLog.start_date.desc(), CycleLog.id.desc()).first()
+        else:
+            log = query.filter(CycleLog.user_id == user.id).order_by(CycleLog.start_date.desc(), CycleLog.id.desc()).first()
+
+        if not log:
+            return {
+                "has_data": False,
+                "current_day": None,
+                "cycle_length": 28,
+                "period_duration": 5,
+                "phase": "Unknown",
+                "phase_name": "No Cycle Data Logged",
+                "phase_description": "Record your most recent cycle start date to unlock personalized Butterfly Estate predictions and herbal care.",
+                "next_expected_date": None,
+                "days_until_next": None,
+                "care_advice": "Welcome to Moonlit Cycle Care. Log your cycle to receive Shinobu Kocho's gentle botanical remedies and wellness tracking.",
+                "partner_guidance": "Encourage her to record her cycle start date so you can provide the sweetest, most thoughtful care throughout her phases 🌸",
+                "log": None
+            }
+
+        try:
+            start_dt = datetime.strptime(log.start_date, "%Y-%m-%d").date()
+        except Exception:
+            start_dt = date.today()
+
+        today = date.today()
+        days_passed = (today - start_dt).days
+        cycle_len = log.cycle_length if log.cycle_length and log.cycle_length > 0 else 28
+        period_dur = log.period_duration if log.period_duration and log.period_duration > 0 else 5
+
+        if days_passed < 0:
+            current_day = 1
+            cycles_completed = 0
+            next_expected_dt = start_dt
+            days_until_next = (start_dt - today).days
+        else:
+            current_day = (days_passed % cycle_len) + 1
+            cycles_completed = (days_passed // cycle_len) + 1
+            next_expected_dt = start_dt + timedelta(days=cycles_completed * cycle_len)
+            days_until_next = (next_expected_dt - today).days
+
+        if current_day <= period_dur:
+            phase = "Menstrual"
+            phase_name = "Menstrual Phase (Rest & Rejuvenation) 🌸"
+            phase_description = "The body is shedding and resetting. Energy naturally dips as hormones are at their lowest baseline."
+            care_advice = "The Butterfly Estate suggests warm ginger, raspberry leaf, and chamomile tea. Apply a warm herbal compress to the lower abdomen, stay cozy, and embrace gentle rest without haste."
+            partner_guidance = "What she needs right now: Warm tea, her favorite hot compress, comfort snacks (dark chocolate, warm soup), gentle back massages, and zero pressure 🌸"
+        elif current_day <= 13:
+            phase = "Follicular"
+            phase_name = "Follicular Phase (Spring Awakening) 🌱"
+            phase_description = "Estrogen is climbing, bringing renewed vitality, mental clarity, and lightness of spirit."
+            care_advice = "Your inner energy is blossoming! Nourish yourself with fresh crisp greens, fermented foods, light strength or yoga sessions, and embark on creative endeavors."
+            partner_guidance = "Her vitality is rising! Plan fun dates, outdoor strolls, match her energetic curiosity, and encourage her new goals 🌱"
+        elif current_day <= 16:
+            phase = "Ovulation"
+            phase_name = "Ovulatory Phase (Peak Radiance) ☀️"
+            phase_description = "Peak estrogen and luteinizing hormone trigger maximum confidence, magnetism, and social warmth."
+            care_advice = "You are at your radiant peak. Stay hydrated with berry-infused waters and electrolyte broths. Great time for passionate connections and joyful celebrations."
+            partner_guidance = "She is in her radiant peak of energy and warmth! Surprise her with flowers, celebrate each other, and express deep appreciation ☀️"
+        else:
+            phase = "Luteal"
+            phase_name = "Luteal Phase (Gentle Nurturing & Calm) 🌙"
+            phase_description = "Progesterone rises to comfort the body. As it winds down, mood sensitivity and cravings may emerge."
+            care_advice = "Prioritize grounding foods rich in magnesium and vitamin B6 — roasted root vegetables, dark cacao, and soothing lavender evening infusions to ease premenstrual tension."
+            partner_guidance = "Be extra patient, gentle, and understanding. Bring her favorite snacks, draw a warm bath, validate her emotions, and offer cozy cuddles 🌙"
+
+        symptoms_list = []
+        if log.symptoms:
+            try:
+                symptoms_list = json.loads(log.symptoms)
+            except Exception:
+                symptoms_list = [log.symptoms]
+
+        return {
+            "has_data": True,
+            "current_day": current_day,
+            "cycle_length": cycle_len,
+            "period_duration": period_dur,
+            "phase": phase,
+            "phase_name": phase_name,
+            "phase_description": phase_description,
+            "next_expected_date": next_expected_dt.strftime("%Y-%m-%d"),
+            "days_until_next": max(0, days_until_next),
+            "care_advice": care_advice,
+            "partner_guidance": partner_guidance,
+            "log": {
+                "id": log.id,
+                "start_date": log.start_date,
+                "cycle_length": log.cycle_length,
+                "period_duration": log.period_duration,
+                "symptoms": symptoms_list,
+                "notes": log.notes,
+                "created_at": log.created_at.isoformat() if log.created_at else None
+            }
+        }
+    finally:
+        session.close()
+
+@app.post("/api/cycle/log")
+def log_cycle(payload: CycleLogCreate, clerk_id: str = Depends(get_current_user_clerk_id)):
+    session = SessionLocal()
+    try:
+        user = session.query(User).filter(User.clerk_id == clerk_id).first()
+        if not user:
+            user = User(clerk_id=clerk_id, display_name="New User")
+            session.add(user)
+            session.commit()
+            session.refresh(user)
+
+        symptoms_json = json.dumps(payload.symptoms or [])
+        new_log = CycleLog(
+            user_id=user.id,
+            couple_id=user.couple_id,
+            start_date=payload.start_date.strip(),
+            cycle_length=payload.cycle_length or 28,
+            period_duration=payload.period_duration or 5,
+            symptoms=symptoms_json,
+            notes=payload.notes,
+            created_at=datetime.utcnow()
+        )
+        session.add(new_log)
+        session.commit()
+        session.refresh(new_log)
+
+        return {
+            "status": "success",
+            "message": "Cycle log recorded successfully",
+            "id": new_log.id
+        }
+    except Exception as e:
+        session.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        session.close()
+
 # The critical Port Binding fix for Render
+
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
     uvicorn.run(app, host="0.0.0.0", port=port)
