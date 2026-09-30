@@ -2,6 +2,7 @@ fastapi
 uvicorn
 sqlalchemy
 psycopg2-binary
+psycopg[binary]
 pydantic
 python-multipart
 python-dotenv
@@ -12,3 +13,6 @@ cloudinary
 pyjwt
 cryptography
 httpx
+groq>=0.11.0
+tensorflow
+opencv-python-headless
