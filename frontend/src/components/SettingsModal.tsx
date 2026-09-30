@@ -206,7 +206,7 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                         </p>
 
                         {/* Scrollable Container for Modal Inner Content */}
-                        <div className="space-y-4 overflow-y-auto pb-28 -mx-2 pl-2 pr-3 flex-1 [&::-webkit-scrollbar]:w-[6px] [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-pink-600 [&::-webkit-scrollbar-thumb]:rounded-full">
+                        <div className="space-y-4 overflow-y-auto pb-28 -mx-2 pl-2 pr-3 flex-1 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-pink-600 [&::-webkit-scrollbar-thumb]:rounded-full">
                             {/* Restart Journey Button */}
                             <button
                                 onClick={handleRestart}
@@ -284,7 +284,7 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                                                 <textarea
                                                     value={notes}
                                                     onChange={(e) => setNotes(e.target.value)}
-                                                    className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500/50 min-h-[80px]"
+                                                    className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500/50 min-h-20"
                                                 />
                                             </div>
 

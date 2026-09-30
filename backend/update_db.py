@@ -1,8 +1,10 @@
 from sqlalchemy import create_engine, text
 import os
+from dotenv import load_dotenv
 
-# Database URL from your main.py
-DATABASE_URL = "postgresql://neondb_owner:npg_N8aJxgwV3ZRM@ep-wild-paper-ainnf2vo-pooler.c-4.us-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require"
+load_dotenv()
+# Database URL from environment
+DATABASE_URL = os.getenv("DATABASE_URL")
 
 def migrate():
     engine = create_engine(DATABASE_URL)

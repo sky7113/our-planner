@@ -1,0 +1,24 @@
+# Environment files
+.env
+.env.*
+*.env
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+venv/
+ENV/
+env/
+
+# Logs & Local DBs
+*.log
+*.db
+*.sqlite3
+
+# Binaries & Backups
+cloudflared.exe
+*.bak
+*.pre_mood_backup

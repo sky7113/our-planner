@@ -1,3 +1,7 @@
+try:
+    from ai_service import generate_ai_chat_response
+except ModuleNotFoundError:
+    from backend.ai_service import generate_ai_chat_response
 import os
 import json
 import base64
@@ -42,44 +46,15 @@ async def chat_mediator(request: ChatRequest):
     You are elegant, slightly teasing but deeply empathetic. 
     Current User Context: {context}. 
     Always respond strictly in character, offering gentle advice and maintaining a premium, magical tone."""
+    # Multi-provider AI Fallback (Local Ollama -> Gemini -> Groq)
+    text_response = await generate_ai_chat_response(
+        system_prompt=system_prompt,
+        user_message=request.user_message,
+        history=[],
+        character_name="Shinobu Kocho"
+    )
+    return ChatResponse(message=text_response)
 
-    # 1. Try Block 1 (Local)
-    if TUNNEL_URL:
-        try:
-            local_payload = {
-                "model": LOCAL_TEXT_MODEL,
-                "messages": [
-                    {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": request.user_message}
-                ],
-                "stream": False
-            }
-            async with httpx.AsyncClient(timeout=5.0) as client:
-                response = await client.post(f"{TUNNEL_URL}/api/chat", json=local_payload)
-                response.raise_for_status()
-                return ChatResponse(message=response.json()["message"]["content"])
-        except (httpx.ConnectError, httpx.TimeoutException):
-            print("Local AI failed (Connection Error or Timeout), falling back to Gemini...")
-            pass
-        except Exception as e:
-            print(f"Local AI failed ({str(e)}), falling back to Gemini...")
-            pass
-
-    # 2. Try Block 2 (Cloud Fallback)
-    if not GEMINI_API_KEY:
-         return ChatResponse(message="System Error: Local AI is offline and Gemini API Key is missing. 🦋")
-
-    try:
-        model = genai.GenerativeModel(TEXT_MODEL, system_instruction=system_prompt)
-        chat_session = model.start_chat(history=[])
-        response = chat_session.send_message(request.user_message)
-        
-        return ChatResponse(message=response.text)
-            
-    except ResourceExhausted:
-        return ChatResponse(message="The Celestial Mediator is catching its breath! 🦋 Please wait about 60 seconds and try again.")
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Cloud AI Error: {str(e)}")
 
 
 @router.post("/analyze-skin")
