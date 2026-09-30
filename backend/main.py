@@ -1,3 +1,7 @@
+import sys
+from pathlib import Path
+sys.path.append(str(Path(__file__).resolve().parent))
+
 from ai_service import generate_ai_chat_response
 from fastapi import FastAPI, File, UploadFile, HTTPException, Depends, Header, Request, Form
 from fastapi.middleware.cors import CORSMiddleware
