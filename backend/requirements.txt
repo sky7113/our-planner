@@ -5,3 +5,10 @@ psycopg2-binary
 pydantic
 python-dotenv
 google-generativeai
+httpx
+pillow
+cloudinary
+pyjwt
+cryptography
+python-multipart
+requests
