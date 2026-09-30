@@ -1,8 +1,11 @@
 import sys
-from pathlib import Path
-sys.path.append(str(Path(__file__).resolve().parent))
+import os
+sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
 
-from ai_service import generate_ai_chat_response
+try:
+    from ai_service import generate_ai_chat_response
+except ModuleNotFoundError:
+    from backend.ai_service import generate_ai_chat_response
 from fastapi import FastAPI, File, UploadFile, HTTPException, Depends, Header, Request, Form
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -290,7 +293,10 @@ except: pass
 
 app = FastAPI()
 
-from src.api.routes.ai_router import router as ai_router
+try:
+    from src.api.routes.ai_router import router as ai_router
+except ModuleNotFoundError:
+    from backend.src.api.routes.ai_router import router as ai_router
 app.include_router(ai_router)
 
 os.makedirs("images", exist_ok=True)
